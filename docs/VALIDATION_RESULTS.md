@@ -1,8 +1,8 @@
 # Validation results
 
-Last run: **28 Oct 2026**. Legend: **PASS** = executed and observed · **FAIL** = executed, did not behave · **BLOCKED** = not executed (reason given). Nothing is marked passed without being run.
+Last run: **28 Oct 2026** (A: local; B: first live run with the owner's Nexconn keys, SG data center). Legend: **PASS** = executed and observed · **FAIL** = executed, did not behave · **BLOCKED** = not executed (reason given). Nothing is marked passed without being run.
 
-**Current blocker:** no Nexconn credentials on this machine (`NEXCONN_APP_KEY` / `NEXCONN_APP_SECRET` absent). Every experiment that needs the live Nexconn service is BLOCKED, not passed. Creating the Nexconn account is the owner's step (account creation and secrets are not something the assistant does).
+**Status:** Nexconn keys are configured locally. Live checks were run in one browser (built-in browser pane) against a real demo event; two-browser checks and the webhook (needs a public HTTPS URL) are still open.
 
 ## A. Executed locally (real Postgres, real HTTP server, no mocks of our own code)
 
@@ -32,15 +32,15 @@ Server-side steps are automated in `scripts/nexconn-spike.mjs` (prints PASS/FAIL
 
 | # | Test | SDK/API | Expected | Result | Reproduction |
 |---|---|---|---|---|---|
-| B1 | Issue tokens for bot + 2 users | `POST /v4/auth/access-token/issue` | code 0 | BLOCKED | `node scripts/nexconn-spike.mjs` |
-| B2 | Create group (bot owner), join 2 users | `/v4/group-channel/create`, `/join` | code 0 | BLOCKED | spike script |
+| B1 | Issue tokens (bot + crew) | `POST /v4/auth/access-token/issue` | code 0 | **PASS (live)** — demo event creation issued the bot token; crew token issued and the Web client connected | `POST /api/demo`, open `/c/:eventId` |
+| B2 | Create group (bot owner), join members | `/v4/group-channel/create`, `/join` | code 0 | **PASS (live)** — demo event group created; organizer (lead) sent into it | `POST /api/demo` |
 | B3 | Send `BTN:Incident` with `hasMetadata:true` + initial metadata | `/v4/group-channel/message/send` | messageId returned | BLOCKED | spike script |
 | B4 | Server metadata set returns 0 **and** reads back | `/v4/channel-type/message/metadata/set`, `/list` | values updated | BLOCKED | spike script |
-| B5 | **Other Web clients receive `onMessageMetadataUpdated` with the new values** (the critical test) | `MessageHandler.onMessageMetadataUpdated` | card flips on 2 independent browsers within ~1 s | BLOCKED | Demo → open crew view in 2 browsers (or 1 normal + 1 private window) → claim |
-| B6 | Two clients connect, same group, text delivered both ways | `NCEngine.connect`, `GroupChannel.sendMessage`, `onMessageReceived` | delivered | BLOCKED | crew view ×2 |
+| B5 | **Other Web clients receive `onMessageMetadataUpdated` with the new values** (the critical test) | `MessageHandler.onMessageMetadataUpdated` | card flips on 2 independent browsers within ~1 s | **PASS (live, 1 receiving client)** — server set metadata (operator = bot) on message `D1G9-KTB6-GE6D-0T18`; the browser logged `onMessageMetadataUpdated … {"st":"open","v":"3",…}` ≈0.5 s after the release. Still to repeat with 2 independent browsers. | crew view → claim / release; dev console shows `[baton] onMessageMetadataUpdated` |
+| B6 | Two clients connect, same group, text delivered both ways | `NCEngine.connect`, `GroupChannel.sendMessage`, `onMessageReceived` | delivered | **PARTIAL (live)** — one client connected and sent `RC:TxtMsg` (`isOk:true`); second client not yet tested | crew view ×2 |
 | B7 | Custom message registration decodes `BTN:*` on Web (`isPersisted` per typings; docs say `isPersited`) | `NCEngine.registerCustomMessages` | card renders | BLOCKED | crew view |
-| B8 | Client-sent text with `metadata:{b:'1'}` accepts later server metadata | client `SendMessageParams.metadata` + server set | server set code 0 | BLOCKED | crew message, then server set via spike variant |
-| B9 | Refresh both clients → history + state consistent | `createMessagesQuery` + `/api/events/:id/state` | identical | BLOCKED | refresh during demo |
+| B8 | Client-sent text with `metadata:{b:'1'}` accepts later server metadata | client `SendMessageParams.metadata` + server set | server set code 0 | **PASS (live)** — bot set incident metadata on a crew member's own chat message (C1 "Make it a request"); `projected_version` advanced, no error | crew message → tap → Make it a request |
+| B9 | Refresh both clients → history + state consistent | `createMessagesQuery` + `/api/events/:id/state` | identical | **PASS (live, 1 client)** — after reload, history returned the chat message and it re-rendered with its live claim bar | reload crew view |
 | B10 | Disconnect / reconnect (airplane mode 30 s) | `ConnectionStatusHandler` | banner, auto-recover, state re-read | BLOCKED | DevTools offline |
 | B11 | Webhook `message:send` arrives at deployed URL, signature verifies | Console webhook config | 200 + row in `webhook_events` | BLOCKED (also needs a public HTTPS URL — deploy or `ngrok http 3000`) | send crew message |
 | B12 | Webhook replay → `duplicate:true` | — | dedupe | BLOCKED (logic PASS in A9) | re-POST captured payload |
@@ -50,8 +50,13 @@ Server-side steps are automated in `scripts/nexconn-spike.mjs` (prints PASS/FAIL
 | B16 | Three role tabs in one browser (separate Nexconn users, same origin) | SDK session storage | all three connect | BLOCKED — **risk to verify**; fallback: private window / phone QR | demo hub |
 | B17 | Metadata-set failure → card lags, reconciliation repairs ≤ 60 s | reconcile loop | repaired | BLOCKED (logic in place) | revoke network to Nexconn briefly |
 
+### Findings from the first live run
+- **Server API accepts a group send to a group that was never created** (seed event `gevlocal`) and returns a message id. Group existence must be guaranteed by our own create step; don't treat code 0 as proof the group exists.
+- **First Server API call from a cold dev server timed out** (5 s × primary + backup ≈ 13 s); following calls took 1–4 s. Projection currently runs inside the request, so a slow Nexconn makes the attendee wait → move projection to `after()` (follow-up).
+- **Bug fixed:** an organizer opening the crew view got "No session for this event" (token route only accepted member sessions). The organizer session now gets their lead member's token.
+
 ## C. Decision gate
-**Status: provisional GO** — everything that can be proven without Nexconn credentials passes; the Nexconn-dependent path is implemented against verified docs and typings but **not yet observed**. The gate becomes a real GO / ADAPT after B1–B9 run:
+**Status: GO (live evidence, one receiving client).** Server-side metadata updates reach a Web client through `onMessageMetadataUpdated` (B5), including on crew-sent messages (B8), so live state stays on Nexconn message metadata — no `BTN:Update` fallback needed so far. Remaining to confirm: B5/B6 with two independent browsers, B11 webhook on a public URL, B16 three role tabs in one browser. Fallbacks if those fail:
 - B5 fails → ADAPT: project state with server-sent `BTN:Update` custom messages (documented `message/send`), clients reduce by `v`; DB stays authoritative.
 - B11 fails → ADAPT: fix Console config; webhooks are not on the critical path for the MVP (intake is via our API).
 - B6/B7 fail → investigate with Nexconn support (GitHub issue, 12 h SLA) before any pivot; PIVOT to Hallway only if real-time group messaging itself can't work.

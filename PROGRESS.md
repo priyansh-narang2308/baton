@@ -1,5 +1,12 @@
 # Progress — Baton 2.0
 
+## 28 Oct 2026 — session 2 (C1 + C3, first live Nexconn run)
+- **C1 chat → request in place:** deterministic detector (`src/server/domain/detection.ts`), chat intake from `message:send` webhooks (`chat-intake.ts`, idempotent per message id), "Make it a request" fallback API, "Not a request" undo, claim bar rendered under the original chat bubble. Migration `0002_chat_origin`.
+- **C3 impact report:** `src/server/domain/impact.ts` + `/o/:eventId/report` (headline reports → issues, time to owner/fixed with p90, closed-loop count, by location/type, crew, activity chart). Simulated activity excluded and disclosed.
+- **Live Nexconn (keys added by owner):** B1, B2, B5 (1 receiving client), B8, B9 PASS — see `docs/VALIDATION_RESULTS.md`. Fixed: organizer couldn't open the crew view.
+- Tests 80/80; typecheck, lint, build clean.
+- Next: two-browser B5/B6, deploy for the webhook (B3/B11), `after()` projection (B7).
+
 ## 28 Oct 2026 — session 1
 
 ### Completed

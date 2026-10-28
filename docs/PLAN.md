@@ -28,13 +28,13 @@ The biggest risk is not code. It is (1) the live Nexconn behaviour not yet obser
 ---
 
 ## Stage A — prove Nexconn live (now → 30 Oct)
-- [!] **A1 You** — Create Nexconn account + app (data center SG), enrol in **Chat Growth Credit**, screenshot the MAU/PCC entitlement.
-- [!] **A2 You** — Paste App Key / App Secret into `.env.local`.
+- [~] **A1 You** — Create Nexconn account + app (data center SG), enrol in **Chat Growth Credit**, screenshot the MAU/PCC entitlement.
+- [x] **A2 You** — Paste App Key / App Secret into `.env.local`.
 - [ ] **A3 You** — Register team on Reskilll, pick **Workplace & Collaboration** track.
 - [ ] **A4 You** — Console: enable group *pre-join history for new members*; add `localhost:3000` (and later the deploy domain) to the Web domain allowlist.
 - [ ] **A5 Claude** — Run `node scripts/nexconn-spike.mjs` (B1–B4, B13 server side).
-- [ ] **A6 Claude** — Live client checks B5–B10, B14–B16 in two independent browsers; **B5 metadata propagation is the gate**.
-- [ ] **A7 Claude** — If B5 fails: implement `BTN:Update` fallback projection (clients reduce by version). Record the decision in `VALIDATION_RESULTS.md`.
+- [~] **A6 Claude** — Live client checks B5–B10, B14–B16 in two independent browsers; **B5 metadata propagation is the gate**. *28 Oct: B1, B2, B5 (1 client), B8, B9 PASS live — see VALIDATION_RESULTS.*
+- [x] **A7 Claude** — Not needed so far (B5 passed live). If B5 fails: implement `BTN:Update` fallback projection (clients reduce by version). Record the decision in `VALIDATION_RESULTS.md`.
 - [ ] **A8 Claude** — Prove a Web Push notification reaches a locked Android phone and an iOS home-screen PWA (small prototype).
 
 ## Stage B — real, deployed, reliable (31 Oct → 3 Nov)
@@ -43,13 +43,14 @@ The biggest risk is not code. It is (1) the live Nexconn behaviour not yet obser
 - [ ] **B3 You** — Console webhook URL → `https://<host>/api/nexconn/webhook`, event `message:send`. Claude verifies B11/B12.
 - [ ] **B4 Claude** — Playwright E2E: organizer + volunteer + attendee contexts, real Nexconn, against the deployed URL (create → report → dedupe → claim race → resolve → attendee sees it).
 - [ ] **B5 Claude** — Delete `evlocal` seed; demo sandbox reset/expiry (demo events auto-end after 2 h).
+- [ ] **B7 Claude** — Run Nexconn projection after the response (`after()`), so a slow Nexconn never delays attendees or claims.
 - [ ] **B6 Claude** — Kicked-by-other-device (31010) "Use here" screen; token refresh (B15); offline banner + state re-read (B10).
 
 ## Stage C — the "never seen that before" layer (4 → 12 Nov)
 Ordered by points per hour.
-- [ ] **C1 Claude** — **Chat → card in place.** A volunteer types "need 2 more chairs at Hall B" in plain chat; the server (webhook) recognises a request deterministically (keywords + zone names), and the same bubble gains a claim bar marked *detected*, editable or dismissable. Optional async AI refinement later, never in the claim path.
+- [x] **C1 Claude** — **Chat → card in place.** *Done 28 Oct: rules + tests, webhook path, "Make it a request" fallback, "Not a request" undo; verified live via the manual path. Webhook path awaits a public URL (B3/B11).* A volunteer types "need 2 more chairs at Hall B" in plain chat; the server (webhook) recognises a request deterministically (keywords + zone names), and the same bubble gains a claim bar marked *detected*, editable or dismissable. Optional async AI refinement later, never in the claim path.
 - [ ] **C2 Claude** — **Crew push alerts:** installable PWA, service worker, VAPID Web Push for urgent incidents and named escalations; Screen Wake Lock while on duty; iOS "Add to Home Screen" prompt.
-- [ ] **C3 Claude** — **Live impact report** per event (real data only): incidents, reports merged ("41 reports → 12 issues"), median time-to-claim / to-fix, unclaimed count, per-zone heat. This is the screenshot for the PDF and the business story.
+- [x] **C3 Claude** — **Live impact report** *Done 28 Oct: `/o/:eventId/report`, real data only, simulated activity excluded and disclosed.* per event (real data only): incidents, reports merged ("41 reports → 12 issues"), median time-to-claim / to-fix, unclaimed count, per-zone heat. This is the screenshot for the PDF and the business story.
 - [ ] **C4 Claude** — **Attendee live board** (open channel): "Known issues near you" — when an attendee is about to report something already being handled, show it and let them +1 instead ("Riya is already on it"). Dedupe *before* the report, not just after.
 - [ ] **C5 Claude** — Presence on the crew list (on duty / online) and per-zone coverage gaps on the board ("Gate 3: nobody on duty").
 - [ ] **C6 Claude** — Debug drawer for the video: live log of `onMessageReceived` / `onMessageMetadataUpdated` / webhook events (proves real Nexconn use to judges).
