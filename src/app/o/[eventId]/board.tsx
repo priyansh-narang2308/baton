@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, QrCode, Users } from "lucide-react";
+import { BarChart3, Copy, QrCode, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { IncidentCard } from "@/components/incident-card";
@@ -60,6 +60,9 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
           <Metric label="Duplicates merged" value={stats.absorbed} />
           <Metric label="Median time to claim" value={stats.median === null ? "—" : `${Math.round(stats.median / 1000)}s`} />
         </dl>
+        <Link href={`/o/${eventId}/report`} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-sm hover:bg-surface-2">
+          <BarChart3 className="size-4" aria-hidden /> Impact
+        </Link>
         <Link href={`/o/${eventId}/share`} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-sm hover:bg-surface-2">
           <QrCode className="size-4" aria-hidden /> QR codes
         </Link>
