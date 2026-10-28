@@ -1,6 +1,6 @@
 "use client";
 
-import { BellRing, ListTodo, MessageSquare, Plus, Send, Users, X } from "lucide-react";
+import { BellRing, ListTodo, MessageSquare, Plus, Send, Sparkles, Users, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IncidentCard } from "@/components/incident-card";
@@ -17,6 +17,7 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [nudge, setNudge] = useState<{ number: number; title: string } | null>(null);
   const [tab, setTab] = useState<Tab>("stream");
+  const [selected, setSelected] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const bottom = useRef<HTMLDivElement>(null);
   const groupId = state?.event.groupId;
@@ -55,6 +56,8 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
   }, [messages.length, tab]);
 
   const incidentsById = useMemo(() => new Map(state?.incidents.map((i) => [i.id, i]) ?? []), [state]);
+  // Chat-detected requests live on the crew message itself (cardMessageId = that message).
+  const incidentsByMessage = useMemo(() => new Map(state?.incidents.filter((i) => i.origin === "chat" && i.cardMessageId).map((i) => [i.cardMessageId!, i]) ?? []), [state]);
   const nameByUser = useMemo(() => new Map(state?.crew.map((c) => [c.nexconnUserId, c.name]) ?? []), [state]);
   const isLead = state?.me?.role === "lead";
 
@@ -117,12 +120,28 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
               if (m.messageType === "BTN:Nudge") return null; // shown as the alert banner
               if (m.messageType !== "RC:TxtMsg") return null;
               const own = m.senderUserId === state.me?.nexconnUserId;
+              const text = String((m.content as { text?: string; content?: string }).text ?? (m.content as { content?: string }).content ?? "");
+              const inc = incidentsByMessage.get(m.messageId) ?? (m.metadata.inc ? incidentsById.get(m.metadata.inc) : undefined);
+              const fromCrew = nameByUser.has(m.senderUserId);
               return (
-                <li key={m.messageId} className={cx("flex", own ? "justify-end" : "justify-start")}>
-                  <div className={cx("max-w-[80%] rounded-2xl px-3.5 py-2 text-[15px]", own ? "bg-accent text-accent-ink" : "border border-border bg-surface")}>
-                    {!own && <p className="mb-0.5 text-xs font-medium text-text-3">{nameByUser.get(m.senderUserId) ?? "Crew"}</p>}
-                    <p className="whitespace-pre-wrap break-words">{String((m.content as { text?: string; content?: string }).text ?? (m.content as { content?: string }).content ?? "")}</p>
-                  </div>
+                <li key={m.messageId} className={cx("flex flex-col", own ? "items-end" : "items-start")}>
+                  <button
+                    type="button"
+                    onClick={() => setSelected((cur) => (cur === m.messageId ? null : m.messageId))}
+                    aria-expanded={!inc && fromCrew ? selected === m.messageId : undefined}
+                    className={cx("max-w-[80%] rounded-2xl px-3.5 py-2 text-left text-[15px]", own ? "bg-accent text-accent-ink" : "border border-border bg-surface", inc && (own ? "rounded-br-md" : "rounded-bl-md"))}
+                  >
+                    {!own && <span className="mb-0.5 block text-xs font-medium text-text-3">{nameByUser.get(m.senderUserId) ?? "Crew"}</span>}
+                    <span className="block whitespace-pre-wrap break-words">{text}</span>
+                  </button>
+                  {inc && (
+                    <div className="mt-1 w-[88%] max-w-sm">
+                      <IncidentCard attached eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onPatch={patchIncident} onRefresh={refresh} />
+                    </div>
+                  )}
+                  {!inc && fromCrew && selected === m.messageId && (
+                    <MakeRequest eventId={eventId} messageId={m.messageId} senderUserId={m.senderUserId} text={text} onDone={() => { setSelected(null); refresh(); }} />
+                  )}
                 </li>
               );
             })}
@@ -292,6 +311,32 @@ function Composer({
           {sheet ? "Post" : <Send className="size-4" />}
         </Button>
       </div>
+    </div>
+  );
+}
+
+/** Fallback when detection missed a request: the same chat message becomes claimable in place. */
+function MakeRequest({ eventId, messageId, senderUserId, text, onDone }: { eventId: string; messageId: string; senderUserId: string; text: string; onDone: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function make() {
+    setBusy(true);
+    setError(null);
+    try {
+      await api(`/api/events/${eventId}/chat-requests`, { method: "POST", body: JSON.stringify({ messageId, senderUserId, text }) });
+      onDone();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="mt-1 flex items-center gap-2">
+      <Button size="sm" variant="secondary" busy={busy} onClick={make}>
+        <Sparkles className="size-3.5" aria-hidden /> Make it a request
+      </Button>
+      {error && <span role="alert" className="text-[13px] text-danger">{error}</span>}
     </div>
   );
 }

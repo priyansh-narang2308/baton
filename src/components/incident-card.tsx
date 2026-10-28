@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Check, GitMerge, MapPin, Users } from "lucide-react";
+import { AlertTriangle, Check, GitMerge, MapPin, Sparkles, Users } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api, CATEGORY_LABEL, type IncidentView } from "@/lib/types";
 import { Button, cx, timeAgo } from "./ui";
@@ -13,6 +13,8 @@ type Props = {
   now: number;
   flashAt?: number;
   compact?: boolean;
+  /** Rendered directly under the crew chat message it was detected from: the message is the title. */
+  attached?: boolean;
   onPatch: (id: string, patch: Partial<IncidentView>) => void;
   onRefresh: () => void;
 };
@@ -25,7 +27,7 @@ const STATUS_STYLE = {
 } as const;
 
 /** The incident card — the same component in the crew stream and on the organizer board. */
-export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt, compact, onPatch, onRefresh }: Props) {
+export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt, compact, attached, onPatch, onRefresh }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [anim, setAnim] = useState(false);
@@ -79,7 +81,8 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
     <article
       aria-label={`Incident ${i.number}: ${i.title}, ${s.label}${i.ownerName ? ` — ${i.ownerName}` : ""}`}
       className={cx(
-        "rounded-xl border border-border border-l-4 bg-surface p-4 transition-colors",
+        "rounded-xl border border-border border-l-4 bg-surface transition-colors",
+        attached ? "px-3 py-2.5" : "p-4",
         s.edge,
         urgent && "bg-urgent-soft",
         anim && "anim-claim",
@@ -98,18 +101,23 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
               </span>
             )}
             <span>· {timeAgo(i.createdAt, now)} ago</span>
+            {i.origin === "chat" && (
+              <span className="inline-flex items-center gap-1 text-accent" title="Raised from a crew chat message">
+                <Sparkles className="size-3" aria-hidden /> From chat
+              </span>
+            )}
             {urgent && (
               <span className="inline-flex items-center gap-1 font-medium text-urgent">
                 <AlertTriangle className="size-3" aria-hidden /> Urgent
               </span>
             )}
           </div>
-          <h3 className={cx("mt-1 text-[15px] font-semibold leading-snug text-text", i.status === "resolved" && "text-text-2 line-through decoration-text-3/40")}>{i.title}</h3>
+          <h3 className={cx(attached && "sr-only", "mt-1 text-[15px] font-semibold leading-snug text-text", i.status === "resolved" && "text-text-2 line-through decoration-text-3/40")}>{i.title}</h3>
         </div>
         <span className={cx("shrink-0 rounded-full px-2 py-0.5 text-xs font-medium", s.pill)}>{s.label}</span>
       </header>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className={cx(attached ? "mt-2" : "mt-3", "flex flex-wrap items-center gap-2")}>
         <span className={cx("inline-flex items-center gap-1 rounded-md bg-surface-2 px-2 py-1 text-xs text-text-2", bump && "anim-bump")} title="People who reported this">
           <Users className="size-3.5" aria-hidden />
           {i.reportCount} {i.reportCount === 1 ? "report" : "reports"}
@@ -142,8 +150,13 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
       {i.status !== "withdrawn" && i.status !== "resolved" && (
         <div className="mt-3 flex gap-2">
           {i.status === "open" && (
-            <Button variant="claim" size={compact ? "sm" : "md"} className="flex-1" busy={busy === "claim"} onClick={() => act("claim")}>
+            <Button variant="claim" size={compact || attached ? "sm" : "md"} className="flex-1" busy={busy === "claim"} onClick={() => act("claim")}>
               I&apos;ll take it
+            </Button>
+          )}
+          {i.status === "open" && i.origin === "chat" && i.reportCount === 1 && (
+            <Button variant="ghost" size="sm" busy={busy === "dismiss-detection"} onClick={() => act("dismiss-detection", { status: "withdrawn" })}>
+              Not a request
             </Button>
           )}
           {i.status === "claimed" && (mine || isLead) && (

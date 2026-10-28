@@ -112,6 +112,7 @@ export async function connect(eventId: string, role: "member" | "organizer" | "a
           for (const m of messages) conn.listeners.message.forEach((l) => l(toChatMessage(m)));
         },
         onMessageMetadataUpdated({ messageId, metadata }) {
+          if (process.env.NODE_ENV !== "production") console.debug("[baton] onMessageMetadataUpdated", messageId, JSON.stringify(metadata));
           conn.listeners.metadata.forEach((l) => l({ messageId, metadata }));
         },
       }),
