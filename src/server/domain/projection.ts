@@ -19,7 +19,7 @@ export type IncidentCardContent = {
 };
 
 /** Live state carried in Nexconn message metadata (all values must be strings; keys ≤ 32 chars). */
-export type IncidentCardMetadata = { st: string; v: string; n: string; own: string; ownN: string; sug: string };
+export type IncidentCardMetadata = { st: string; v: string; n: string; own: string; ownN: string; sug: string; inc: string; num: string };
 
 export type StatusState = "received" | "claimed" | "resolved";
 const STATE_ORDER: StatusState[] = ["received", "claimed", "resolved"];
@@ -51,6 +51,9 @@ export function cardMetadata(s: NonNullable<Awaited<ReturnType<typeof snapshot>>
     own: s.inc.ownerMemberId ?? "",
     ownN: s.ownerName ?? "",
     sug: s.suggestionNumber ? String(s.suggestionNumber) : "",
+    // Lets clients link any message (bot card or crew chat) to its incident before the next state read.
+    inc: s.inc.id,
+    num: String(s.inc.number),
   };
 }
 

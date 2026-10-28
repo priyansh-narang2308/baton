@@ -57,13 +57,16 @@ export type SubmitReportInput = {
   text: string;
   structured: boolean;
   priority?: "normal" | "urgent";
+  /** Set when the report is a crew chat message: the incident's live state goes onto that message. */
+  sourceMessageId?: string;
+  auditPayload?: Record<string, unknown>;
   now?: Date;
 };
 
 export type SubmitReportResult = {
   reportId: string;
   incidentId: string;
-  outcome: "new" | "attached" | "new_with_suggestion";
+  outcome: "new" | "attached" | "new_with_suggestion" | "existing";
   reportCount: number;
   effects: Effect[];
 };
@@ -80,6 +83,14 @@ export async function submitReport(db: Db, input: SubmitReportInput): Promise<Su
     if (input.zoneId) {
       const [z] = await tx.select({ id: zones.id }).from(zones).where(and(eq(zones.id, input.zoneId), eq(zones.eventId, ev.id)));
       if (!z) throw new DomainError("invalid", "Unknown zone for this event");
+    }
+    if (input.sourceMessageId) {
+      // Idempotent per chat message: webhook retries and a manual "make it a request" race resolve to one incident.
+      const [existing] = await tx.select().from(incidents).where(eq(incidents.sourceMessageId, input.sourceMessageId));
+      if (existing) {
+        const [rep] = await tx.select({ id: reports.id }).from(reports).where(eq(reports.incidentId, existing.id)).limit(1);
+        return { reportId: rep?.id ?? "", incidentId: existing.id, outcome: "existing", reportCount: existing.reportCount, effects: [] };
+      }
     }
 
     const since = new Date(now.getTime() - CANDIDATE_WINDOW_MIN * 60_000);
@@ -126,11 +137,14 @@ export async function submitReport(db: Db, input: SubmitReportInput): Promise<Su
       category: input.category,
       priority,
       title: incidentTitle(input.category, input.text),
+      origin: input.sourceMessageId ? "chat" : "report",
+      sourceMessageId: input.sourceMessageId,
+      cardMessageId: input.sourceMessageId,
       nextEscalationAt: escalationTime(priority, ev, now),
       createdAt: now,
     });
     await tx.insert(reports).values({ id: reportId, eventId: ev.id, incidentId, source: input.source, attendeeId: input.attendeeId, memberId: input.memberId, zoneId: input.zoneId, category: input.category, text: input.text, structured: input.structured, createdAt: now });
-    await audit(tx, incidentId, actor, "incident.created", { reportId, priority });
+    await audit(tx, incidentId, actor, "incident.created", { reportId, priority, ...input.auditPayload });
     if (decision.kind === "suggest") {
       await tx.insert(mergeSuggestions).values({ id: newId.suggestion(), eventId: ev.id, incidentId, candidateIncidentId: decision.incidentId, score: decision.score });
       await audit(tx, incidentId, "system", "merge.suggested", { candidateIncidentId: decision.incidentId, score: decision.score });
@@ -245,6 +259,25 @@ export async function mergeIncidents(db: Db, eventId: string, sourceId: string, 
       targetId: dst.id,
       effects: [{ type: "card.update", incidentId: src.id }, { type: "card.update", incidentId: dst.id }, { type: "notify", incidentId: dst.id }] as Effect[],
     };
+  });
+}
+
+/** "Not a request": undoes a chat detection. Only while nobody else reported it and nobody owns it. */
+export async function dismissDetection(db: Db, eventId: string, incidentId: string, memberId: string) {
+  return db.transaction(async (tx) => {
+    const actor = await activeMember(tx, memberId, eventId);
+    const [inc] = await tx.select().from(incidents).where(and(eq(incidents.id, incidentId), eq(incidents.eventId, eventId))).for("update");
+    if (!inc) throw new DomainError("not_found", "Incident not found");
+    if (inc.origin !== "chat") throw new DomainError("invalid", "Only requests detected in chat can be dismissed");
+    if (inc.status === "withdrawn") return { effects: [] as Effect[] };
+    if (inc.status !== "open") throw new DomainError("conflict", `This request is already ${inc.status}`, { status: inc.status });
+    if (inc.reportCount > 1) throw new DomainError("conflict", "Others reported this too — resolve it instead");
+    const [rep] = await tx.select({ memberId: reports.memberId }).from(reports).where(eq(reports.incidentId, inc.id));
+    if (rep?.memberId !== memberId && actor.role !== "lead") throw new DomainError("forbidden", "Only the sender or a lead can dismiss this");
+    await tx.update(incidents).set({ status: "withdrawn", nextEscalationAt: null, version: sql`${incidents.version} + 1` }).where(eq(incidents.id, inc.id));
+    await tx.update(mergeSuggestions).set({ status: "dismissed" }).where(and(eq(mergeSuggestions.incidentId, inc.id), eq(mergeSuggestions.status, "pending")));
+    await audit(tx, inc.id, memberId, "detection.dismissed");
+    return { effects: [{ type: "card.update", incidentId: inc.id }] as Effect[] };
   });
 }
 

@@ -15,6 +15,13 @@
       "when": 1793159122485,
       "tag": "0001_webhook_payload",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793188883726,
+      "tag": "0002_chat_origin",
+      "breakpoints": true
     }
   ]
 }

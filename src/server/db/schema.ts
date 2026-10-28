@@ -69,6 +69,9 @@ export const incidents = pgTable(
     category: text("category", { enum: CATEGORIES }).notNull(),
     priority: text("priority", { enum: ["normal", "urgent"] }).notNull().default("normal"),
     title: text("title").notNull(),
+    // "chat": raised from a plain crew chat message; its live state is projected onto that same message.
+    origin: text("origin", { enum: ["report", "chat"] }).notNull().default("report"),
+    sourceMessageId: text("source_message_id"),
     status: text("status", { enum: ["open", "claimed", "resolved", "withdrawn"] }).notNull().default("open"),
     ownerMemberId: text("owner_member_id"),
     reportCount: integer("report_count").notNull().default(1),
@@ -83,6 +86,7 @@ export const incidents = pgTable(
   },
   (t) => [
     uniqueIndex("incidents_event_number").on(t.eventId, t.number),
+    uniqueIndex("incidents_source_message").on(t.sourceMessageId),
     index("incidents_event_status").on(t.eventId, t.status),
     index("incidents_escalation").on(t.nextEscalationAt).where(sql`status = 'open'`),
   ],
