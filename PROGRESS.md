@@ -21,6 +21,7 @@
 **Nexconn credentials.** Needed in `.env.local`: `NEXCONN_APP_KEY`, `NEXCONN_APP_SECRET`, `NEXCONN_DATA_CENTER`. Also enrol the app in **Chat Growth Credit** and check its MAU/PCC in the Console. For webhooks: a public HTTPS URL (deploy, or `ngrok http 3000`) configured under Chat → Chat settings → Webhooks.
 
 ### Next task
+Full dated task list: **`docs/PLAN.md`**. Immediate:
 1. With credentials: `node scripts/nexconn-spike.mjs`, then run B5–B17 in `docs/VALIDATION_RESULTS.md` (critical: B5 metadata propagation to other Web clients; B16 three role tabs in one browser).
 2. Make the GO/ADAPT call; record it.
 3. Playwright E2E for the three-device loop (real Nexconn, two browser contexts).

@@ -7,7 +7,7 @@
 - One tap — **I'll take it** — flips the card on every device; **everyone who reported it** is told who's on it and when it's fixed.
 - Unclaimed incidents notify a **named** lead, not the whole group.
 
-Docs: [product spec](docs/PRODUCT_SPEC.md) · [architecture](docs/ARCHITECTURE.md) · [validation](docs/VALIDATION_RESULTS.md) · [competitive refinement](docs/COMPETITIVE_REFINEMENT.md) · [traction plan](docs/TRACTION_PLAN.md) · [research](docs/NEXCONN_RESEARCH.md)
+Docs: [task plan](docs/PLAN.md) · [product spec](docs/PRODUCT_SPEC.md) · [architecture](docs/ARCHITECTURE.md) · [validation](docs/VALIDATION_RESULTS.md) · [competitive refinement](docs/COMPETITIVE_REFINEMENT.md) · [traction plan](docs/TRACTION_PLAN.md) · [research](docs/NEXCONN_RESEARCH.md)
 
 ## Run locally
 Requires Node 22+ and a Postgres binary (Homebrew `postgresql@16` works).
