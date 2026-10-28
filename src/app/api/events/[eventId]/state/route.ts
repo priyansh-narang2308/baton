@@ -1,20 +1,18 @@
 import { NextResponse } from "next/server";
 import { db } from "@/server/db/client";
 import { DomainError, listIncidents } from "@/server/domain/incidents";
-import { handle } from "@/server/http";
+import { crewActor, handle } from "@/server/http";
 import { eventById, eventCrew, eventZones } from "@/server/services";
-import { getSession } from "@/server/session";
 
 /** Authoritative read model for crew and board. Clients call this on load, on reconnect and on metadata gaps. */
-export async function GET(_req: Request, ctx: RouteContext<"/api/events/[eventId]/state">) {
+export async function GET(req: Request, ctx: RouteContext<"/api/events/[eventId]/state">) {
   return handle(async () => {
     const { eventId } = await ctx.params;
-    const session = (await getSession("organizer", eventId)) ?? (await getSession("member", eventId));
-    if (!session) throw new DomainError("forbidden", "Join this event's crew first");
+    const meId = await crewActor(eventId, req);
     const ev = await eventById(eventId);
     if (!ev) throw new DomainError("not_found", "Event not found");
     const [incidents, crew, zones] = await Promise.all([listIncidents(db(), eventId), eventCrew(eventId), eventZones(eventId)]);
-    const me = crew.find((m) => m.id === session.id);
+    const me = crew.find((m) => m.id === meId);
     return NextResponse.json(
       {
         event: { id: ev.id, name: ev.name, slug: ev.slug, status: ev.status, groupId: ev.nexconnGroupId, botUserId: ev.botUserId, isDemo: ev.isDemo },

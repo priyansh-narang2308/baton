@@ -17,7 +17,7 @@ const COLUMNS: { key: IncidentView["status"]; title: string; empty: string }[] =
 
 export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: string; slug: string }) {
   const conn = useNexconn(eventId, "organizer");
-  const { state, error, refresh, patchIncident, flash } = useEventState(eventId, conn.state);
+  const { state, error, refresh, patchIncident, flash } = useEventState(eventId, conn.state, "organizer");
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 5_000);
@@ -86,7 +86,7 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
                 <p className="rounded-xl border border-dashed border-border p-5 text-center text-[13px] text-text-3">{col.empty}</p>
               ) : (
                 byStatus[col.key].map((i) => (
-                  <IncidentCard key={i.id} eventId={eventId} incident={i} meId={state?.me?.id ?? null} isLead now={now} flashAt={flash[i.id]} compact={col.key === "resolved"} onPatch={patchIncident} onRefresh={refresh} />
+                  <IncidentCard key={i.id} as="organizer" eventId={eventId} incident={i} meId={state?.me?.id ?? null} isLead now={now} flashAt={flash[i.id]} compact={col.key === "resolved"} onPatch={patchIncident} onRefresh={refresh} />
                 ))
               )}
             </div>

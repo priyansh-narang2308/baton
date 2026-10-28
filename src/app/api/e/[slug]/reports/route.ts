@@ -3,9 +3,8 @@ import { z } from "zod";
 import { db } from "@/server/db/client";
 import { CATEGORIES } from "@/server/db/schema";
 import { attendeeReports, DomainError, submitReport } from "@/server/domain/incidents";
-import { applyEffects } from "@/server/domain/projection";
-import { body, clientIp, handle, rateLimit } from "@/server/http";
-import { ensureAttendee, eventBySlug, eventZones, nexconnApi } from "@/server/services";
+import { body, clientIp, handle, rateLimit, projectLater } from "@/server/http";
+import { ensureAttendee, eventBySlug, eventZones } from "@/server/services";
 import { getSession, setSession } from "@/server/session";
 
 const AttendeeReport = z.object({
@@ -39,8 +38,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/e/[slug]/report
       text: input.text,
       structured: Boolean(zone), // zone from the poster + category from a chip
     });
-    const projection = await applyEffects(db(), nexconnApi(), r.effects);
-    return NextResponse.json({ reportId: r.reportId, incidentId: r.incidentId, outcome: r.outcome, reportCount: r.reportCount, eventId: ev.id, projected: projection.ok }, { status: 201 });
+    return NextResponse.json({ reportId: r.reportId, incidentId: r.incidentId, outcome: r.outcome, reportCount: r.reportCount, eventId: ev.id, projection: projectLater(r.effects) }, { status: 201 });
   });
 }
 

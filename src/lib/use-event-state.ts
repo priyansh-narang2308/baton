@@ -9,21 +9,21 @@ import { api, type EventState, type IncidentView } from "./types";
  * - incident card metadata updates patch the matching incident immediately (if their version is newer)
  * - any card event or reconnect schedules a debounced re-read of the authoritative state
  */
-export function useEventState(eventId: string, connection: ConnectionState) {
+export function useEventState(eventId: string, connection: ConnectionState, as?: "organizer") {
   const [state, setState] = useState<EventState | null>(null);
   const [error, setError] = useState<{ message: string; code?: string } | null>(null);
   const [flash, setFlash] = useState<Record<string, number>>({}); // incidentId → timestamp of last live change
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const refresh = useCallback(() => {
-    return api<EventState>(`/api/events/${eventId}/state`).then(
+    return api<EventState>(`/api/events/${eventId}/state${as ? `?as=${as}` : ""}`).then(
       (s) => {
         setState(s);
         setError(null);
       },
       (e: Error & { code?: string }) => setError({ message: e.message, code: e.code }),
     );
-  }, [eventId]);
+  }, [eventId, as]);
 
   const scheduleRefresh = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);

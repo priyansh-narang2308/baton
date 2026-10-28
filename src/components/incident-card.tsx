@@ -15,6 +15,8 @@ type Props = {
   compact?: boolean;
   /** Rendered directly under the crew chat message it was detected from: the message is the title. */
   attached?: boolean;
+  /** Act as the organizer (board) even when this browser also holds a crew member session. */
+  as?: "organizer";
   onPatch: (id: string, patch: Partial<IncidentView>) => void;
   onRefresh: () => void;
 };
@@ -27,7 +29,7 @@ const STATUS_STYLE = {
 } as const;
 
 /** The incident card — the same component in the crew stream and on the organizer board. */
-export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt, compact, attached, onPatch, onRefresh }: Props) {
+export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt, compact, attached, as, onPatch, onRefresh }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [anim, setAnim] = useState(false);
@@ -61,7 +63,7 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
     const before = { ...i };
     if (optimistic) onPatch(i.id, optimistic);
     try {
-      await api(`/api/events/${eventId}/incidents/${i.id}/${action}`, { method: "POST", body: payload ? JSON.stringify(payload) : undefined });
+      await api(`/api/events/${eventId}/incidents/${i.id}/${action}${as ? `?as=${as}` : ""}`, { method: "POST", body: payload ? JSON.stringify(payload) : undefined });
       onRefresh();
     } catch (e) {
       const err = e as Error & { code?: string; details?: { ownerName?: string } };
@@ -148,9 +150,9 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
       )}
 
       {i.status !== "withdrawn" && i.status !== "resolved" && (
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           {i.status === "open" && (
-            <Button variant="claim" size={compact || attached ? "sm" : "md"} className="flex-1" busy={busy === "claim"} onClick={() => act("claim")}>
+            <Button variant="claim" size={compact || attached ? "sm" : "md"} className="min-w-28 flex-1" busy={busy === "claim"} onClick={() => act("claim")}>
               I&apos;ll take it
             </Button>
           )}
@@ -161,7 +163,7 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
           )}
           {i.status === "claimed" && (mine || isLead) && (
             <>
-              <Button variant="done" size={compact ? "sm" : "md"} className="flex-1" busy={busy === "resolve"} onClick={() => act("resolve", { status: "resolved" })}>
+              <Button variant="done" size={compact ? "sm" : "md"} className="min-w-28 flex-1" busy={busy === "resolve"} onClick={() => act("resolve", { status: "resolved" })}>
                 <Check className="size-4" aria-hidden /> Mark fixed
               </Button>
               <Button variant="ghost" size={compact ? "sm" : "md"} busy={busy === "release"} onClick={() => act("release", { status: "open", ownerMemberId: null, ownerName: null })}>

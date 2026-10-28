@@ -2,16 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/server/db/client";
 import { claimIncident, dismissDetection, dismissSuggestion, DomainError, mergeIncidents, releaseIncident, resolveIncident, type Effect } from "@/server/domain/incidents";
-import { applyEffects } from "@/server/domain/projection";
-import { body, crewActor, handle } from "@/server/http";
-import { nexconnApi } from "@/server/services";
+import { body, crewActor, handle, projectLater } from "@/server/http";
 
 const Merge = z.object({ targetIncidentId: z.string().min(1).max(40) });
 
 export async function POST(req: Request, ctx: RouteContext<"/api/events/[eventId]/incidents/[incidentId]/[action]">) {
   return handle(async () => {
     const { eventId, incidentId, action } = await ctx.params;
-    const memberId = await crewActor(eventId);
+    const memberId = await crewActor(eventId, req);
     let effects: Effect[];
     let payload: Record<string, unknown> = {};
     switch (action) {
@@ -51,8 +49,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/events/[eventId
       default:
         throw new DomainError("not_found", `Unknown action "${action}"`);
     }
-    // DB is already committed; projection failures are logged and repaired by reconciliation.
-    const projection = await applyEffects(db(), nexconnApi(), effects);
-    return NextResponse.json({ ok: true, ...payload, projected: projection.ok });
+    // DB is already committed; Nexconn catches up after the response (reconciliation repairs failures).
+    return NextResponse.json({ ok: true, ...payload, projection: projectLater(effects) });
   });
 }

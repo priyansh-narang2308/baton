@@ -3,9 +3,7 @@ import { z } from "zod";
 import { db } from "@/server/db/client";
 import { CATEGORIES } from "@/server/db/schema";
 import { submitReport } from "@/server/domain/incidents";
-import { applyEffects } from "@/server/domain/projection";
-import { body, crewActor, handle } from "@/server/http";
-import { nexconnApi } from "@/server/services";
+import { body, crewActor, handle, projectLater } from "@/server/http";
 
 const CrewReport = z.object({
   category: z.enum(CATEGORIES),
@@ -18,7 +16,7 @@ const CrewReport = z.object({
 export async function POST(req: Request, ctx: RouteContext<"/api/events/[eventId]/reports">) {
   return handle(async () => {
     const { eventId } = await ctx.params;
-    const memberId = await crewActor(eventId);
+    const memberId = await crewActor(eventId, req);
     const input = await body(req, CrewReport);
     const r = await submitReport(db(), {
       eventId,
@@ -30,7 +28,6 @@ export async function POST(req: Request, ctx: RouteContext<"/api/events/[eventId
       structured: Boolean(input.zoneId),
       priority: input.urgent ? "urgent" : undefined,
     });
-    const projection = await applyEffects(db(), nexconnApi(), r.effects);
-    return NextResponse.json({ ...r, effects: undefined, projected: projection.ok }, { status: 201 });
+    return NextResponse.json({ ...r, effects: undefined, projection: projectLater(r.effects) }, { status: 201 });
   });
 }
