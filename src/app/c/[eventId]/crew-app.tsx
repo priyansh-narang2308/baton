@@ -60,6 +60,11 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
   const incidentsByMessage = useMemo(() => new Map(state?.incidents.filter((i) => i.origin === "chat" && i.cardMessageId).map((i) => [i.cardMessageId!, i]) ?? []), [state]);
   const nameByUser = useMemo(() => new Map(state?.crew.map((c) => [c.nexconnUserId, c.name]) ?? []), [state]);
   const isLead = state?.me?.role === "lead";
+  // Requests whose card isn't in the loaded history (joined mid-event, or history beyond the first page).
+  const earlier = useMemo(() => {
+    const loaded = new Set(messages.map((m) => m.messageId));
+    return state?.incidents.filter((i) => (i.status === "open" || i.status === "claimed") && !(i.cardMessageId && loaded.has(i.cardMessageId))) ?? [];
+  }, [state, messages]);
 
   if (error?.code === "forbidden") {
     return (
@@ -102,7 +107,17 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
         {error && error.code !== "forbidden" && <ErrorNote>{error.message}</ErrorNote>}
         {state && tab === "stream" && (
           <ol className="space-y-2.5" aria-label="Crew stream">
-            {messages.length === 0 && conn.state === "connected" && (
+            {earlier.length > 0 && (
+              <li>
+                <section aria-label="Earlier requests" className="space-y-2.5">
+                  <h2 className="px-1 text-xs font-medium text-text-3">Earlier requests still open</h2>
+                  {earlier.map((inc) => (
+                    <IncidentCard key={inc.id} eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onPatch={patchIncident} onRefresh={refresh} />
+                  ))}
+                </section>
+              </li>
+            )}
+            {messages.length === 0 && earlier.length === 0 && conn.state === "connected" && (
               <li className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-text-3">
                 No messages yet. Requests from attendees and crew show up here as cards.
               </li>
