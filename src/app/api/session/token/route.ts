@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
     const refresh = req.nextUrl.searchParams.get("refresh") === "1";
     const cfg = nexconnConfig();
     if (!cfg) return fail(503, "nexconn_not_configured", "Messaging is not configured on this server yet.");
-    const session = await getSession(role, eventId);
+    // The organizer is also a lead crew member: their organizer session can open the crew view.
+    const session = (await getSession(role, eventId)) ?? (role === "member" ? await getSession("organizer", eventId) : null);
     if (!session) throw new DomainError("forbidden", "No session for this event");
 
     let userId: string;
