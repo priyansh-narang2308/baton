@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/server/db/client";
-import { claimIncident, dismissSuggestion, DomainError, mergeIncidents, releaseIncident, resolveIncident, type Effect } from "@/server/domain/incidents";
+import { claimIncident, dismissDetection, dismissSuggestion, DomainError, mergeIncidents, releaseIncident, resolveIncident, type Effect } from "@/server/domain/incidents";
 import { applyEffects } from "@/server/domain/projection";
 import { body, crewActor, handle } from "@/server/http";
 import { nexconnApi } from "@/server/services";
@@ -38,6 +38,10 @@ export async function POST(req: Request, ctx: RouteContext<"/api/events/[eventId
         const r = await mergeIncidents(db(), eventId, incidentId, targetIncidentId, memberId);
         effects = r.effects;
         payload = { targetIncidentId: r.targetId };
+        break;
+      }
+      case "dismiss-detection": {
+        effects = (await dismissDetection(db(), eventId, incidentId, memberId)).effects;
         break;
       }
       case "dismiss-suggestion": {

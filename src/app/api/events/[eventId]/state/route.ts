@@ -25,6 +25,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/events/[eventId
           id: i.id,
           number: i.number,
           title: i.title,
+          origin: i.origin,
           category: i.category,
           priority: i.priority,
           status: i.status,

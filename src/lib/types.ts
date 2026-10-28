@@ -4,6 +4,7 @@ export type IncidentView = {
   id: string;
   number: number;
   title: string;
+  origin: "report" | "chat";
   category: string;
   priority: "normal" | "urgent";
   status: IncidentStatus;
