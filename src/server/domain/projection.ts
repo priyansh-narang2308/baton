@@ -136,6 +136,20 @@ async function notifyReporters(db: Db, api: NexconnApi, incidentId: string) {
   }
 }
 
+// Projection for one incident runs strictly in order (one Node server process): without this, a report and a
+// duplicate arriving together could both see "no card yet" and post two cards.
+const chains = new Map<string, Promise<unknown>>();
+function serialized<T>(incidentId: string, fn: () => Promise<T>): Promise<T> {
+  const prev = chains.get(incidentId) ?? Promise.resolve();
+  const run = prev.then(fn, fn);
+  const tail = run.catch(() => {});
+  chains.set(incidentId, tail);
+  void tail.then(() => {
+    if (chains.get(incidentId) === tail) chains.delete(incidentId);
+  });
+  return run;
+}
+
 export async function applyEffects(db: Db, api: NexconnApi | null, effects: Effect[], log: ProjectionLog = console.warn) {
   if (!api) {
     log("Nexconn not configured — projection skipped; reconciliation will retry", { effects: effects.length });
@@ -148,8 +162,8 @@ export async function applyEffects(db: Db, api: NexconnApi | null, effects: Effe
     if (seen.has(key)) continue;
     seen.add(key);
     try {
-      if (e.type === "notify") await notifyReporters(db, api, e.incidentId);
-      else await projectCard(db, api, e.incidentId);
+      if (e.type === "notify") await serialized(e.incidentId, () => notifyReporters(db, api, e.incidentId));
+      else await serialized(e.incidentId, () => projectCard(db, api, e.incidentId));
     } catch (err) {
       ok = false;
       log("Projection failed; will be reconciled", { effect: e, error: err instanceof Error ? err.message : String(err) });
