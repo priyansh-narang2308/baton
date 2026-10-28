@@ -33,7 +33,7 @@ The biggest risk is not code. It is (1) the live Nexconn behaviour not yet obser
 - [ ] **A3 You** — Register team on Reskilll, pick **Workplace & Collaboration** track.
 - [ ] **A4 You** — Console: enable group *pre-join history for new members*; add `localhost:3000` (and later the deploy domain) to the Web domain allowlist.
 - [ ] **A5 Claude** — Run `node scripts/nexconn-spike.mjs` (B1–B4, B13 server side).
-- [~] **A6 Claude** — Live client checks B5–B10, B14–B16 in two independent browsers; **B5 metadata propagation is the gate**. *28 Oct: B1, B2, B5 (1 client), B8, B9 PASS live — see VALIDATION_RESULTS.*
+- [~] **A6 Claude** — Live client checks B5–B10, B14–B16 in two independent browsers; **B5 metadata propagation is the gate**. *28 Oct: B1, B2, B5 (2 users), B8, B9, B16 (2 of 3) PASS live — see VALIDATION_RESULTS.*
 - [x] **A7 Claude** — Not needed so far (B5 passed live). If B5 fails: implement `BTN:Update` fallback projection (clients reduce by version). Record the decision in `VALIDATION_RESULTS.md`.
 - [ ] **A8 Claude** — Prove a Web Push notification reaches a locked Android phone and an iOS home-screen PWA (small prototype).
 
@@ -43,7 +43,7 @@ The biggest risk is not code. It is (1) the live Nexconn behaviour not yet obser
 - [ ] **B3 You** — Console webhook URL → `https://<host>/api/nexconn/webhook`, event `message:send`. Claude verifies B11/B12.
 - [ ] **B4 Claude** — Playwright E2E: organizer + volunteer + attendee contexts, real Nexconn, against the deployed URL (create → report → dedupe → claim race → resolve → attendee sees it).
 - [ ] **B5 Claude** — Delete `evlocal` seed; demo sandbox reset/expiry (demo events auto-end after 2 h).
-- [ ] **B7 Claude** — Run Nexconn projection after the response (`after()`), so a slow Nexconn never delays attendees or claims.
+- [x] **B7 Claude** — *Done 28 Oct (10–30 ms responses live).* Run Nexconn projection after the response (`after()`), so a slow Nexconn never delays attendees or claims.
 - [ ] **B6 Claude** — Kicked-by-other-device (31010) "Use here" screen; token refresh (B15); offline banner + state re-read (B10).
 
 ## Stage C — the "never seen that before" layer (4 → 12 Nov)
