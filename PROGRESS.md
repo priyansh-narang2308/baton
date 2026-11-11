@@ -1,5 +1,15 @@
 # Progress — Baton 2.0
 
+## 10–11 Nov 2026 — audit, command centre, landing (session 3)
+- **Audits:** `docs/PRODUCT_AUDIT.md` (claims re-verified, defects D1–D9, judge panel, track and positioning) and `docs/NEXCONN_DOCS_AUDIT.md` (869 doc pages; Call SDK blocked on Console and card; live SDK findings in §10).
+- **Fixed:** every QR code returned 500 when `PUBLIC_BASE_URL` was blank (D1).
+- **Incident detail and assignment:** reports, facts and an activity timeline from `incident_events`; leads assign, and the assignee gets a private targeted alert (D2, D3).
+- **Direct messages:** organizer ↔ volunteer over Nexconn direct channels; inbox with unread counts. The SDK channel list returns 35011 on our key, so the inbox falls back to per-peer history (D4).
+- **Command centre:** KPI strip, filters, crew load, inbox, invite links. The demo organizer is now "Organizer" (D7).
+- **Landing page:** 13 sections with no invented logos, numbers or quotes (D5). Attendee category grid fixed (D6).
+- **Docs:** ARCHITECTURE rewritten against the code (removed claims about Web Push and an AI key that were never built); new IMPLEMENTATION_PLAN, DEMO_SCRIPT, SUBMISSION_CHECKLIST; TRACTION_PLAN rewritten as a kit.
+- **Not done, needs the owner:** deploy authorisation and host account, Growth Credit screenshot, pilots, video, making the repository public.
+
 ## 28 Oct 2026 — session 2 (C1 + C3, first live Nexconn run)
 - **C1 chat → request in place:** deterministic detector (`src/server/domain/detection.ts`), chat intake from `message:send` webhooks (`chat-intake.ts`, idempotent per message id), "Make it a request" fallback API, "Not a request" undo, claim bar rendered under the original chat bubble. Migration `0002_chat_origin`.
 - **C3 impact report:** `src/server/domain/impact.ts` + `/o/:eventId/report` (headline reports → issues, time to owner/fixed with p90, closed-loop count, by location/type, crew, activity chart). Simulated activity excluded and disclosed.

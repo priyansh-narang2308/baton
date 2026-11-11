@@ -1,13 +1,14 @@
 # Baton
 
-**The group chat where every request gets an owner.** Real-time coordination for event crews, built on Nexconn Chat.
+**Real-time incident coordination for event crews.** Every report gets acknowledged, every incident gets an owner, and every action has a visible outcome. Built on Nexconn Chat.
 
 - Volunteers join by QR (no app, no account). Attendees report issues from location posters.
 - Reports become **live incident cards** in the crew chat; **duplicate reports merge** into one card ("3 reports").
 - One tap — **I'll take it** — flips the card on every device; **everyone who reported it** is told who's on it and when it's fixed.
 - Unclaimed incidents notify a **named** lead, not the whole group.
+- Organizers run a **command centre**: what needs an owner, longest wait, crew load, incident history, assignment and direct messages with volunteers.
 
-Docs: [task plan](docs/PLAN.md) · [product spec](docs/PRODUCT_SPEC.md) · [architecture](docs/ARCHITECTURE.md) · [validation](docs/VALIDATION_RESULTS.md) · [competitive refinement](docs/COMPETITIVE_REFINEMENT.md) · [traction plan](docs/TRACTION_PLAN.md) · [research](docs/NEXCONN_RESEARCH.md)
+Docs: [implementation plan](docs/IMPLEMENTATION_PLAN.md) · [architecture](docs/ARCHITECTURE.md) · [product audit](docs/PRODUCT_AUDIT.md) · [Nexconn docs audit](docs/NEXCONN_DOCS_AUDIT.md) · [traction kit](docs/TRACTION_PLAN.md) · [demo script](docs/DEMO_SCRIPT.md) · [submission checklist](docs/SUBMISSION_CHECKLIST.md) · [validation](docs/VALIDATION_RESULTS.md) · [product spec](docs/PRODUCT_SPEC.md) · [research](docs/NEXCONN_RESEARCH.md) · [28 Oct plan](docs/PLAN.md)
 
 ## Run locally
 Requires Node 22+ and a Postgres binary (Homebrew `postgresql@16` works).

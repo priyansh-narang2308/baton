@@ -1,5 +1,7 @@
 # Baton — task plan to submission (28 Oct → 22 Nov 2026)
 
+> **11 Nov update:** the current dated plan is `docs/IMPLEMENTATION_PLAN.md`. This file is kept as the 28 Oct history; statuses below were last updated on 28 Oct, except C1 and C3.
+
 The single source of truth for **what to do next**. Strategy and reasoning live in `docs/NEXCONN_RESEARCH.md` (§9 tiers, §14 roadmap, §17 submission); this file is the task list. Status: `[ ]` todo · `[~]` in progress · `[x]` done (verified) · `[!]` blocked.
 
 Owner: **You** = needs your account, money, people or judgement · **Claude** = engineering in this repo.

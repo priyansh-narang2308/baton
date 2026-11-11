@@ -35,12 +35,12 @@ Each of these is fixable before the deadline, apart from traction, which depends
 | # | Severity | Defect | Status |
 |---|---|---|---|
 | D1 | **P0** | Every QR code on the demo hub and share page returned **HTTP 500**: a blank `PUBLIC_BASE_URL=` was read raw and became `new URL(path, "")`. Judges scanning with phones would hit a broken image. | **Fixed**: now uses the normalised `env()` |
-| D2 | P0 | No incident detail. The full history (`incident_events`), every report, reporter source, times and escalation are stored but never shown. | Building |
-| D3 | P0 | The organizer cannot assign a request to a specific volunteer, only claim it themselves. A command centre without assignment is not credible. | Building |
-| D4 | P1 | There is no organizer ↔ volunteer conversation, so follow-up happens in WhatsApp. Nexconn direct channels solve this natively. | Building |
-| D5 | P1 | The landing page is one hero and four tiles. It does not explain the problem, the proof or Nexconn's role. | Building |
-| D6 | P2 | The attendee category grid leaves orphan tiles ("Lost & found" alone, "Medical" full width). | Building |
-| D7 | P2 | The crew list on the board shows the organizer as "You (organizer)" alongside volunteers. | Building |
+| D2 | P0 | No incident detail. The full history (`incident_events`), every report, reporter source, times and escalation are stored but never shown. | **Fixed**: incident detail sheet with reports, facts and an activity timeline (verified in the browser) |
+| D3 | P0 | The organizer cannot assign a request to a specific volunteer, only claim it themselves. A command centre without assignment is not credible. | **Fixed**: leads assign from the incident detail; the assignee gets a private alert (unit-tested and verified in the browser) |
+| D4 | P1 | There is no organizer ↔ volunteer conversation, so follow-up happens in WhatsApp. Nexconn direct channels solve this natively. | **Fixed**: direct messages from the crew list and "Message owner" on an incident; inbox with unread counts (verified live in two sessions; channel list falls back, see NEXCONN_DOCS_AUDIT §10) |
+| D5 | P1 | The landing page is one hero and four tiles. It does not explain the problem, the proof or Nexconn's role. | **Fixed**: 13-section page with no invented logos, numbers or quotes (checked at 375 px and desktop) |
+| D6 | P2 | The attendee category grid leaves orphan tiles ("Lost & found" alone, "Medical" full width). | **Fixed**: Medical leads full width; six tiles in three even rows |
+| D7 | P2 | The crew list on the board shows the organizer as "You (organizer)" alongside volunteers. | **Fixed**: the crew list hides the viewer; the demo organizer is named "Organizer" |
 | D8 | P2 | If the organizer cookie is lost (new browser), the board says "open your organizer link". The link exists only at creation time. | Documented; the creation page tells the organizer to save it |
 | D9 | P2 | The demo `simulate` route projects synchronously while every other route projects in the background. | Low impact (demo only) |
 

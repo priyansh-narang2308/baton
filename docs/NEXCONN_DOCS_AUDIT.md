@@ -128,3 +128,15 @@ What we lose: a ready-made inbox. Mitigation: the direct-message view we need is
 3. **Optional: enable online-status subscription** to get presence on the crew list.
 4. **Optional, needs a card: enable audio/video calling** to unlock one-tap "Call owner".
 5. **At deploy time (not yet authorised): set the webhook URL** for `message:send`, so detection from plain chat runs without the manual button.
+6. **Ask Nexconn support whether `getChannels`/`createChannelsQuery` needs enabling** for this App Key (see §10).
+
+## 10. Live findings from building against the SDK (not from the docs)
+
+These were observed in the browser against our real App Key on 10–11 Nov 2026. They are not inferred from documentation.
+
+| Finding | What we saw | What we did |
+|---|---|---|
+| Channel list unavailable | `BaseChannel.createChannelsQuery({pageSize}).loadNextPage()` rejects with **35011 METHOD_NOT_AVAILABLE**. The docs present it as a standard Chat SDK call with no plan note, so it may be gated in the Console or by plan. | The DM inbox tries the channel list once per page load. On 35011 it falls back to loading the last 20 direct messages per known crew member (capped at 40 peers) and keeps unread counts with a local read marker (`baton:dm-read:<me>:<peer>`). `clearUnreadCount` is only called when the channel list works. The behaviour is correct either way; the fallback costs more requests on large crews. |
+| Direct messages work end to end | `DirectChannel(peer).sendMessage(SendTextMessageParams)` delivered organizer → volunteer and volunteer → organizer live, with no reload, in two browser sessions. | Used for "Message the owner" from an incident and for the crew list's message buttons. |
+| Targeted group messages reach only the target | A `BTN:Nudge` with `toUserIds=[assignee]` appeared live in Riya's session ("Organizer assigned you #2"). That other members don't receive it rests on the documented `toUserIds` behaviour; we did not test it with a third live session. | Used for assignment alerts and escalations. Targeted messages cannot carry metadata (documented), so the alert is its own message and the card is updated separately. |
+| Metadata updates are live | Claiming on one phone updated the card's `st`/`ownN` in the other open sessions without a reload. We did not measure latency precisely. | This is the core projection, with the database as the authority. |
