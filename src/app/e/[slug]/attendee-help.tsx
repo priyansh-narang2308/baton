@@ -6,13 +6,14 @@ import { Button, ConnectionBanner, cx, ErrorNote, inputClass } from "@/component
 import { connect, onMessage, useNexconn } from "@/lib/nexconn-client";
 import { api } from "@/lib/types";
 
+// Medical sits first and full width (the one that can't wait); the other six fill three even rows.
 const CHIPS = [
+  { key: "medical", label: "Medical" },
   { key: "supplies", label: "Water & supplies" },
   { key: "cleanliness", label: "Cleanliness" },
   { key: "directions", label: "Directions & info" },
   { key: "tech", label: "Tech / AV" },
   { key: "lost_found", label: "Lost & found" },
-  { key: "medical", label: "Medical" },
   { key: "other", label: "Something else" },
 ] as const;
 
@@ -101,7 +102,13 @@ export function AttendeeHelp({ slug, eventId, eventName, zone, ended, isDemo }: 
                   onClick={() => setCategory(c.key)}
                   className={cx(
                     "min-h-14 rounded-xl border px-3 py-3 text-left text-[15px] font-medium transition-colors",
-                    category === c.key ? "border-accent bg-accent-soft text-accent" : "border-border bg-surface text-text hover:bg-surface-2",
+                    category === c.key
+                      ? c.key === "medical"
+                        ? "border-urgent bg-urgent-soft text-urgent"
+                        : "border-accent bg-accent-soft text-accent"
+                      : c.key === "medical"
+                        ? "border-urgent/40 bg-surface text-urgent hover:bg-urgent-soft"
+                        : "border-border bg-surface text-text hover:bg-surface-2",
                     c.key === "medical" && "col-span-2",
                   )}
                 >
