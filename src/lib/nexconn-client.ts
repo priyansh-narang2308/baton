@@ -158,6 +158,80 @@ export async function sendGroupText(groupId: string, text: string): Promise<Chat
   return toChatMessage(res.data);
 }
 
+/** Nexconn channel types as numbers on the wire (docs: webhook channel types): 1 direct, 3 group. */
+export const DIRECT = 1;
+
+/** One-to-one message (organizer ↔ crew member). Nexconn creates the direct channel on first send. */
+export async function sendDirectText(peerUserId: string, text: string): Promise<ChatMessage> {
+  const sdk = conn.sdk;
+  if (!sdk || conn.state !== "connected") throw new Error("Not connected — your message was not sent");
+  const res = await new sdk.DirectChannel(peerUserId).sendMessage(new sdk.SendTextMessageParams({ text }));
+  if (!res.isOk || !res.data) throw new Error(res.code === 30004 ? "Slow down — sending too fast" : `Message not sent (code ${res.code})`);
+  return toChatMessage(res.data);
+}
+
+export type DirectThreadSummary = { peerUserId: string; unreadCount: number; latest: ChatMessage | null; updatedAt: number };
+
+// The Web channel list (`createChannelsQuery`) answered 35011 METHOD_NOT_AVAILABLE on our App Key (11 Nov), so we
+// only use it when it works. Otherwise each known peer's direct history is read (1 query per crew member, crews are
+// small) and unread counts come from a per-device "read up to" marker.
+let channelListAvailable: boolean | null = null;
+const readKey = (me: string, peer: string) => `baton:dm-read:${me}:${peer}`;
+function readMarker(me: string, peer: string) {
+  try {
+    return Number(localStorage.getItem(readKey(me, peer)) ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+/** Direct conversations with these peers, newest first, with unread counts. */
+export async function listDirectThreads(peerUserIds: string[]): Promise<DirectThreadSummary[]> {
+  const sdk = conn.sdk;
+  const me = conn.userId;
+  if (!sdk || !me || conn.state !== "connected") return [];
+  const wanted = new Set(peerUserIds);
+  if (channelListAvailable !== false) {
+    const res = await sdk.BaseChannel.createChannelsQuery({ pageSize: 50 }).loadNextPage();
+    if (res.isOk && res.data) {
+      channelListAvailable = true;
+      return res.data.data
+        .filter((c) => Number(c.channelType) === DIRECT && wanted.has(c.channelId))
+        .map((c) => ({ peerUserId: c.channelId, unreadCount: c.unreadCount, latest: c.latestMessage ? toChatMessage(c.latestMessage) : null, updatedAt: c.operationTime }))
+        .sort((a, b) => b.updatedAt - a.updatedAt);
+    }
+    channelListAvailable = false;
+  }
+  const threads = await Promise.all(
+    [...wanted].slice(0, 40).map(async (peer) => {
+      const history = await loadHistory("direct", peer, 20).catch(() => []);
+      const latest = history.at(-1) ?? null;
+      const since = readMarker(me, peer);
+      const unreadCount = history.filter((m) => m.senderUserId === peer && m.sentTime > since).length;
+      return { peerUserId: peer, unreadCount, latest, updatedAt: latest?.sentTime ?? 0 };
+    }),
+  );
+  return threads.filter((t) => t.latest).sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+/** Marks a direct conversation read on this device (and in Nexconn where the channel API is available). */
+export async function clearDirectUnread(peerUserId: string) {
+  const sdk = conn.sdk;
+  const me = conn.userId;
+  if (!sdk || !me || conn.state !== "connected") return;
+  try {
+    localStorage.setItem(readKey(me, peerUserId), String(Date.now()));
+  } catch {
+    /* private mode: unread counts just won't persist */
+  }
+  if (channelListAvailable) await new sdk.DirectChannel(peerUserId).clearUnreadCount().catch(() => undefined);
+}
+
+export function messageText(m: ChatMessage) {
+  const c = m.content as { text?: string; content?: string };
+  return String(c.text ?? c.content ?? "");
+}
+
 export async function loadHistory(kind: "group" | "direct", targetId: string, pageSize = 50): Promise<ChatMessage[]> {
   const sdk = conn.sdk;
   if (!sdk) return [];

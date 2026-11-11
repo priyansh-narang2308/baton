@@ -114,6 +114,16 @@ body {
 .anim-owner { animation: owner-in 220ms ease-out both; }
 .anim-bump { animation: count-bump 420ms ease-out; }
 
+/* Sheets: rise from the bottom on phones, slide in from the right on wide screens. */
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes sheet-left { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.anim-fade { animation: fade-in 160ms ease-out both; }
+.anim-sheet { animation: sheet-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@media (min-width: 1024px) {
+  .anim-sheet { animation-name: sheet-left; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .anim-claim, .anim-owner, .anim-bump { animation: none; }
+  .anim-claim, .anim-owner, .anim-bump, .anim-fade, .anim-sheet { animation: none; }
 }
