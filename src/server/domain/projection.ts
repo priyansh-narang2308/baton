@@ -136,6 +136,22 @@ async function notifyReporters(db: Db, api: NexconnApi, incidentId: string) {
   }
 }
 
+/** A targeted message inside the crew group: only the assignee receives it (docs: group-channel/direct). */
+async function notifyAssignee(db: Db, api: NexconnApi, incidentId: string, memberId: string, byName: string) {
+  const s = await snapshot(db, incidentId);
+  if (!s || s.inc.status !== "claimed" || s.inc.ownerMemberId !== memberId) return; // reassigned or closed meanwhile
+  const [m] = await db.select({ nexconnUserId: members.nexconnUserId }).from(members).where(eq(members.id, memberId));
+  if (!m) return;
+  await api.sendGroupMessage({
+    fromUserId: s.ev.botUserId,
+    groupId: s.ev.nexconnGroupId,
+    toUserIds: [m.nexconnUserId],
+    messageType: MSG_NUDGE,
+    content: { kind: "assigned", incidentId, number: s.inc.number, title: s.inc.title, byName },
+    pushContent: `${byName} assigned you #${s.inc.number} — ${s.inc.title}`,
+  });
+}
+
 // Projection for one incident runs strictly in order (one Node server process): without this, a report and a
 // duplicate arriving together could both see "no card yet" and post two cards.
 const chains = new Map<string, Promise<unknown>>();
@@ -158,11 +174,13 @@ export async function applyEffects(db: Db, api: NexconnApi | null, effects: Effe
   const seen = new Set<string>();
   let ok = true;
   for (const e of effects) {
-    const key = e.type === "card.create" ? `card:${e.incidentId}` : e.type === "card.update" ? `card:${e.incidentId}` : `${e.type}:${e.incidentId}`;
+    const key =
+      e.type === "card.create" || e.type === "card.update" ? `card:${e.incidentId}` : e.type === "assigned" ? `assigned:${e.incidentId}:${e.memberId}` : `${e.type}:${e.incidentId}`;
     if (seen.has(key)) continue;
     seen.add(key);
     try {
       if (e.type === "notify") await serialized(e.incidentId, () => notifyReporters(db, api, e.incidentId));
+      else if (e.type === "assigned") await serialized(e.incidentId, () => notifyAssignee(db, api, e.incidentId, e.memberId, e.byName));
       else await serialized(e.incidentId, () => projectCard(db, api, e.incidentId));
     } catch (err) {
       ok = false;

@@ -4,7 +4,9 @@ import { createDb } from "../db/client";
 import { events, incidentEvents, incidents, members, reports, zones } from "../db/schema";
 import {
   DomainError,
+  assignIncident,
   claimIncident,
+  incidentDetail,
   listIncidents,
   mergeIncidents,
   releaseIncident,
@@ -166,5 +168,67 @@ describe("escalation", () => {
     expect(second[0].level).toBe(2);
     const third = await takeDueEscalations(db, new Date(later.getTime() + 60 * 60_000));
     expect(third).toHaveLength(0);
+  });
+});
+
+describe("assignment (lead hands a request to someone)", () => {
+  // In the seed, "mbarjun" is the lead and everyone else is a volunteer.
+  it("lets a lead assign an open request and tells the assignee", async () => {
+    const { incidentId } = await report();
+    const r = await assignIncident(db, EVENT, incidentId, "mbarjun", "mbriya");
+    expect(r.incident).toMatchObject({ status: "claimed", ownerMemberId: "mbriya" });
+    expect(r.effects).toContainEqual({ type: "assigned", incidentId, memberId: "mbriya", byName: "arjun" });
+  });
+
+  it("refuses volunteers, unknown people and finished incidents", async () => {
+    const { incidentId } = await report();
+    await expect(assignIncident(db, EVENT, incidentId, "mbriya", "mbsam")).rejects.toMatchObject({ code: "forbidden" });
+    await expect(assignIncident(db, EVENT, incidentId, "mbarjun", "mbstranger")).rejects.toMatchObject({ code: "invalid" });
+    await resolveIncident(db, EVENT, incidentId, "mbarjun");
+    await expect(assignIncident(db, EVENT, incidentId, "mbarjun", "mbriya")).rejects.toMatchObject({ code: "conflict" });
+  });
+
+  it("reassigns without resetting the original claim time, and is idempotent for the same person", async () => {
+    const { incidentId } = await report();
+    const t0 = new Date("2026-11-11T10:00:00Z");
+    await claimIncident(db, EVENT, incidentId, "mbriya", t0);
+    const r = await assignIncident(db, EVENT, incidentId, "mbarjun", "mbsam", new Date("2026-11-11T10:05:00Z"));
+    expect(r.incident.ownerMemberId).toBe("mbsam");
+    expect(r.incident.claimedAt?.toISOString()).toBe(t0.toISOString());
+    const again = await assignIncident(db, EVENT, incidentId, "mbarjun", "mbsam");
+    expect(again.unchanged).toBe(true);
+    expect(again.effects).toEqual([]);
+  });
+
+  it("a claim racing an assignment never leaves two owners", async () => {
+    const { incidentId } = await report();
+    await Promise.allSettled([claimIncident(db, EVENT, incidentId, "mbkim"), assignIncident(db, EVENT, incidentId, "mbarjun", "mbriya")]);
+    const [inc] = await db.select().from(incidents);
+    expect(inc.status).toBe("claimed");
+    expect(["mbkim", "mbriya"]).toContain(inc.ownerMemberId);
+    const owners = (await db.select().from(incidentEvents)).filter((e) => e.type === "incident.claimed" || e.type === "incident.assigned");
+    expect(owners.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("incident detail", () => {
+  it("returns every report and a readable, ordered timeline", async () => {
+    const a = await report({ text: "Water supply is unavailable near Gate 3" });
+    await report({ attendeeId: "at2", text: "Same problem at Gate 3" });
+    await assignIncident(db, EVENT, a.incidentId, "mbarjun", "mbriya");
+    await resolveIncident(db, EVENT, a.incidentId, "mbriya");
+    const d = await incidentDetail(db, EVENT, a.incidentId);
+    expect(d.reports.map((r) => r.text)).toEqual(["Water supply is unavailable near Gate 3", "Same problem at Gate 3"]);
+    expect(d.reports.every((r) => r.reporterName === "Attendee" && r.zoneName === "Gate 3")).toBe(true);
+    expect(d.activity.map((e) => e.type)).toEqual(["incident.created", "report.attached", "incident.assigned", "incident.resolved"]);
+    const assigned = d.activity.find((e) => e.type === "incident.assigned")!;
+    expect(assigned).toMatchObject({ actorName: "arjun", actorKind: "crew", detail: { assigneeName: "riya" } });
+    expect(d.incident).toMatchObject({ status: "resolved", ownerName: "riya" });
+    expect(d.incident.timeToFixSec).not.toBeNull();
+  });
+
+  it("does not leak incidents across events", async () => {
+    const { incidentId } = await report();
+    await expect(incidentDetail(db, "evother", incidentId)).rejects.toMatchObject({ code: "not_found" });
   });
 });

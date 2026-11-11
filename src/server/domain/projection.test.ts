@@ -1,9 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { sql } from "drizzle-orm";
 import { createDb } from "../db/client";
-import { events, incidents, zones } from "../db/schema";
+import { events, incidents, members, zones } from "../db/schema";
 import type { NexconnApi } from "../nexconn/api";
-import { submitReport } from "./incidents";
+import { assignIncident, submitReport } from "./incidents";
 import { applyEffects } from "./projection";
 
 const db = createDb(process.env.TEST_DATABASE_URL ?? "postgres://baton@localhost:54329/baton_test");
@@ -51,6 +51,35 @@ describe("applyEffects", () => {
     const [inc] = await db.select().from(incidents);
     expect(inc.cardMessageId).toBe("MSG-1");
     expect(inc.projectedVersion).toBe(inc.version);
+  });
+
+  it("tells only the assignee, and skips the message if the incident moved on", async () => {
+    await db.insert(members).values([
+      { id: "mblead", eventId: "evproj", role: "lead", name: "Asha", nexconnUserId: "cmblead" },
+      { id: "mbvol", eventId: "evproj", role: "volunteer", name: "Riya", nexconnUserId: "cmbvol" },
+      { id: "mbvol2", eventId: "evproj", role: "volunteer", name: "Sam", nexconnUserId: "cmbvol2" },
+    ]);
+    const sent: { toUserIds?: string[]; content: Record<string, unknown> }[] = [];
+    const api = {
+      async sendGroupMessage(input: { toUserIds?: string[]; content: Record<string, unknown> }) {
+        sent.push(input);
+        return "MSG-x";
+      },
+      async setMessageMetadata() {},
+      async sendDirectMessage() {},
+    } as unknown as NexconnApi;
+    const { incidentId } = await submitReport(db, { eventId: "evproj", source: "attendee", attendeeId: "a1", zoneId: "zg", category: "supplies", text: "water", structured: true });
+    const r = await assignIncident(db, "evproj", incidentId, "mblead", "mbvol");
+    await applyEffects(db, api, r.effects.filter((e) => e.type === "assigned"));
+    expect(sent).toEqual([expect.objectContaining({ toUserIds: ["cmbvol"], content: expect.objectContaining({ kind: "assigned", byName: "Asha", number: 1 }) })]);
+
+    // Reassigned before the projection ran: the stale "assigned to Riya" message is not sent.
+    const second = await assignIncident(db, "evproj", incidentId, "mblead", "mbvol2");
+    sent.length = 0;
+    await applyEffects(db, api, r.effects.filter((e) => e.type === "assigned"));
+    expect(sent).toHaveLength(0);
+    await applyEffects(db, api, second.effects.filter((e) => e.type === "assigned"));
+    expect(sent[0].toUserIds).toEqual(["cmbvol2"]);
   });
 
   it("reports not-configured instead of pretending", async () => {

@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, isNull, lte, sql } from "drizzle-orm";
 import type { Db } from "../db/client";
-import { events, incidentEvents, incidents, members, mergeSuggestions, reports, zones, type Category } from "../db/schema";
+import { attendees, events, incidentEvents, incidents, members, mergeSuggestions, reports, zones, type Category } from "../db/schema";
 import { newId } from "../ids";
 import { CANDIDATE_WINDOW_MIN, decide, type Candidate } from "./consolidation";
 
@@ -8,7 +8,9 @@ import { CANDIDATE_WINDOW_MIN, decide, type Candidate } from "./consolidation";
 export type Effect =
   | { type: "card.create"; incidentId: string }
   | { type: "card.update"; incidentId: string }
-  | { type: "notify"; incidentId: string };
+  | { type: "notify"; incidentId: string }
+  /** Tell one crew member, privately inside the crew group, that a lead assigned them an incident. */
+  | { type: "assigned"; incidentId: string; memberId: string; byName: string };
 
 export class DomainError extends Error {
   constructor(
@@ -237,6 +239,115 @@ export async function resolveIncident(db: Db, eventId: string, incidentId: strin
     await audit(tx, incidentId, memberId, "incident.resolved");
     return { incident: updated, effects: [{ type: "card.update", incidentId }, { type: "notify", incidentId }] as Effect[] };
   });
+}
+
+/**
+ * A lead hands an open or claimed incident to a specific crew member. Version-checked, so a concurrent claim or
+ * resolve wins cleanly instead of being overwritten. The original claim time is kept on reassignment so
+ * time-to-claim still measures how long the incident waited for its first owner.
+ */
+export async function assignIncident(db: Db, eventId: string, incidentId: string, actorMemberId: string, assigneeMemberId: string, now = new Date()) {
+  return db.transaction(async (tx) => {
+    const actor = await activeMember(tx, actorMemberId, eventId);
+    if (actor.role !== "lead") throw new DomainError("forbidden", "Only a lead can assign requests");
+    const [assignee] = await tx.select().from(members).where(and(eq(members.id, assigneeMemberId), eq(members.eventId, eventId), isNull(members.removedAt)));
+    if (!assignee) throw new DomainError("invalid", "That person is not on this event's crew");
+    const inc = await loadIncident(tx, incidentId, eventId);
+    if (inc.status === "resolved" || inc.status === "withdrawn") throw new DomainError("conflict", `This incident is ${inc.status === "withdrawn" ? "merged" : "already fixed"}`, { status: inc.status });
+    if (inc.status === "claimed" && inc.ownerMemberId === assigneeMemberId) return { incident: inc, effects: [] as Effect[], unchanged: true };
+    const [updated] = await tx
+      .update(incidents)
+      .set({ status: "claimed", ownerMemberId: assigneeMemberId, claimedAt: inc.claimedAt ?? now, nextEscalationAt: null, version: sql`${incidents.version} + 1` })
+      .where(and(eq(incidents.id, incidentId), eq(incidents.version, inc.version)))
+      .returning();
+    if (!updated) throw new DomainError("conflict", "The incident changed — refresh and try again");
+    await audit(tx, incidentId, actorMemberId, "incident.assigned", { assigneeId: assigneeMemberId, previousOwnerId: inc.ownerMemberId });
+    const effects: Effect[] = [{ type: "card.update", incidentId }, { type: "notify", incidentId }];
+    if (assigneeMemberId !== actorMemberId) effects.push({ type: "assigned", incidentId, memberId: assigneeMemberId, byName: actor.name });
+    return { incident: updated, effects, unchanged: false };
+  });
+}
+
+export type ActivityEntry = { id: string; type: string; at: number; actorName: string; actorKind: "crew" | "attendee" | "system"; detail: Record<string, unknown> };
+export type ReportEntry = {
+  id: string;
+  source: "attendee" | "crew";
+  reporterName: string;
+  simulated: boolean;
+  text: string;
+  zoneName: string | null;
+  category: string;
+  attachedBy: "new" | "auto" | "merge";
+  fromChat: boolean;
+  createdAt: number;
+};
+
+/** Everything that happened to one incident, for the detail view: every report behind it and its full audit trail. */
+export async function incidentDetail(db: Db, eventId: string, incidentId: string) {
+  const [inc] = await db.select().from(incidents).where(and(eq(incidents.id, incidentId), eq(incidents.eventId, eventId)));
+  if (!inc) throw new DomainError("not_found", "Incident not found");
+  const [reps, log, crew, zs, atts] = await Promise.all([
+    db.select().from(reports).where(eq(reports.incidentId, incidentId)).orderBy(reports.createdAt),
+    db.select().from(incidentEvents).where(eq(incidentEvents.incidentId, incidentId)).orderBy(incidentEvents.at),
+    db.select({ id: members.id, name: members.name, isSimulated: members.isSimulated }).from(members).where(eq(members.eventId, eventId)),
+    db.select({ id: zones.id, name: zones.name }).from(zones).where(eq(zones.eventId, eventId)),
+    db.select({ id: attendees.id, isSimulated: attendees.isSimulated }).from(attendees).where(eq(attendees.eventId, eventId)),
+  ]);
+  const crewById = new Map(crew.map((m) => [m.id, m]));
+  const zoneById = new Map(zs.map((z) => [z.id, z.name]));
+  const attById = new Map(atts.map((a) => [a.id, a]));
+  // Incidents referenced by merges, so the timeline can say "#4" instead of an id.
+  const related = [...new Set(log.flatMap((e) => [e.payload as Record<string, unknown>]).flatMap((p) => [p.targetId, p.sourceId, p.candidateIncidentId, p.newIncidentId, p.fromIncidentId]).filter((v): v is string => typeof v === "string"))];
+  const relatedNumbers = related.length ? await db.select({ id: incidents.id, number: incidents.number }).from(incidents).where(inArray(incidents.id, related)) : [];
+  const numberById = new Map(relatedNumbers.map((r) => [r.id, r.number]));
+
+  const actorOf = (actor: string): Pick<ActivityEntry, "actorName" | "actorKind"> => {
+    if (actor === "system") return { actorName: "Baton", actorKind: "system" };
+    const m = crewById.get(actor);
+    if (m) return { actorName: m.name, actorKind: "crew" };
+    return { actorName: attById.get(actor)?.isSimulated ? "Simulated attendee" : "Attendee", actorKind: "attendee" };
+  };
+  const activity: ActivityEntry[] = log.map((e) => {
+    const p = { ...(e.payload as Record<string, unknown>) };
+    for (const k of ["targetId", "sourceId", "candidateIncidentId", "newIncidentId", "fromIncidentId"]) {
+      if (typeof p[k] === "string" && numberById.has(p[k] as string)) p[`${k.replace(/Id$/, "")}Number`] = numberById.get(p[k] as string);
+    }
+    for (const k of ["assigneeId", "previousOwnerId"]) {
+      if (typeof p[k] === "string") p[`${k.replace(/Id$/, "")}Name`] = crewById.get(p[k] as string)?.name ?? null;
+    }
+    return { id: e.id, type: e.type, at: e.at.getTime(), ...actorOf(e.actor), detail: p };
+  });
+  const reportEntries: ReportEntry[] = reps.map((r) => {
+    const m = r.memberId ? crewById.get(r.memberId) : undefined;
+    const a = r.attendeeId ? attById.get(r.attendeeId) : undefined;
+    return {
+      id: r.id,
+      source: r.source,
+      reporterName: m ? m.name : a?.isSimulated ? "Simulated attendee" : "Attendee",
+      simulated: Boolean(m?.isSimulated || a?.isSimulated),
+      text: r.text,
+      zoneName: r.zoneId ? (zoneById.get(r.zoneId) ?? null) : null,
+      category: r.category,
+      attachedBy: r.attachedBy,
+      fromChat: inc.origin === "chat" && r.id === reps[0]?.id,
+      createdAt: r.createdAt.getTime(),
+    };
+  });
+  const sec = (a: Date | null, b: Date | null) => (a && b ? Math.round((b.getTime() - a.getTime()) / 1000) : null);
+  return {
+    incident: {
+      id: inc.id,
+      number: inc.number,
+      status: inc.status,
+      ownerMemberId: inc.ownerMemberId,
+      ownerName: inc.ownerMemberId ? (crewById.get(inc.ownerMemberId)?.name ?? null) : null,
+      escalationLevel: inc.escalationLevel,
+      timeToClaimSec: sec(inc.createdAt, inc.claimedAt),
+      timeToFixSec: sec(inc.createdAt, inc.resolvedAt),
+    },
+    reports: reportEntries,
+    activity,
+  };
 }
 
 /** Moves every report of `sourceId` into `targetId`. The source is kept (status withdrawn) so history stays traceable. */
