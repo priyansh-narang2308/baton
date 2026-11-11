@@ -1,21 +1,30 @@
 "use client";
 
-import { BellRing, ListTodo, MessageSquare, Plus, Send, Sparkles, Users, X } from "lucide-react";
+import { BellRing, Inbox as InboxIcon, ListTodo, MessageCircle, MessageSquare, Plus, Send, Sparkles, Users, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { DirectThread } from "@/components/direct-thread";
+import { Inbox, useDirectThreads } from "@/components/inbox";
 import { IncidentCard } from "@/components/incident-card";
+import { IncidentDetail } from "@/components/incident-detail";
+import { Sheet } from "@/components/sheet";
 import { Button, ConnectionBanner, cx, ErrorNote, inputClass } from "@/components/ui";
 import { loadHistory, onMessage, sendGroupText, useNexconn, type ChatMessage } from "@/lib/nexconn-client";
-import { api, CATEGORY_LABEL } from "@/lib/types";
+import { api, CATEGORY_LABEL, type CrewMemberView } from "@/lib/types";
 import { useEventState } from "@/lib/use-event-state";
 
-type Tab = "stream" | "mine" | "crew";
+type Tab = "stream" | "mine" | "inbox" | "crew";
+type Nudge = { kind: "escalation" | "assigned"; incidentId: string; number: number; title: string; byName?: string };
 
 export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: "member" | "organizer" }) {
   const conn = useNexconn(eventId, role);
   const { state, error, refresh, patchIncident, flash } = useEventState(eventId, conn.state);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [nudge, setNudge] = useState<{ number: number; title: string } | null>(null);
+  const [nudge, setNudge] = useState<Nudge | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [dmPeer, setDmPeer] = useState<CrewMemberView | null>(null);
+  const connected = conn.state === "connected";
+  const dms = useDirectThreads(connected, state?.crew, state?.me?.nexconnUserId);
   const [tab, setTab] = useState<Tab>("stream");
   const [selected, setSelected] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -43,8 +52,8 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
     return onMessage((m) => {
       if (m.channelId !== groupId) return;
       if (m.messageType === "BTN:Nudge") {
-        const c = m.content as { number: number; title: string };
-        setNudge({ number: c.number, title: c.title });
+        const c = m.content as { kind?: string; incidentId: string; number: number; title: string; byName?: string };
+        setNudge({ kind: c.kind === "assigned" ? "assigned" : "escalation", incidentId: c.incidentId, number: c.number, title: c.title, byName: c.byName });
         if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(200);
       }
       setMessages((cur) => mergeMessages(cur, [m]));
@@ -94,8 +103,27 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
         <div role="alert" className="flex items-center gap-2 bg-urgent-soft px-4 py-2.5 text-[13px] text-urgent">
           <BellRing className="size-4" aria-hidden />
           <span className="flex-1">
-            <strong>#{nudge.number}</strong> is unclaimed — {nudge.title}. You were asked to handle it.
+            {nudge.kind === "assigned" ? (
+              <>
+                {nudge.byName ?? "A lead"} assigned you <strong>#{nudge.number}</strong> — {nudge.title}
+              </>
+            ) : (
+              <>
+                <strong>#{nudge.number}</strong> is unclaimed — {nudge.title}. You were asked to handle it.
+              </>
+            )}
           </span>
+          {incidentsById.has(nudge.incidentId) && (
+            <button
+              className="font-medium underline underline-offset-2"
+              onClick={() => {
+                setOpenId(nudge.incidentId);
+                setNudge(null);
+              }}
+            >
+              Open
+            </button>
+          )}
           <button aria-label="Dismiss" onClick={() => setNudge(null)}>
             <X className="size-4" />
           </button>
@@ -112,7 +140,7 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
                 <section aria-label="Earlier requests" className="space-y-2.5">
                   <h2 className="px-1 text-xs font-medium text-text-3">Earlier requests still open</h2>
                   {earlier.map((inc) => (
-                    <IncidentCard key={inc.id} eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onPatch={patchIncident} onRefresh={refresh} />
+                    <IncidentCard key={inc.id} eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onOpen={() => setOpenId(inc.id)} onPatch={patchIncident} onRefresh={refresh} />
                   ))}
                 </section>
               </li>
@@ -128,7 +156,7 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
                 if (!inc) return null;
                 return (
                   <li key={m.messageId}>
-                    <IncidentCard eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onPatch={patchIncident} onRefresh={refresh} />
+                    <IncidentCard eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onOpen={() => setOpenId(inc.id)} onPatch={patchIncident} onRefresh={refresh} />
                   </li>
                 );
               }
@@ -151,7 +179,7 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
                   </button>
                   {inc && (
                     <div className="mt-1 w-[88%] max-w-sm">
-                      <IncidentCard attached eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onPatch={patchIncident} onRefresh={refresh} />
+                      <IncidentCard attached eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onOpen={() => setOpenId(inc.id)} onPatch={patchIncident} onRefresh={refresh} />
                     </div>
                   )}
                   {!inc && fromCrew && selected === m.messageId && (
@@ -168,9 +196,12 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
             {mine.length === 0 ? (
               <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-text-3">Nothing claimed yet. Tap “I’ll take it” on a card to own it.</p>
             ) : (
-              mine.map((inc) => <IncidentCard key={inc.id} eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onPatch={patchIncident} onRefresh={refresh} />)
+              mine.map((inc) => <IncidentCard key={inc.id} eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onOpen={() => setOpenId(inc.id)} onPatch={patchIncident} onRefresh={refresh} />)
             )}
           </div>
+        )}
+        {state && tab === "inbox" && (
+          <Inbox threads={dms.threads} crew={state.crew} meId={state.me?.nexconnUserId ?? null} now={now} onOpen={setDmPeer} onStart={() => setTab("crew")} />
         )}
         {state && tab === "crew" && (
           <ul className="divide-y divide-border rounded-xl border border-border bg-surface">
@@ -187,6 +218,11 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
                     {c.isSimulated ? " · simulated" : ""}
                   </p>
                 </div>
+                {c.id !== state.me?.id && !c.isSimulated && (
+                  <Button size="sm" variant="ghost" onClick={() => setDmPeer(c)} aria-label={`Message ${c.name}`}>
+                    <MessageCircle className="size-4" aria-hidden /> Message
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
@@ -195,20 +231,58 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
 
       {state && tab === "stream" && <Composer eventId={eventId} groupId={state.event.groupId} zones={state.zones} connected={conn.state === "connected"} onSent={(m) => setMessages((cur) => mergeMessages(cur, [m]))} onRequested={refresh} />}
 
-      <nav className="grid grid-cols-3 border-t border-border bg-surface" aria-label="Sections">
+      <nav className="grid grid-cols-4 border-t border-border bg-surface" aria-label="Sections">
         {(
           [
             ["stream", MessageSquare, "Stream"],
             ["mine", ListTodo, `My tasks${mine.length ? ` (${mine.length})` : ""}`],
+            ["inbox", InboxIcon, "Inbox"],
             ["crew", Users, "Crew"],
           ] as const
         ).map(([key, Icon, label]) => (
-          <button key={key} onClick={() => setTab(key)} aria-current={tab === key} className={cx("flex flex-col items-center gap-0.5 py-2 text-[11px]", tab === key ? "text-accent" : "text-text-3")}>
+          <button key={key} onClick={() => setTab(key)} aria-current={tab === key} className={cx("relative flex flex-col items-center gap-0.5 py-2 text-[11px]", tab === key ? "text-accent" : "text-text-3")}>
             <Icon className="size-5" aria-hidden />
             {label}
+            {key === "inbox" && dms.unread > 0 && (
+              <span className="absolute left-1/2 top-1 ml-2 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-semibold text-accent-ink" aria-label={`${dms.unread} unread`}>
+                {dms.unread}
+              </span>
+            )}
           </button>
         ))}
       </nav>
+      {state && openId && incidentsById.get(openId) && (
+        <IncidentDetail
+          eventId={eventId}
+          incident={incidentsById.get(openId)!}
+          crew={state.crew}
+          me={state.me}
+          isLead={isLead}
+          now={now}
+          connected={connected}
+          flashAt={flash[openId]}
+          onPatch={patchIncident}
+          onRefresh={refresh}
+          onClose={() => setOpenId(null)}
+        />
+      )}
+      {state && dmPeer && (
+        <Sheet
+          onClose={() => {
+            setDmPeer(null);
+            dms.refresh();
+          }}
+          title={
+            <span>
+              {dmPeer.name} <span className="font-normal text-text-3">· {dmPeer.role === "lead" ? "lead" : "crew"}</span>
+            </span>
+          }
+        >
+          <div className="flex h-full min-h-[60dvh] flex-col lg:min-h-full">
+            <DirectThread peerUserId={dmPeer.nexconnUserId} peerName={dmPeer.name} meUserId={state.me?.nexconnUserId ?? null} connected={connected} onActivity={dms.refresh} />
+          </div>
+        </Sheet>
+      )}
       {role === "organizer" && (
         <Link href={`/o/${eventId}`} className="fixed right-3 top-3 hidden rounded-md bg-surface px-2 py-1 text-xs text-text-2 shadow-pop sm:block">
           Board

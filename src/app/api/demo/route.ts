@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     rateLimit(`demo:${clientIp(req)}`, 5, 60 * 60_000);
     const ev = await createEvent({ name: "Demo TechFest", zones: ["Gate 3", "Hall B", "Registration"], isDemo: true });
     const full = await eventById(ev.id);
-    const { memberId } = await joinCrew({ crewCode: full!.crewCode, name: "You (organizer)", zoneId: null, role: "lead" });
+    const { memberId } = await joinCrew({ crewCode: full!.crewCode, name: "Organizer", zoneId: null, role: "lead" });
     await setSession({ role: "organizer", id: memberId, eventId: ev.id });
     return NextResponse.json({ eventId: ev.id }, { status: 201 });
   });

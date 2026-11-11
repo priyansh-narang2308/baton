@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Check, GitMerge, MapPin, Sparkles, Users } from "lucide-react";
+import { AlertTriangle, Check, ChevronRight, GitMerge, MapPin, Sparkles, Users } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api, CATEGORY_LABEL, type IncidentView } from "@/lib/types";
 import { Button, cx, timeAgo } from "./ui";
@@ -17,6 +17,8 @@ type Props = {
   attached?: boolean;
   /** Act as the organizer (board) even when this browser also holds a crew member session. */
   as?: "organizer";
+  /** Opens the incident detail (reports, history, assignment, messaging). */
+  onOpen?: () => void;
   onPatch: (id: string, patch: Partial<IncidentView>) => void;
   onRefresh: () => void;
 };
@@ -29,7 +31,7 @@ const STATUS_STYLE = {
 } as const;
 
 /** The incident card — the same component in the crew stream and on the organizer board. */
-export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt, compact, attached, as, onPatch, onRefresh }: Props) {
+export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt, compact, attached, as, onOpen, onPatch, onRefresh }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [anim, setAnim] = useState(false);
@@ -114,7 +116,15 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
               </span>
             )}
           </div>
-          <h3 className={cx(attached && "sr-only", "mt-1 text-[15px] font-semibold leading-snug text-text", i.status === "resolved" && "text-text-2 line-through decoration-text-3/40")}>{i.title}</h3>
+          <h3 className={cx(attached && "sr-only", "mt-1 text-[15px] font-semibold leading-snug text-text", i.status === "resolved" && "text-text-2 line-through decoration-text-3/40")}>
+            {onOpen && !attached ? (
+              <button type="button" onClick={onOpen} className="text-left hover:underline hover:decoration-text-3 hover:underline-offset-4">
+                {i.title}
+              </button>
+            ) : (
+              i.title
+            )}
+          </h3>
         </div>
         <span className={cx("shrink-0 rounded-full px-2 py-0.5 text-xs font-medium", s.pill)}>{s.label}</span>
       </header>
@@ -132,6 +142,11 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
           </span>
         )}
         {i.escalationLevel > 0 && i.status === "open" && <span className="text-xs text-urgent">Lead notified</span>}
+        {onOpen && (
+          <button type="button" onClick={onOpen} className="ml-auto inline-flex items-center gap-0.5 rounded-md px-1.5 py-1 text-xs text-text-3 hover:bg-surface-2 hover:text-text" aria-label={`Details for incident ${i.number}`}>
+            Details <ChevronRight className="size-3.5" aria-hidden />
+          </button>
+        )}
       </div>
 
       {i.suggestion && i.status !== "withdrawn" && i.status !== "resolved" && (
