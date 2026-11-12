@@ -9,6 +9,8 @@ export type Effect =
   | { type: "card.create"; incidentId: string }
   | { type: "card.update"; incidentId: string }
   | { type: "notify"; incidentId: string }
+  /** Ownership moved while the incident stayed claimed: tell reporters who is on it now (no state change to dedupe on). */
+  | { type: "owner.changed"; incidentId: string }
   /** Tell one crew member, privately inside the crew group, that a lead assigned them an incident. */
   | { type: "assigned"; incidentId: string; memberId: string; byName: string }
   /** Baton Pass: tell one crew member privately that a pass was offered to them, or answered. */
@@ -268,6 +270,7 @@ export async function assignIncident(db: Db, eventId: string, incidentId: string
     if (!updated) throw new DomainError("conflict", "The incident changed — refresh and try again");
     await audit(tx, incidentId, actorMemberId, "incident.assigned", { assigneeId: assigneeMemberId, previousOwnerId: inc.ownerMemberId });
     const effects: Effect[] = [{ type: "card.update", incidentId }, { type: "notify", incidentId }];
+    if (inc.status === "claimed") effects.push({ type: "owner.changed", incidentId });
     if (assigneeMemberId !== actorMemberId) effects.push({ type: "assigned", incidentId, memberId: assigneeMemberId, byName: actor.name });
     return { incident: updated, effects, unchanged: false };
   });
@@ -324,7 +327,11 @@ export async function acceptPass(db: Db, eventId: string, incidentId: string, me
     await audit(tx, incidentId, memberId, "pass.accepted", { fromId, waitedSec: inc.passOfferedAt ? Math.round((now.getTime() - inc.passOfferedAt.getTime()) / 1000) : null });
     return {
       incident: updated,
-      effects: [{ type: "card.update", incidentId }, { type: "pass", incidentId, memberId: fromId, kind: "accepted", byName: me.name }] as Effect[],
+      effects: [
+        { type: "card.update", incidentId },
+        { type: "pass", incidentId, memberId: fromId, kind: "accepted", byName: me.name },
+        { type: "owner.changed", incidentId },
+      ] as Effect[],
       alreadyYours: false,
     };
   });

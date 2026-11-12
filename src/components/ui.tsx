@@ -18,7 +18,7 @@ export function Button({ variant = "secondary", size = "md", busy, className, ch
       {...rest}
       disabled={disabled || busy}
       className={cx(
-        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-[background,color,box-shadow,transform] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full [&>svg]:shrink-0 font-medium transition-[background,color,box-shadow,transform] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
         size === "sm" && cx("h-8 text-[13px]", !iconOnly && "px-3.5"),
         size === "md" && cx("h-10 text-sm", !iconOnly && "px-5"),
         size === "lg" && cx("h-12 text-[15px] font-semibold", !iconOnly && "px-7"),

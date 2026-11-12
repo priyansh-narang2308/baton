@@ -381,10 +381,10 @@ function Huddle({
   return (
     <div className="rounded-xl border border-border bg-surface px-3 py-2.5">
       <p className="flex items-center gap-2 text-sm font-medium">
-        <Phone className="size-4 text-accent" aria-hidden /> Voice huddle
+        <Phone className="size-4 text-accent" aria-hidden /> Talk it through
       </p>
       <p className="mt-0.5 text-xs text-text-3">
-        A real audio call over Nexconn Call. Their Baton page rings with #{i.number}; the call is noted below.
+        A live voice call over Nexconn Call. Their Baton page rings about #{i.number}; the call is logged in the timeline.
       </p>
       <div className="mt-2 flex gap-2">
         <Picker
@@ -403,7 +403,7 @@ function Huddle({
           }))}
         />
         <Button variant="primary" onClick={ring} disabled={!ready || inCall}>
-          {ready ? (inCall ? "In a call" : "Call") : "Connecting…"}
+          {ready ? (inCall ? "In a call" : `Call ${m.name.split(" ")[0]}`) : "Connecting…"}
         </Button>
       </div>
       {m.online === false && (

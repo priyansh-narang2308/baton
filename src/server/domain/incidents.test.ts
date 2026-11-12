@@ -254,6 +254,8 @@ describe("Baton Pass (owner hands over, teammate must accept)", () => {
     const accepted = await acceptPass(db, EVENT, id, "mbsam");
     expect(accepted.incident).toMatchObject({ status: "claimed", ownerMemberId: "mbsam", passToMemberId: null, passNote: null });
     expect(accepted.effects).toContainEqual({ type: "pass", incidentId: id, memberId: "mbriya", kind: "accepted", byName: "sam" });
+    // Reporters are told who owns it now, even though the status stays "claimed".
+    expect(accepted.effects).toContainEqual({ type: "owner.changed", incidentId: id });
     const detail = await incidentDetail(db, EVENT, id);
     expect(detail.activity.map((a) => a.type)).toEqual(expect.arrayContaining(["pass.offered", "pass.accepted"]));
     expect(detail.activity.find((a) => a.type === "pass.accepted")?.detail).toMatchObject({ fromName: "riya" });

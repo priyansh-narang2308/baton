@@ -157,6 +157,16 @@ export function CrewApp({
     () => new Map(state?.incidents.map((i) => [i.id, i]) ?? []),
     [state],
   );
+  // A nudge is a one-off message; the incident state is the truth. Hide it once it no longer matches, e.g. the pass
+  // was accepted, declined or withdrawn, or someone claimed the unowned request it was about.
+  const meIdForNudge = state?.me?.id;
+  const nudgeIncident = nudge ? incidentsById.get(nudge.incidentId) : undefined;
+  const nudgeStale =
+    !!nudge &&
+    !!nudgeIncident &&
+    ((nudge.kind === "pass_offered" && nudgeIncident.passToMemberId !== meIdForNudge) ||
+      (nudge.kind === "assigned" && nudgeIncident.ownerMemberId !== meIdForNudge) ||
+      (nudge.kind === "escalation" && nudgeIncident.status !== "open"));
   // Chat-detected requests live on the crew message itself (cardMessageId = that message).
   const incidentsByMessage = useMemo(
     () =>
@@ -358,7 +368,7 @@ export function CrewApp({
           error={conn.error}
           onRetry={conn.retry}
         />
-        {nudge && (
+        {nudge && !nudgeStale && (
           <div
             role="alert"
             className="flex items-center gap-2 bg-urgent-soft px-4 py-2.5 text-[13px] text-urgent lg:px-8"

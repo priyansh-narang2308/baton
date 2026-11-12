@@ -140,6 +140,30 @@ async function notifyReporters(db: Db, api: NexconnApi, incidentId: string) {
   }
 }
 
+/**
+ * Ownership changed hands while the incident stayed "claimed" (Baton Pass accepted, or a lead reassigned it). The
+ * per-state dedupe in notifyReporters would swallow this, so reporters get one extra status message naming the new
+ * owner; their page re-reads the authoritative status when it arrives.
+ */
+async function notifyOwnerChange(db: Db, api: NexconnApi, incidentId: string) {
+  const s = await snapshot(db, incidentId);
+  if (!s || s.inc.status !== "claimed") return;
+  const reporters = await db
+    .select({ nexconnUserId: attendees.nexconnUserId })
+    .from(reports)
+    .innerJoin(attendees, eq(attendees.id, reports.attendeeId))
+    .where(and(eq(reports.incidentId, incidentId), eq(reports.source, "attendee")));
+  const recipients = [...new Set(reporters.map((r) => r.nexconnUserId))];
+  if (recipients.length === 0) return;
+  await api.sendDirectMessage({
+    fromUserId: s.ev.botUserId,
+    toUserIds: recipients,
+    messageType: MSG_STATUS,
+    content: { incidentId, number: s.inc.number, state: "claimed", ownerName: s.ownerName ?? "", reportCount: s.inc.reportCount, title: s.inc.title },
+    pushContent: `${s.ownerName ?? "Someone"} is on it now`,
+  });
+}
+
 /** A targeted message inside the crew group: only the assignee receives it (docs: group-channel/direct). */
 async function notifyAssignee(db: Db, api: NexconnApi, incidentId: string, memberId: string, byName: string) {
   const s = await snapshot(db, incidentId);
@@ -204,6 +228,7 @@ export async function applyEffects(db: Db, api: NexconnApi | null, effects: Effe
     seen.add(key);
     try {
       if (e.type === "notify") await serialized(e.incidentId, () => notifyReporters(db, api, e.incidentId));
+      else if (e.type === "owner.changed") await serialized(e.incidentId, () => notifyOwnerChange(db, api, e.incidentId));
       else if (e.type === "assigned") await serialized(e.incidentId, () => notifyAssignee(db, api, e.incidentId, e.memberId, e.byName));
       else if (e.type === "pass") await serialized(e.incidentId, () => notifyPass(db, api, e));
       else await serialized(e.incidentId, () => projectCard(db, api, e.incidentId));
