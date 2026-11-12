@@ -58,13 +58,11 @@ We do **not** claim that every one of the 869 pages was read line by line. The t
 **What decides it for Baton**, quoted from the current pages:
 1. Feature matrix: **"Message metadata: No"** for rendering. Since 26.2.4, `MESSAGE_WILL_SEND` lets you *attach* metadata on send, but the UI does not re-render from `onMessageMetadataUpdated`. Our incident card *is* metadata.
 2. Quick start: **"Only Chrome, Safari, and Edge are supported. Portrait mobile browsers are not a supported target for the UI today."** Volunteers use Baton on phones held upright.
-3. The Chat UI inbox depends on the server channel list. That call returns **35011** for our App Key (NEXCONN_DOCS_AUDIT §10), so the inbox would likely come up empty.
+3. The Chat UI inbox depends on the server channel list. We first saw **35011** there. **Update 12 Nov:** traced in the installed engine, 35011 is returned only until the post-connect sync sets `ugSynced`. Retried a second later, the list returns code 0 on our App Key. This is no longer a blocker.
 
-**The one place it could fit** is the organizer's desktop inbox for direct messages. We tested the reasoning, not the component: with 35011 open, it would ship a visibly broken list.
+**The one place it could fit** is the organizer's desktop inbox for direct messages. Chat UI uses the same `NCEngine` connection (the quickstart says to initialise `NCEngine` first and that it owns the connection), so it can sit beside our custom views. Costs: bumping all three packages to 26.2.5, and our `BTN:*` incident cards rendering as unknown messages in its group view.
 
-**Decision: not used.** We will not build a look-alike and call it Chat UI.
-
-**Revisit if** Nexconn confirms 35011 is a Console switch and it gets enabled. Then the desktop command centre's Inbox is a safe Chat UI candidate (about half a day), with phones keeping the custom SDK views.
+**Decision: not used yet.** A half-day isolated spike for the desktop Messages pane (DMs only) is scheduled after deployment. Phones keep the custom SDK views. We will not build a look-alike and call it Chat UI.
 
 ## C. Call SDK for Web (`@nexconn/call`) and Server Call API
 
@@ -153,5 +151,5 @@ Baton (`src/app/api/nexconn/webhook/route.ts`, `src/server/domain/webhooks.ts`):
 ## I. Gaps the docs confirm we cannot close inside Nexconn on Web
 
 1. **No Web push.** A closed tab misses alerts. Only our own Web Push (service worker plus VAPID) can fill this, and that sits outside Nexconn.
-2. **Channel list 35011** for our App Key. It needs Nexconn support or the Console.
+2. ~~Channel list 35011~~: **resolved 12 Nov.** It was a timing condition right after connect, now retried (see §B).
 3. **Calls need the owner's Console action**, plus a card on hackathon terms.

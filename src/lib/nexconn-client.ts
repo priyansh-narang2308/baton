@@ -15,15 +15,30 @@ export type ChatMessage = {
   metadata: Record<string, string>;
 };
 
-export type ConnectionState = "idle" | "connecting" | "connected" | "reconnecting" | "offline" | "kicked" | "needs_reconnect" | "not_configured" | "error";
+export type ConnectionState =
+  | "idle"
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "offline"
+  | "kicked"
+  | "needs_reconnect"
+  | "not_configured"
+  | "error";
 
 type Sdk = typeof import("@nexconn/chat");
 
-export const CUSTOM_TYPES = ["BTN:Incident", "BTN:Status", "BTN:Nudge"] as const;
+export const CUSTOM_TYPES = [
+  "BTN:Incident",
+  "BTN:Status",
+  "BTN:Nudge",
+] as const;
 
 type Listeners = {
   message: Set<(m: ChatMessage) => void>;
-  metadata: Set<(e: { messageId: string; metadata: Record<string, string> }) => void>;
+  metadata: Set<
+    (e: { messageId: string; metadata: Record<string, string> }) => void
+  >;
   state: Set<(s: ConnectionState, code?: number) => void>;
 };
 
@@ -33,7 +48,11 @@ const conn = {
   initialized: false,
   userId: null as string | null,
   state: "idle" as ConnectionState,
-  listeners: { message: new Set(), metadata: new Set(), state: new Set() } as Listeners,
+  listeners: {
+    message: new Set(),
+    metadata: new Set(),
+    state: new Set(),
+  } as Listeners,
 };
 
 function setState(s: ConnectionState, code?: number) {
@@ -50,7 +69,10 @@ export function toChatMessage(m: {
   content: unknown;
   metadata?: Map<string, string> | Record<string, string> | null;
 }): ChatMessage {
-  const md = m.metadata instanceof Map ? Object.fromEntries(m.metadata) : (m.metadata ?? {});
+  const md =
+    m.metadata instanceof Map
+      ? Object.fromEntries(m.metadata)
+      : (m.metadata ?? {});
   return {
     messageId: m.messageId,
     messageType: m.messageType,
@@ -63,17 +85,36 @@ export function toChatMessage(m: {
   };
 }
 
-type TokenResponse = { appKey: string; dataCenter: "SG" | "NA" | "SA"; userId: string; token: string };
+type TokenResponse = {
+  appKey: string;
+  dataCenter: "SG" | "NA" | "SA";
+  userId: string;
+  token: string;
+};
 
-async function fetchToken(eventId: string, role: string, refresh = false): Promise<TokenResponse | "not_configured"> {
-  const res = await fetch(`/api/session/token?event=${encodeURIComponent(eventId)}&role=${role}${refresh ? "&refresh=1" : ""}`, { cache: "no-store" });
+async function fetchToken(
+  eventId: string,
+  role: string,
+  refresh = false,
+): Promise<TokenResponse | "not_configured"> {
+  const res = await fetch(
+    `/api/session/token?event=${encodeURIComponent(eventId)}&role=${role}${refresh ? "&refresh=1" : ""}`,
+    { cache: "no-store" },
+  );
   if (res.status === 503) return "not_configured";
-  if (!res.ok) throw new Error((await res.json().catch(() => null))?.error?.message ?? `Token request failed (${res.status})`);
+  if (!res.ok)
+    throw new Error(
+      (await res.json().catch(() => null))?.error?.message ??
+        `Token request failed (${res.status})`,
+    );
   return res.json();
 }
 
 /** Initialises the SDK once, registers handlers, then connects once (the SDK reconnects by itself). */
-export async function connect(eventId: string, role: "member" | "organizer" | "attendee"): Promise<string | null> {
+export async function connect(
+  eventId: string,
+  role: "member" | "organizer" | "attendee",
+): Promise<string | null> {
   if (conn.state === "connected" && conn.userId) return conn.userId;
   setState("connecting");
   const tok = await fetchToken(eventId, role);
@@ -82,22 +123,45 @@ export async function connect(eventId: string, role: "member" | "organizer" | "a
     return null;
   }
   const sdk = (conn.sdk ??= await import("@nexconn/chat"));
-  const { NCEngine, ConnectionStatusHandler, MessageHandler, AreaCode, LogLevel } = sdk;
+  const {
+    NCEngine,
+    ConnectionStatusHandler,
+    MessageHandler,
+    AreaCode,
+    LogLevel,
+  } = sdk;
   if (!conn.initialized) {
     NCEngine.initialize({
       appKey: tok.appKey,
-      areaCode: tok.dataCenter === "NA" ? AreaCode.NA : tok.dataCenter === "SA" ? AreaCode.SA : AreaCode.SG,
-      logLevel: process.env.NODE_ENV === "production" ? LogLevel.WARN : LogLevel.DEBUG,
+      areaCode:
+        tok.dataCenter === "NA"
+          ? AreaCode.NA
+          : tok.dataCenter === "SA"
+            ? AreaCode.SA
+            : AreaCode.SG,
+      logLevel:
+        process.env.NODE_ENV === "production" ? LogLevel.WARN : LogLevel.DEBUG,
     });
     // Custom types must be registered before connect (docs: chatsdk-web/message/customize).
-    NCEngine.registerCustomMessages(CUSTOM_TYPES.map((messageType) => ({ messageType, isPersisted: true, isCounted: messageType !== "BTN:Status" })));
+    NCEngine.registerCustomMessages(
+      CUSTOM_TYPES.map((messageType) => ({
+        messageType,
+        isPersisted: true,
+        isCounted: messageType !== "BTN:Status",
+      })),
+    );
     NCEngine.addConnectionStatusHandler(
       "baton",
       new ConnectionStatusHandler({
         onConnectionStatusChanged({ status, code }) {
           // RCConnectionStatus: 0 CONNECTED, 1 CONNECTING, 2 DISCONNECTED, 3 SUSPENDED (auto-retry in 5 s)
           if (status === 0) setState("connected");
-          else if (status === 1) setState(conn.state === "connected" || conn.state === "offline" ? "reconnecting" : "connecting");
+          else if (status === 1)
+            setState(
+              conn.state === "connected" || conn.state === "offline"
+                ? "reconnecting"
+                : "connecting",
+            );
           else if (status === 3) setState("offline", code);
           else if (code === 31010) setState("kicked", code);
           else if (code === 33007) setState("needs_reconnect", code);
@@ -109,10 +173,16 @@ export async function connect(eventId: string, role: "member" | "organizer" | "a
       "baton",
       new MessageHandler({
         onMessageReceived({ messages }) {
-          for (const m of messages) conn.listeners.message.forEach((l) => l(toChatMessage(m)));
+          for (const m of messages)
+            conn.listeners.message.forEach((l) => l(toChatMessage(m)));
         },
         onMessageMetadataUpdated({ messageId, metadata }) {
-          if (process.env.NODE_ENV !== "production") console.debug("[baton] onMessageMetadataUpdated", messageId, JSON.stringify(metadata));
+          if (process.env.NODE_ENV !== "production")
+            console.debug(
+              "[baton] onMessageMetadataUpdated",
+              messageId,
+              JSON.stringify(metadata),
+            );
           conn.listeners.metadata.forEach((l) => l({ messageId, metadata }));
         },
       }),
@@ -123,7 +193,8 @@ export async function connect(eventId: string, role: "member" | "organizer" | "a
   if (!result.isOk && result.code === 31004) {
     // Token invalid/expired → ask our server for a fresh one, once.
     const fresh = await fetchToken(eventId, role, true);
-    if (fresh !== "not_configured") result = await NCEngine.connect({ token: fresh.token });
+    if (fresh !== "not_configured")
+      result = await NCEngine.connect({ token: fresh.token });
   }
   if (!result.isOk) {
     setState("error", result.code);
@@ -140,21 +211,32 @@ export function onMessage(fn: (m: ChatMessage) => void) {
     conn.listeners.message.delete(fn);
   };
 }
-export function onMetadata(fn: (e: { messageId: string; metadata: Record<string, string> }) => void) {
+export function onMetadata(
+  fn: (e: { messageId: string; metadata: Record<string, string> }) => void,
+) {
   conn.listeners.metadata.add(fn);
   return () => {
     conn.listeners.metadata.delete(fn);
   };
 }
 
-export async function sendGroupText(groupId: string, text: string): Promise<ChatMessage> {
+export async function sendGroupText(
+  groupId: string,
+  text: string,
+): Promise<ChatMessage> {
   const sdk = conn.sdk;
-  if (!sdk || conn.state !== "connected") throw new Error("Not connected — your message was not sent");
+  if (!sdk || conn.state !== "connected")
+    throw new Error("Not connected — your message was not sent");
   const params = new sdk.SendTextMessageParams({ text });
   // Enable metadata on crew messages so the server can later turn one into a request card in place.
   params.metadata = { b: "1" };
   const res = await new sdk.GroupChannel(groupId).sendMessage(params);
-  if (!res.isOk || !res.data) throw new Error(res.code === 30004 ? "Slow down — sending too fast" : `Message not sent (code ${res.code})`);
+  if (!res.isOk || !res.data)
+    throw new Error(
+      res.code === 30004
+        ? "Slow down — sending too fast"
+        : `Message not sent (code ${res.code})`,
+    );
   return toChatMessage(res.data);
 }
 
@@ -162,19 +244,37 @@ export async function sendGroupText(groupId: string, text: string): Promise<Chat
 export const DIRECT = 1;
 
 /** One-to-one message (organizer ↔ crew member). Nexconn creates the direct channel on first send. */
-export async function sendDirectText(peerUserId: string, text: string): Promise<ChatMessage> {
+export async function sendDirectText(
+  peerUserId: string,
+  text: string,
+): Promise<ChatMessage> {
   const sdk = conn.sdk;
-  if (!sdk || conn.state !== "connected") throw new Error("Not connected — your message was not sent");
-  const res = await new sdk.DirectChannel(peerUserId).sendMessage(new sdk.SendTextMessageParams({ text }));
-  if (!res.isOk || !res.data) throw new Error(res.code === 30004 ? "Slow down — sending too fast" : `Message not sent (code ${res.code})`);
+  if (!sdk || conn.state !== "connected")
+    throw new Error("Not connected — your message was not sent");
+  const res = await new sdk.DirectChannel(peerUserId).sendMessage(
+    new sdk.SendTextMessageParams({ text }),
+  );
+  if (!res.isOk || !res.data)
+    throw new Error(
+      res.code === 30004
+        ? "Slow down — sending too fast"
+        : `Message not sent (code ${res.code})`,
+    );
   return toChatMessage(res.data);
 }
 
-export type DirectThreadSummary = { peerUserId: string; unreadCount: number; latest: ChatMessage | null; updatedAt: number };
+export type DirectThreadSummary = {
+  peerUserId: string;
+  unreadCount: number;
+  latest: ChatMessage | null;
+  updatedAt: number;
+};
 
-// The Web channel list (`createChannelsQuery`) answered 35011 METHOD_NOT_AVAILABLE on our App Key (11 Nov), so we
-// only use it when it works. Otherwise each known peer's direct history is read (1 query per crew member, crews are
-// small) and unread counts come from a per-device "read up to" marker.
+// The Web channel list (`createChannelsQuery`) is refused with 35011 METHOD_NOT_AVAILABLE until the engine has
+// finished its post-connect sync (the engine checks an internal `ugSynced` flag that turns on a moment after
+// connect). That is a timing condition, not a missing entitlement, so a 35011 is retried on the next refresh and
+// only other failures switch to the fallback: each known peer's direct history (1 query per crew member, crews are
+// small) with unread counts from a per-device "read up to" marker.
 let channelListAvailable: boolean | null = null;
 const readKey = (me: string, peer: string) => `baton:dm-read:${me}:${peer}`;
 function readMarker(me: string, peer: string) {
@@ -186,32 +286,63 @@ function readMarker(me: string, peer: string) {
 }
 
 /** Direct conversations with these peers, newest first, with unread counts. */
-export async function listDirectThreads(peerUserIds: string[]): Promise<DirectThreadSummary[]> {
+export async function listDirectThreads(
+  peerUserIds: string[],
+): Promise<DirectThreadSummary[]> {
   const sdk = conn.sdk;
   const me = conn.userId;
   if (!sdk || !me || conn.state !== "connected") return [];
   const wanted = new Set(peerUserIds);
   if (channelListAvailable !== false) {
-    const res = await sdk.BaseChannel.createChannelsQuery({ pageSize: 50 }).loadNextPage();
+    let res = await sdk.BaseChannel.createChannelsQuery({
+      pageSize: 50,
+    }).loadNextPage();
+    // Right after connect the engine may still be syncing: wait briefly instead of giving up.
+    for (
+      let attempt = 0;
+      res.code === 35011 && attempt < 3 && conn.state === "connected";
+      attempt++
+    ) {
+      await new Promise((r) => setTimeout(r, 1000));
+      res = await sdk.BaseChannel.createChannelsQuery({
+        pageSize: 50,
+      }).loadNextPage();
+    }
     if (res.isOk && res.data) {
       channelListAvailable = true;
       return res.data.data
-        .filter((c) => Number(c.channelType) === DIRECT && wanted.has(c.channelId))
-        .map((c) => ({ peerUserId: c.channelId, unreadCount: c.unreadCount, latest: c.latestMessage ? toChatMessage(c.latestMessage) : null, updatedAt: c.operationTime }))
+        .filter(
+          (c) => Number(c.channelType) === DIRECT && wanted.has(c.channelId),
+        )
+        .map((c) => ({
+          peerUserId: c.channelId,
+          unreadCount: c.unreadCount,
+          latest: c.latestMessage ? toChatMessage(c.latestMessage) : null,
+          updatedAt: c.operationTime,
+        }))
         .sort((a, b) => b.updatedAt - a.updatedAt);
     }
-    channelListAvailable = false;
+    if (res.code !== 35011) channelListAvailable = false;
   }
   const threads = await Promise.all(
     [...wanted].slice(0, 40).map(async (peer) => {
       const history = await loadHistory("direct", peer, 20).catch(() => []);
       const latest = history.at(-1) ?? null;
       const since = readMarker(me, peer);
-      const unreadCount = history.filter((m) => m.senderUserId === peer && m.sentTime > since).length;
-      return { peerUserId: peer, unreadCount, latest, updatedAt: latest?.sentTime ?? 0 };
+      const unreadCount = history.filter(
+        (m) => m.senderUserId === peer && m.sentTime > since,
+      ).length;
+      return {
+        peerUserId: peer,
+        unreadCount,
+        latest,
+        updatedAt: latest?.sentTime ?? 0,
+      };
     }),
   );
-  return threads.filter((t) => t.latest).sort((a, b) => b.updatedAt - a.updatedAt);
+  return threads
+    .filter((t) => t.latest)
+    .sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
 /** Marks a direct conversation read on this device (and in Nexconn where the channel API is available). */
@@ -224,7 +355,10 @@ export async function clearDirectUnread(peerUserId: string) {
   } catch {
     /* private mode: unread counts just won't persist */
   }
-  if (channelListAvailable) await new sdk.DirectChannel(peerUserId).clearUnreadCount().catch(() => undefined);
+  if (channelListAvailable)
+    await new sdk.DirectChannel(peerUserId)
+      .clearUnreadCount()
+      .catch(() => undefined);
 }
 
 export function messageText(m: ChatMessage) {
@@ -232,18 +366,36 @@ export function messageText(m: ChatMessage) {
   return String(c.text ?? c.content ?? "");
 }
 
-export async function loadHistory(kind: "group" | "direct", targetId: string, pageSize = 50): Promise<ChatMessage[]> {
+export async function loadHistory(
+  kind: "group" | "direct",
+  targetId: string,
+  pageSize = 50,
+): Promise<ChatMessage[]> {
   const sdk = conn.sdk;
   if (!sdk) return [];
-  const identifier = kind === "group" ? new sdk.GroupChannel(targetId).identifier : new sdk.DirectChannel(targetId).identifier;
-  const query = sdk.BaseChannel.createMessagesQuery({ channelIdentifier: identifier, startTime: Date.now(), pageSize, isAscending: false });
+  const identifier =
+    kind === "group"
+      ? new sdk.GroupChannel(targetId).identifier
+      : new sdk.DirectChannel(targetId).identifier;
+  const query = sdk.BaseChannel.createMessagesQuery({
+    channelIdentifier: identifier,
+    startTime: Date.now(),
+    pageSize,
+    isAscending: false,
+  });
   const res = await query.loadNextPage();
   if (!res.isOk || !res.data) return [];
-  return res.data.data.map(toChatMessage).sort((a, b) => a.sentTime - b.sentTime);
+  return res.data.data
+    .map(toChatMessage)
+    .sort((a, b) => a.sentTime - b.sentTime);
 }
 
 /** React hook: connection state for the current page's single Nexconn session. */
-export function useNexconn(eventId: string | null, role: "member" | "organizer" | "attendee", enabled = true) {
+export function useNexconn(
+  eventId: string | null,
+  role: "member" | "organizer" | "attendee",
+  enabled = true,
+) {
   const [state, setLocal] = useState<ConnectionState>(conn.state);
   const [code, setCode] = useState<number | undefined>();
   const [userId, setUserId] = useState<string | null>(conn.userId);
@@ -272,7 +424,9 @@ export function useNexconn(eventId: string | null, role: "member" | "organizer" 
   const retry = () => {
     setError(null);
     conn.state = "idle";
-    connect(eventId!, role).then(setUserId).catch((e: Error) => setError(e.message));
+    connect(eventId!, role)
+      .then(setUserId)
+      .catch((e: Error) => setError(e.message));
   };
 
   return { state, code, userId, error, retry };

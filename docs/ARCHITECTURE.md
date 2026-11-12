@@ -107,8 +107,9 @@ The rule: a state change is settled in Postgres first, inside one conditional `U
 9. **Reconciliation:** every 60 s, re-projects incidents whose last projection failed.
 10. **Incident detail:** `GET /api/events/:id/incidents/:incidentId` returns the incident, every report (simulated ones labelled) and the activity timeline from `incident_events`.
 11. **Direct messages:** organizer ↔ volunteer, entirely client-side over Nexconn direct channels (`sendDirectText`, `loadHistory("direct", peer)`).
-    - The inbox should come from the SDK channel list, but `createChannelsQuery` returns **35011 METHOD_NOT_AVAILABLE** for our App Key.
-    - The client therefore falls back to per-peer history (at most 40 peers) and a local read marker for unread counts. See NEXCONN_DOCS_AUDIT §10.
+    - The inbox comes from the SDK channel list (`createChannelsQuery`), with server-side unread counts.
+    - Right after connect the engine answers **35011 METHOD_NOT_AVAILABLE** until its post-connect sync finishes (internal `ugSynced` flag, verified in `@nexconn/engine` 26.2.1). The client retries up to 3 times, 1 s apart. Verified live on 12 Nov: code 0.
+    - If the list still fails, the client falls back to per-peer history (at most 40 peers) and a local read marker.
 
 ## 7. Nexconn rate budget (from the docs)
 
@@ -123,11 +124,11 @@ The rule: a state change is settled in Postgres first, inside one conditional `U
 | Web Push when the tab is closed | The Nexconn Web SDK has no push. Building VAPID push is real work that judges can't see in a demo. Escalations reach the phone while the tab is open. |
 | AI / LLM request detection | Transparent rules are explainable, free and testable (see `detection.test.ts`). An LLM adds cost, latency and a key to manage. |
 | Nexconn Call SDK (1:1 audio) | Requires Console enablement and a credit card to claim free minutes, which the owner must do. No simulated calls. See NEXCONN_DOCS_AUDIT §4. |
-| Nexconn Chat UI kit | Our cards and states are domain-specific; the kit would fight them. See NEXCONN_DOCS_AUDIT §3. |
+| Nexconn Chat UI kit | Our cards and states are domain-specific; the kit would fight them, and portrait phones aren't supported. Now that the channel list works, a desktop-only spike for the Messages pane is scheduled (SCORE_IMPROVEMENT_PLAN §3). |
 
 ## 9. Console settings required (owner action)
 
 - Webhook URL with `message:send`.
 - Domain allowlist for the deployed web origin.
 - Group pre-join history, so late joiners see earlier cards (the app also shows "Earlier requests still open" from the database, so this is a nicety).
-- Ask Nexconn whether the channel-list method (35011) is plan- or Console-gated.
+- ~~Ask Nexconn about 35011~~: resolved on 12 Nov. It was a post-connect timing condition, not a plan gate.

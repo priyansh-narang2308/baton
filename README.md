@@ -9,7 +9,7 @@
 - Unclaimed incidents notify a **named** lead, not the whole group.
 - Organizers run a **command centre**: what needs an owner, longest wait, crew load, incident history, assignment and direct messages with volunteers.
 
-Docs: [implementation plan](docs/IMPLEMENTATION_PLAN.md) · [architecture](docs/ARCHITECTURE.md) · [project audit](docs/COMPLETE_PROJECT_AUDIT.md) · [Nexconn research](docs/NEXCONN_COMPLETE_DOCUMENTATION_RESEARCH.md) · [product audit](docs/PRODUCT_AUDIT.md) · [Nexconn docs audit](docs/NEXCONN_DOCS_AUDIT.md) · [traction kit](docs/TRACTION_PLAN.md) · [judge demo script](docs/JUDGE_DEMO_SCRIPT.md) · [submission readiness](docs/SUBMISSION_READINESS.md) · [validation](docs/VALIDATION_RESULTS.md) · [product spec](docs/PRODUCT_SPEC.md) · [research](docs/NEXCONN_RESEARCH.md) · [28 Oct plan](docs/PLAN.md)
+Docs: [implementation plan](docs/IMPLEMENTATION_PLAN.md) · [architecture](docs/ARCHITECTURE.md) · [project audit](docs/COMPLETE_PROJECT_AUDIT.md) · [score plan](docs/SCORE_IMPROVEMENT_PLAN.md) · [deployment](docs/DEPLOYMENT.md) · [Nexconn research](docs/NEXCONN_COMPLETE_DOCUMENTATION_RESEARCH.md) · [product audit](docs/PRODUCT_AUDIT.md) · [Nexconn docs audit](docs/NEXCONN_DOCS_AUDIT.md) · [traction kit](docs/TRACTION_PLAN.md) · [judge demo script](docs/JUDGE_DEMO_SCRIPT.md) · [submission readiness](docs/SUBMISSION_READINESS.md) · [validation](docs/VALIDATION_RESULTS.md) · [product spec](docs/PRODUCT_SPEC.md) · [research](docs/NEXCONN_RESEARCH.md) · [28 Oct plan](docs/PLAN.md)
 
 ## Run locally
 Requires Node 22+ and a Postgres binary (Homebrew `postgresql@16` works).
@@ -42,7 +42,7 @@ npm run dev
 | Webhooks with signature + freshness check and idempotent recording | `src/app/api/nexconn/webhook/route.ts` |
 
 ## Scripts
-`npm test` (unit + real-Postgres integration; uses the `baton_test` DB — run `npm run db:migrate:test` once) · `npm run typecheck` · `npm run lint` · `npm run build`
+`npm run e2e` (21-step multi-user scenario against a running server; pass a base URL to target a deployment) · `npm test` (unit + real-Postgres integration; uses the `baton_test` DB — run `npm run db:migrate:test` once) · `npm run typecheck` · `npm run lint` · `npm run build`
 
 ## Security notes
 App Secret, session secret and DB URL are server-only. Crew/attendee identities are HMAC-signed, per-event, per-role cookies; organizer access is a rotatable capability link. Claims, merges and resolutions are authorised and decided server-side in database transactions; Nexconn metadata is a projection, never the source of truth. Webhook signatures don't cover the body, so payloads are treated as hints and deduped by event id.

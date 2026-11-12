@@ -9,6 +9,7 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "e2e": "node scripts/e2e-scenario.mjs",
     "db:start": "./scripts/db-local.sh start",
     "db:stop": "./scripts/db-local.sh stop",
     "db:generate": "drizzle-kit generate",

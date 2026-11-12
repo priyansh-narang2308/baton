@@ -25,7 +25,9 @@ Status on 12 Nov 2026: `[x]` done and verified · `[ ]` to do · `[!]` blocked o
 ## Live app
 
 - [ ] [!] Deployed on HTTPS, always on (IMPLEMENTATION_PLAN P0-1/2). Needs your go-ahead and host account.
-- [ ] `/api/health` returns 200 on the deployed URL.
+- [ ] `/api/health` returns 200 on the deployed URL. (Locally on the production build: ✅ 12 Nov.)
+- [ ] `npm run e2e -- https://<domain>` passes 21/21 on the deployed URL. (Locally: ✅ 12 Nov.)
+- Deployment steps: `DEPLOYMENT.md`. Score gaps: `SCORE_IMPROVEMENT_PLAN.md`.
 - [ ] Console: webhook URL with `message:send`; domain allowlist includes the deployed origin.
 - [ ] "Try Baton live" works logged out on Android, iPhone and desktop.
 - [ ] Testing checklist in TRACTION_PLAN §6 passes on the deployed URL.

@@ -1,5 +1,12 @@
 # Progress — Baton 2.0
 
+## 12 Nov 2026 — laptop layouts, 35011 root cause, deploy prep, e2e (session 5)
+- **Laptop layouts:** the crew app and command centre share `src/components/app-shell.tsx`: sidebar, section headers, two-pane messages, crew grid, and an "owner needed" or crew-load side column. Phones keep bottom tabs (610d142, 6da519a).
+- **35011 solved:** the engine refuses the channel list until its post-connect sync finishes; we asked once, too early, and then gave up. It now retries, and the channel list returns code 0 on our App Key.
+- **Deploy prep:** `Dockerfile`, `.dockerignore`, `docs/DEPLOYMENT.md`. Production build verified locally (health ok, worker running).
+- **E2E:** `npm run e2e`: 21 checks with 5 separate sessions, all passing.
+- **Plan:** `docs/SCORE_IMPROVEMENT_PLAN.md` (why we're below 9, what moves it, what only the owner can do).
+
 ## 12 Nov 2026 — Baton Pass, documentation research, landing motion (session 4)
 - **Baton Pass:** the owner offers an incident to a teammate with a handover note; ownership moves only when they accept (one conditional `UPDATE`), so it is never ownerless. Decline, cancel, and void on release, fix or assign. Migration `0003_baton_pass`; card metadata `pass` / `passN`; targeted `BTN:Nudge` alerts. 6 new tests, including an accept-vs-release race; verified live organizer → volunteer in two sessions.
 - **Docs:** `COMPLETE_PROJECT_AUDIT.md` (status table, track, judge score), `NEXCONN_COMPLETE_DOCUMENTATION_RESEARCH.md` plus a generated 869-row `NEXCONN_PAGE_INVENTORY.md`. Chat UI and Call SDK decisions re-checked against the current pages. `DEMO_SCRIPT` → `JUDGE_DEMO_SCRIPT` (Baton Pass beat); `SUBMISSION_CHECKLIST` → `SUBMISSION_READINESS` (traction bonus).

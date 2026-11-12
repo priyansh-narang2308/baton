@@ -1,0 +1,11 @@
+node_modules
+.next
+.pgdata
+.git
+.env*
+!.env.example
+coverage
+docs
+*.log
+.claude
+tsconfig.tsbuildinfo
