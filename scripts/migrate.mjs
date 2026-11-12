@@ -3,7 +3,8 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
-const url = process.env.DATABASE_URL ?? "postgres://baton@localhost:54329/baton";
+// Hosted Postgres behind a pooler (Neon on Vercel) also exposes a direct URL; DDL is safer on a direct connection.
+const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || "postgres://baton@localhost:54329/baton";
 const sql = postgres(url, { max: 1, onnotice: () => {} });
 await migrate(drizzle(sql), { migrationsFolder: new URL("../drizzle", import.meta.url).pathname });
 await sql.end();

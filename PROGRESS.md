@@ -1,5 +1,10 @@
 # Progress — Baton 2.0
 
+## 12 Nov 2026 — deployed on Vercel (session 6)
+- **Live:** https://baton-sable.vercel.app (Vercel `sin1`, Neon Postgres). Health ok; `npm run e2e` 21/21 against production; a live browser loop (attendee report → card on the command centre without a reload → claim → the attendee sees "on it").
+- **Serverless changes:** an escalation and reconcile tick after `/state` (`BATON_DISABLE_WORKER=1`); migrations over the direct Neon URL; a smaller DB pool on Vercel; `@types/node` ^22 (Vercel's `npm install` refused the vitest peer range).
+- **Owner, still to do:** Nexconn Console webhook URL; pilots; the video.
+
 ## 12 Nov 2026 — laptop layouts, 35011 root cause, deploy prep, e2e (session 5)
 - **Laptop layouts:** the crew app and command centre share `src/components/app-shell.tsx`: sidebar, section headers, two-pane messages, crew grid, and an "owner needed" or crew-load side column. Phones keep bottom tabs (610d142, 6da519a).
 - **35011 solved:** the engine refuses the channel list until its post-connect sync finishes; we asked once, too early, and then gave up. It now retries, and the channel list returns code 0 on our App Key.

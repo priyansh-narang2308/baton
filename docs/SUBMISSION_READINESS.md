@@ -24,9 +24,10 @@ Status on 12 Nov 2026: `[x]` done and verified · `[ ]` to do · `[!]` blocked o
 
 ## Live app
 
-- [ ] [!] Deployed on HTTPS, always on (IMPLEMENTATION_PLAN P0-1/2). Needs your go-ahead and host account.
-- [ ] `/api/health` returns 200 on the deployed URL. (Locally on the production build: ✅ 12 Nov.)
-- [ ] `npm run e2e -- https://<domain>` passes 21/21 on the deployed URL. (Locally: ✅ 12 Nov.)
+- [x] Deployed on HTTPS: **https://baton-sable.vercel.app** (Vercel plus Neon, 12 Nov). Escalations run while any Baton page is open (see DEPLOYMENT.md).
+- [x] `/api/health` returns 200 on the deployed URL (12 Nov).
+- [x] `npm run e2e -- https://baton-sable.vercel.app` passes 21/21 (12 Nov).
+- [ ] Console webhook URL set to `https://baton-sable.vercel.app/api/nexconn/webhook` (owner).
 - Deployment steps: `DEPLOYMENT.md`. Score gaps: `SCORE_IMPROVEMENT_PLAN.md`.
 - [ ] Console: webhook URL with `message:send`; domain allowlist includes the deployed origin.
 - [ ] "Try Baton live" works logged out on Android, iPhone and desktop.

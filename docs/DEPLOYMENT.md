@@ -1,6 +1,25 @@
 # Baton — deployment guide
 
-**Status:** prepared locally, **not deployed.** Deploying needs your go-ahead and your host account.
+**Status: live on Vercel since 12 Nov 2026 at https://baton-sable.vercel.app** (project `baton`, functions in `sin1`, Neon Postgres from the Vercel Marketplace, free plan).
+
+### What is live and how it was checked (12 Nov)
+- `/api/health` returns `ok` for config, database and Nexconn (SG).
+- `npm run e2e -- https://baton-sable.vercel.app`: **21/21** with 5 separate sessions.
+- Browser test, done with a demo event:
+  - an attendee report appeared on the command centre without a reload;
+  - after the claim, the attendee's page changed to "Organizer from the crew is on it";
+  - no console errors.
+
+### How the Vercel setup differs from the Docker notes below
+- `vercel.json` pins functions to `sin1` and runs `node scripts/migrate.mjs` before `next build`. Migrations use `DATABASE_URL_UNPOOLED`, the direct Neon URL.
+- **No always-on worker.** `BATON_DISABLE_WORKER=1` turns the in-process loops off. Escalation and reconciliation instead run after `/state` requests, which every open crew or organizer page makes every 30 s (`runWorkerTick`, throttled, row-locked). **Limit:** if no Baton page is open anywhere, escalations wait until one is.
+- Env vars (production): the Nexconn key, secret and data center; a fresh `SESSION_SECRET`; `BATON_DISABLE_WORKER`; `PUBLIC_BASE_URL`; and the Neon-provided `DATABASE_URL*`.
+- The GitHub repository you connected is linked, so **pushes to `main` will auto-deploy.**
+- **Still to do in the Nexconn Console:** set the webhook URL `https://baton-sable.vercel.app/api/nexconn/webhook` with event `message:send`. Until then, crew-chat lines aren't auto-detected as requests; the manual "Make it a request" still works. The Web SDK connected from the new domain without an allowlist change.
+
+---
+
+## Alternative: Docker host (Railway, Render, Fly)
 
 ## What Baton needs from a host
 

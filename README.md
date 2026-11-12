@@ -1,6 +1,6 @@
 # Baton
 
-**Real-time incident coordination for event crews.** Every report gets acknowledged, every incident gets an owner, and every action has a visible outcome. Built on Nexconn Chat.
+**Real-time incident coordination for event crews.** Live: https://baton-sable.vercel.app · Every report gets acknowledged, every incident gets an owner, and every action has a visible outcome. Built on Nexconn Chat.
 
 - Volunteers join by QR (no app, no account). Attendees report issues from location posters.
 - Reports become **live incident cards** in the crew chat; **duplicate reports merge** into one card ("3 reports").

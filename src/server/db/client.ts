@@ -5,7 +5,8 @@ import * as schema from "./schema";
 export type Db = ReturnType<typeof createDb>;
 
 export function createDb(url: string) {
-  const sql = postgres(url, { max: 10, prepare: false });
+  // Serverless functions each hold their own pool, so keep it small there; the provider's pooler does the fan-in.
+  const sql = postgres(url, { max: process.env.VERCEL ? 3 : 10, prepare: false });
   return drizzle(sql, { schema });
 }
 
