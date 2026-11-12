@@ -279,7 +279,7 @@ export function BottomTabs<K extends string>({
 
 export function liveLabelFor(state: string) {
   return state === "connected"
-    ? "Live"
+    ? "Live via Nexconn"
     : state === "connecting" || state === "idle"
       ? "Connecting…"
       : "Offline";

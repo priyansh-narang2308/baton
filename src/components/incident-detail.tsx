@@ -307,6 +307,13 @@ export function IncidentDetail({
             ))}
           </ol>
         </section>
+
+        <p className="border-t border-border pt-3 text-xs text-text-3">
+          <span className="font-semibold text-text-2">Live via Nexconn.</span>{" "}
+          {i.cardMessageId
+            ? "This card is a message in the crew's Nexconn group. Each change updates that message's metadata, so every open screen redraws it without a reload."
+            : "The card message is still being posted to the crew's Nexconn group; this screen refreshes from Baton meanwhile."}
+        </p>
       </div>
     </Sheet>
   );
