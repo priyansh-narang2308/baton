@@ -54,7 +54,7 @@ export default function NewEventPage() {
         <span className="grid size-10 place-items-center rounded-full bg-done-soft text-done">
           <Check className="size-5" aria-hidden />
         </span>
-        <h1 className="font-serif font-normal tracking-[-0.025em] mt-4 text-[38px] leading-[1.02] sm:text-5xl">
+        <h1 className="font-serif font-normal tracking-tight mt-4 text-[38px] leading-[1.02] sm:text-5xl">
           Your event is live
         </h1>
         <p className="mt-2 text-sm text-text-2">
@@ -100,7 +100,7 @@ export default function NewEventPage() {
       >
         Baton
       </Link>
-      <h1 className="font-serif font-normal tracking-[-0.025em] mt-1 text-[38px] leading-[1.02] sm:text-5xl">
+      <h1 className="font-serif font-normal tracking-tight mt-1 text-[38px] leading-[1.02] sm:text-5xl">
         Set up your event
       </h1>
       <p className="mt-1 text-sm text-text-2">

@@ -160,7 +160,7 @@ export default async function Home(props: PageProps<"/">) {
   const sp = await props.searchParams;
   return (
     <div
-      className={`flex flex-1 flex-col bg-white font-(family-name:--font-body) text-neutral-950 antialiased [color-scheme:light]`}
+      className={`flex flex-1 flex-col bg-white font-(family-name:--font-body) text-neutral-950 antialiased scheme-light`}
     >
       <MotionRoot>
       <Hero57 error={typeof sp.error === "string" ? sp.error : undefined} />
@@ -234,7 +234,7 @@ export default async function Home(props: PageProps<"/">) {
           aria-labelledby="lifecycle-h"
           className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 sm:px-6"
         >
-          <Reveal className="grid items-center gap-10 overflow-hidden rounded-[2rem] bg-[linear-gradient(160deg,#FBE6DF_0%,#F7D3C8_45%,#F4A493_100%)] px-6 py-12 sm:px-12 sm:py-16 lg:grid-cols-[1fr_1fr] lg:gap-16">
+          <Reveal className="grid items-center gap-10 overflow-hidden rounded-4xl bg-[linear-gradient(160deg,#FBE6DF_0%,#F7D3C8_45%,#F4A493_100%)] px-6 py-12 sm:px-12 sm:py-16 lg:grid-cols-[1fr_1fr] lg:gap-16">
             <div>
               <Eyebrow>The closed loop</Eyebrow>
               <h2
@@ -349,7 +349,7 @@ export default async function Home(props: PageProps<"/">) {
           aria-labelledby="realtime-h"
           className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 sm:px-6"
         >
-          <Reveal className="rounded-[2rem] bg-neutral-950 px-6 py-14 text-white sm:px-12 sm:py-20">
+          <Reveal className="rounded-4xl bg-neutral-950 px-6 py-14 text-white sm:px-12 sm:py-20">
             <Eyebrow dark>Real-time by Nexconn</Eyebrow>
             <h2
               id="realtime-h"
@@ -531,9 +531,8 @@ export default async function Home(props: PageProps<"/">) {
           </div>
         </Section>
 
-        {/* Final call to action */}
         <section className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
-          <Reveal className="rounded-[2rem] bg-[linear-gradient(180deg,#FBE6DF_0%,#F7D3C8_50%,#F4A493_100%)] px-6 py-16 text-center sm:px-12 sm:py-24">
+          <Reveal className="rounded-4xl bg-[linear-gradient(180deg,#FBE6DF_0%,#F7D3C8_50%,#F4A493_100%)] px-6 py-16 text-center sm:px-12 sm:py-24">
             <h2
               className={`${serif} mx-auto max-w-3xl text-[44px] leading-none tracking-[-0.035em] sm:text-7xl`}
             >
