@@ -21,6 +21,7 @@ import { DirectThread } from "./direct-thread";
 import { IncidentCard } from "./incident-card";
 import { Sheet } from "./sheet";
 import { Button, cx, ErrorNote, inputClass } from "./ui";
+import { crewSublabel, Picker } from "./dropdown";
 
 type ActivityEntry = {
   id: string;
@@ -386,20 +387,21 @@ function Huddle({
         A real audio call over Nexconn Call. Their Baton page rings with #{i.number}; the call is noted below.
       </p>
       <div className="mt-2 flex gap-2">
-        <select
+        <Picker
+          ariaLabel="Who to call"
+          label="Call a teammate"
+          className="h-10 min-w-0 flex-1"
           value={m.id}
-          onChange={(e) => setMemberId(e.target.value)}
-          className={cx(inputClass, "h-10 min-w-0 flex-1")}
-          aria-label="Who to call"
-        >
-          {options.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-              {c.id === i.ownerMemberId ? " · owner" : ""}
-              {c.online === true ? " · online" : c.online === false ? " · offline" : ""}
-            </option>
-          ))}
-        </select>
+          onChange={setMemberId}
+          options={options.map((c) => ({
+            value: c.id,
+            label: c.name,
+            sublabel: crewSublabel(c),
+            avatar: true,
+            online: c.online,
+            badge: c.id === i.ownerMemberId ? "Owner" : undefined,
+          }))}
+        />
         <Button variant="primary" onClick={ring} disabled={!ready || inCall}>
           {ready ? (inCall ? "In a call" : "Call") : "Connecting…"}
         </Button>
@@ -495,21 +497,15 @@ function PassBaton({
             crew chat.
           </p>
           <div className="mt-2 flex gap-2">
-            <select
+            <Picker
               id={`pass-${i.id}`}
+              label="Pass to"
+              className="h-10 flex-1"
               value={memberId}
-              onChange={(e) => setMemberId(e.target.value)}
-              className={cx(inputClass, "h-10 flex-1 text-sm")}
-            >
-              <option value="">Choose a teammate</option>
-              {options.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                  {c.role === "lead" ? " (lead)" : ""}
-                  {c.online ? " · online" : ""}
-                </option>
-              ))}
-            </select>
+              onChange={setMemberId}
+              placeholder="Choose a teammate"
+              options={options.map((c) => ({ value: c.id, label: c.name, sublabel: crewSublabel(c), avatar: true, online: c.online }))}
+            />
             <Button
               variant="primary"
               busy={busy}
@@ -610,22 +606,22 @@ function Assign({
         {i.ownerMemberId ? "Reassign" : "Assign to"}
       </label>
       <div className="mt-2 flex gap-2">
-        <select
+        <Picker
           id={`assign-${i.id}`}
+          label={i.ownerMemberId ? "Reassign to" : "Assign to"}
+          className="h-10 flex-1"
           value={memberId}
-          onChange={(e) => setMemberId(e.target.value)}
-          className={cx(inputClass, "h-10 flex-1 text-sm")}
-        >
-          <option value="">Choose a crew member</option>
-          {options.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-              {c.role === "lead" ? " (lead)" : ""}
-              {c.isSimulated ? " (simulated)" : ""}
-              {c.online ? " · online" : ""}
-            </option>
-          ))}
-        </select>
+          onChange={setMemberId}
+          placeholder="Choose a crew member"
+          options={options.map((c) => ({
+            value: c.id,
+            label: c.name,
+            sublabel: crewSublabel(c),
+            avatar: true,
+            online: c.online,
+            badge: c.id === i.ownerMemberId ? "Owner" : undefined,
+          }))}
+        />
         <Button
           variant="primary"
           busy={busy}

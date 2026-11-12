@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, ErrorNote, Field, inputClass } from "@/components/ui";
 import { api } from "@/lib/types";
+import { Picker } from "@/components/dropdown";
 
 export function JoinForm({ code, eventName, zones, defaultName, isDemo }: { code: string; eventName: string; zones: { id: string; name: string }[]; defaultName: string; isDemo: boolean }) {
   const router = useRouter();
@@ -36,14 +37,14 @@ export function JoinForm({ code, eventName, zones, defaultName, isDemo }: { code
         </Field>
         {zones.length > 0 && (
           <Field label="Your area (optional)">
-            <select className={inputClass} value={zoneId} onChange={(e) => setZoneId(e.target.value)}>
-              <option value="">Anywhere</option>
-              {zones.map((z) => (
-                <option key={z.id} value={z.id}>
-                  {z.name}
-                </option>
-              ))}
-            </select>
+            <Picker
+              value={zoneId}
+              onChange={setZoneId}
+              emptyLabel="Anywhere"
+              label="Where you'll be"
+              ariaLabel="Your area"
+              options={zones.map((z) => ({ value: z.id, label: z.name }))}
+            />
           </Field>
         )}
         {error && <ErrorNote>{error}</ErrorNote>}

@@ -53,6 +53,7 @@ import {
   type IncidentView,
 } from "@/lib/types";
 import { useEventState } from "@/lib/use-event-state";
+import { Picker } from "@/components/dropdown";
 
 type Tab = "stream" | "mine" | "inbox" | "crew";
 type NudgeKind =
@@ -866,19 +867,16 @@ function Composer({
               ))}
             </div>
             <div className="flex gap-2">
-              <select
-                aria-label="Location"
-                className={cx(inputClass, "h-10 flex-1 text-sm")}
+              <Picker
+                ariaLabel="Location"
+                label="Location"
+                className="h-10 flex-1"
                 value={zoneId}
-                onChange={(e) => setZoneId(e.target.value)}
-              >
-                <option value="">Location (optional)</option>
-                {zones.map((z) => (
-                  <option key={z.id} value={z.id}>
-                    {z.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setZoneId}
+                placeholder="Location (optional)"
+                emptyLabel={zoneId ? "No location" : undefined}
+                options={zones.map((z) => ({ value: z.id, label: z.name }))}
+              />
               <label className="flex items-center gap-1.5 text-[13px] text-text-2">
                 <input
                   type="checkbox"

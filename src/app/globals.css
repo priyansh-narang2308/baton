@@ -115,3 +115,12 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .anim-claim, .anim-owner, .anim-bump, .anim-fade, .anim-sheet { animation: none; }
 }
+
+/* Dropdown menus (components/dropdown.tsx): a short fade and lift; none when motion is reduced. */
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-radix-menu-content] { animation: none !important; }
+}

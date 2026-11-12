@@ -43,6 +43,7 @@ import {
   type IncidentView,
 } from "@/lib/types";
 import { useEventState } from "@/lib/use-event-state";
+import { Picker } from "@/components/dropdown";
 
 const COLUMNS: {
   key: IncidentView["status"];
@@ -361,32 +362,24 @@ export function Board({
                     role="group"
                     aria-label="Filters"
                   >
-                    <select
-                      aria-label="Filter by location"
+                    <Picker
+                      variant="pill"
+                      ariaLabel="Filter by location"
+                      label="Location"
                       value={zone}
-                      onChange={(e) => setZone(e.target.value)}
-                      className="h-9 rounded-full border border-border bg-surface px-3.5 text-sm"
-                    >
-                      <option value="">All locations</option>
-                      {state?.zones.map((z) => (
-                        <option key={z.id} value={z.id}>
-                          {z.name}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      aria-label="Filter by category"
+                      onChange={setZone}
+                      emptyLabel="All locations"
+                      options={(state?.zones ?? []).map((z) => ({ value: z.id, label: z.name }))}
+                    />
+                    <Picker
+                      variant="pill"
+                      ariaLabel="Filter by category"
+                      label="Category"
                       value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="h-9 rounded-full border border-border bg-surface px-3.5 text-sm"
-                    >
-                      <option value="">All categories</option>
-                      {categories.map((c) => (
-                        <option key={c} value={c}>
-                          {CATEGORY_LABEL[c] ?? c}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={setCategory}
+                      emptyLabel="All categories"
+                      options={categories.map((c) => ({ value: c, label: CATEGORY_LABEL[c] ?? c }))}
+                    />
                     <label className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface px-3.5 text-sm">
                       <input
                         type="checkbox"
