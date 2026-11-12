@@ -50,7 +50,7 @@ export function DemoHub({ eventId, crewCode, slug }: { eventId: string; crewCode
   const steps: Step[] = [
     {
       title: "Join the crew as Riya",
-      todo: "Opens the volunteer invite with the name filled in. Tap Join.",
+      todo: "Opens the volunteer invite with the name filled in. Tap “Join crew”.",
       nexconn: "Baton's server registers Riya as a Nexconn user and adds her to the event's crew group; her browser connects with the Chat SDK.",
       path: `/join/${crewCode}?name=Riya`,
       linkLabel: "Open volunteer view",
