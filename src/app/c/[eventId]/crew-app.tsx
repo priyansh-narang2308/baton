@@ -14,13 +14,18 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+  BatonMark,
+  BottomTabs,
+  liveLabelFor,
+  SectionHeader,
+  type ShellSection,
+  Sidebar,
+  SidebarLink,
+  SignedInAs,
+  useIsDesktop,
+} from "@/components/app-shell";
 import { DirectThread } from "@/components/direct-thread";
 import { Inbox, useDirectThreads } from "@/components/inbox";
 import { IncidentCard } from "@/components/incident-card";
@@ -238,13 +243,7 @@ export function CrewApp({
     if (desktop) setTab("inbox");
   }
 
-  const NAV: {
-    key: Tab;
-    Icon: typeof MessageSquare;
-    label: string;
-    hint: string;
-    count?: number;
-  }[] = [
+  const NAV: ShellSection<Tab>[] = [
     {
       key: "stream",
       Icon: MessageSquare,
@@ -257,6 +256,7 @@ export function CrewApp({
       label: "My tasks",
       hint: "What you own, and passes waiting for your answer",
       count: mine.length,
+      countTone: "task",
     },
     {
       key: "inbox",
@@ -264,6 +264,7 @@ export function CrewApp({
       label: "Inbox",
       hint: "Private conversations with your crew",
       count: dms.unread,
+      countTone: "alert",
     },
     {
       key: "crew",
@@ -274,100 +275,39 @@ export function CrewApp({
     },
   ];
   const current = NAV.find((n) => n.key === tab)!;
-  const liveLabel =
-    conn.state === "connected"
-      ? "Live"
-      : conn.state === "connecting" || conn.state === "idle"
-        ? "Connecting…"
-        : "Offline";
+  const liveLabel = liveLabelFor(conn.state);
 
   return (
     <div className="flex h-dvh bg-bg">
       {/* Laptop: sidebar */}
-      <aside
-        className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface lg:flex"
-        aria-label="Crew navigation"
-      >
-        <div className="border-b border-border px-5 pb-5 pt-5">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-text"
-            aria-label="Baton home"
-          >
-            <BatonMark className="h-[15px] w-[21px]" />
-            <span className="font-serif text-[22px] leading-none tracking-[-0.02em]">
-              Baton
-            </span>
-          </Link>
-          <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-ink">
-            Crew{state?.event.isDemo ? " · Demo" : ""}
-          </p>
-          <p className="mt-1 font-serif text-[24px] leading-[1.1] tracking-[-0.02em]">
-            {state?.event.name ?? "Loading…"}
-          </p>
-        </div>
-        <nav className="flex-1 space-y-0.5 p-3" aria-label="Sections">
-          {NAV.map(({ key, Icon, label, count }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              aria-current={tab === key ? "page" : undefined}
-              className={cx(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
-                tab === key
-                  ? "bg-surface-2 font-medium text-text"
-                  : "text-text-2 hover:bg-surface-2/60 hover:text-text",
-              )}
-            >
-              <Icon className="size-[18px]" aria-hidden />
-              <span className="flex-1">{label}</span>
-              {!!count && (
-                <span
-                  className={cx(
-                    "min-w-5 rounded-full px-1.5 text-center text-[11px] font-semibold tabular-nums",
-                    key === "inbox"
-                      ? "bg-accent text-accent-ink"
-                      : "bg-surface-2 text-text-2",
-                    tab === key && key !== "inbox" && "bg-bg",
-                  )}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
-        <div className="space-y-3 border-t border-border p-4">
-          {role === "organizer" && (
-            <Link
+      <Sidebar
+        label="Crew navigation"
+        eyebrow={`Crew${state?.event.isDemo ? " · Demo" : ""}`}
+        title={state?.event.name ?? "Loading…"}
+        sections={NAV}
+        current={tab}
+        onSelect={setTab}
+        links={
+          role === "organizer" ? (
+            <SidebarLink
               href={`/o/${eventId}`}
-              className="flex items-center gap-2 rounded-lg px-1 text-sm text-text-2 hover:text-text"
+              icon={<LayoutDashboard className="size-[18px]" aria-hidden />}
             >
-              <LayoutDashboard className="size-4" aria-hidden /> Command centre
-            </Link>
-          )}
-          {state?.me && (
-            <div className="flex items-center gap-3">
-              <span className="grid size-9 place-items-center rounded-full bg-brand text-sm font-semibold text-white">
-                {state.me.name.slice(0, 1).toUpperCase()}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{state.me.name}</p>
-                <p className="flex items-center gap-1.5 text-xs text-text-3">
-                  <span
-                    className={cx(
-                      "size-1.5 rounded-full",
-                      connected ? "bg-done" : "bg-open",
-                    )}
-                    aria-hidden
-                  />
-                  {state.me.role === "lead" ? "Lead" : "Crew"} · {liveLabel}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </aside>
+              Command centre
+            </SidebarLink>
+          ) : undefined
+        }
+        footer={
+          state?.me && (
+            <SignedInAs
+              name={state.me.name}
+              role={state.me.role === "lead" ? "Lead" : "Crew"}
+              connected={connected}
+              liveLabel={liveLabel}
+            />
+          )
+        }
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Phone: compact header */}
@@ -402,20 +342,14 @@ export function CrewApp({
         </header>
 
         {/* Laptop: section header */}
-        <header className="hidden items-end gap-4 border-b border-border px-8 pb-5 pt-7 lg:flex">
-          <div className="min-w-0 flex-1">
-            <h1 className="font-serif text-[34px] font-normal leading-none tracking-[-0.025em]">
-              {current.label}
-            </h1>
-            <p className="mt-2 text-sm text-text-3">{current.hint}</p>
-          </div>
+        <SectionHeader title={current.label} hint={current.hint}>
           {openCount > 0 && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-open-soft px-3 py-1 text-[13px] font-medium text-open">
               <span className="size-1.5 rounded-full bg-open" aria-hidden />{" "}
               {openCount} need{openCount === 1 ? "s" : ""} an owner
             </span>
           )}
-        </header>
+        </SectionHeader>
 
         <ConnectionBanner
           state={conn.state}
@@ -782,45 +716,7 @@ export function CrewApp({
         </div>
 
         {/* Phone: bottom tabs */}
-        <nav
-          className="grid grid-cols-4 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
-          aria-label="Sections"
-        >
-          {NAV.map(({ key, Icon, label, count }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              aria-current={tab === key ? "page" : undefined}
-              className={cx(
-                "relative flex flex-col items-center gap-1 pb-2 pt-1.5 text-[11px]",
-                tab === key ? "font-medium text-text" : "text-text-3",
-              )}
-            >
-              <span
-                className={cx(
-                  "grid h-7 w-12 place-items-center rounded-full transition-colors",
-                  tab === key && "bg-surface-2",
-                )}
-              >
-                <Icon className="size-[18px]" aria-hidden />
-              </span>
-              {label}
-              {!!count && (key === "inbox" || key === "mine") && (
-                <span
-                  className={cx(
-                    "absolute left-1/2 top-1 ml-3 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] font-semibold",
-                    key === "inbox"
-                      ? "bg-accent text-accent-ink"
-                      : "bg-claimed text-white",
-                  )}
-                  aria-label={`${count} ${key === "inbox" ? "unread" : "tasks"}`}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
+        <BottomTabs sections={NAV} current={tab} onSelect={setTab} />
       </div>
 
       {state && openId && incidentsById.get(openId) && (
@@ -865,40 +761,6 @@ export function CrewApp({
         </Sheet>
       )}
     </div>
-  );
-}
-
-const DESKTOP = "(min-width: 1024px)";
-/** True at the `lg` breakpoint and up, where the crew app uses its laptop layout. */
-function useIsDesktop() {
-  return useSyncExternalStore(
-    (onChange) => {
-      const m = window.matchMedia(DESKTOP);
-      m.addEventListener("change", onChange);
-      return () => m.removeEventListener("change", onChange);
-    },
-    () => window.matchMedia(DESKTOP).matches,
-    () => false,
-  );
-}
-
-/** Baton's striped half-sun, the same mark as the landing page. */
-function BatonMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 28 20" aria-hidden className={className}>
-      <clipPath id="baton-mark-bands">
-        <rect width="28" height="9" />
-        <rect y="11" width="28" height="3" />
-        <rect y="16" width="28" height="2" />
-      </clipPath>
-      <circle
-        cx="14"
-        cy="18"
-        r="13"
-        clipPath="url(#baton-mark-bands)"
-        fill="currentColor"
-      />
-    </svg>
   );
 }
 
