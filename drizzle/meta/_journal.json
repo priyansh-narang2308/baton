@@ -29,6 +29,13 @@
       "when": 1794462394451,
       "tag": "0003_baton_pass",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794465136862,
+      "tag": "0004_presence",
+      "breakpoints": true
     }
   ]
 }

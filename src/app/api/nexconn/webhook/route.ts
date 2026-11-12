@@ -3,6 +3,7 @@ import { db } from "@/server/db/client";
 import { handleMessageSend } from "@/server/domain/chat-intake";
 import type { Effect } from "@/server/domain/incidents";
 import { applyEffects } from "@/server/domain/projection";
+import { applyConnectionStatus } from "@/server/domain/presence";
 import { recordWebhook, WebhookEnvelope } from "@/server/domain/webhooks";
 import { nexconnConfig } from "@/server/env";
 import { fail } from "@/server/http";
@@ -13,6 +14,7 @@ import { nexconnApi } from "@/server/services";
  * Nexconn webhook endpoint (Console → Chat → Chat settings → Webhooks).
  * Answers fast (< 5 s timeout, 3 attempts), verifies signature + freshness, dedupes on the envelope id.
  * `message:send` from crew → request detection; Nexconn projection runs after the response is sent.
+ * `user:connection_status` → who on the crew is online right now (shown on the board, crew list and assign picker).
  */
 export async function POST(req: Request) {
   const cfg = nexconnConfig();
@@ -25,7 +27,10 @@ export async function POST(req: Request) {
   const parsed = WebhookEnvelope.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return fail(400, "invalid", "Malformed webhook envelope");
   try {
-    const fresh = await recordWebhook(db(), parsed.data);
+    const envelope = parsed.data;
+    // Presence events carry the client's IP address; we don't need it, so it is never stored.
+    const stored = envelope.type === "user:connection_status" ? { ...envelope, data: envelope.data.map((item) => Object.fromEntries(Object.entries(item).filter(([k]) => k !== "clientIp"))) } : envelope;
+    const fresh = await recordWebhook(db(), stored);
     const effects: Effect[] = [];
     let detected = 0;
     if (parsed.data.type === "message:send") {
@@ -38,6 +43,9 @@ export async function POST(req: Request) {
           if (r.outcome !== "existing") detected++;
         }
       }
+    }
+    if (parsed.data.type === "user:connection_status") {
+      for (const item of parsed.data.data) await applyConnectionStatus(db(), item);
     }
     if (effects.length) after(() => applyEffects(db(), nexconnApi(), effects));
     return NextResponse.json({ ok: true, duplicate: !fresh, detected });

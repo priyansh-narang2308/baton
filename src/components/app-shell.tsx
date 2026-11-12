@@ -284,3 +284,26 @@ export function liveLabelFor(state: string) {
       ? "Connecting…"
       : "Offline";
 }
+
+/** Green when Nexconn reports the person connected; nothing at all when presence isn't tracked yet. */
+export function PresenceDot({
+  online,
+  className,
+}: {
+  online: boolean | null | undefined;
+  className?: string;
+}) {
+  if (online === null || online === undefined) return null;
+  return (
+    <span
+      className={cx(
+        "inline-block size-2 shrink-0 rounded-full",
+        online ? "bg-done" : "bg-border-strong",
+        className,
+      )}
+      title={online ? "Online now" : "Offline"}
+      aria-label={online ? "Online now" : "Offline"}
+      role="img"
+    />
+  );
+}

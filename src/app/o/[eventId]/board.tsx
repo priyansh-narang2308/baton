@@ -15,6 +15,7 @@ import {
   BatonMark,
   BottomTabs,
   liveLabelFor,
+  PresenceDot,
   SectionHeader,
   type ShellSection,
   Sidebar,
@@ -584,7 +585,8 @@ export function Board({
                               {c.name.slice(0, 1).toUpperCase()}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium">
+                              <p className="flex items-center gap-1.5 truncate text-sm font-medium">
+                                <PresenceDot online={c.online} />
                                 {c.name}
                               </p>
                               <p className="truncate text-xs text-text-3">
@@ -638,6 +640,12 @@ export function Board({
               >
                 <Users className="size-4" aria-hidden /> Crew load{" "}
                 <span className="font-normal text-text-3">{others.length}</span>
+                {others.some((c) => c.online !== null) && (
+                  <span className="ml-auto flex items-center gap-1.5 text-xs font-normal text-text-3">
+                    <PresenceDot online />{" "}
+                    {others.filter((c) => c.online).length} online
+                  </span>
+                )}
               </h2>
               <div className="flex-1 overflow-y-auto p-3">
                 {others.length === 0 ? (
@@ -657,6 +665,10 @@ export function Board({
                             {c.name.slice(0, 1).toUpperCase()}
                           </span>
                           <span className="min-w-0 flex-1 truncate">
+                            <PresenceDot
+                              online={c.online}
+                              className="mr-1.5 align-middle"
+                            />
                             {c.name}
                             {zoneName(c.zoneId) && (
                               <span className="text-text-3">

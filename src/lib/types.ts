@@ -27,7 +27,7 @@ export type IncidentView = {
   suggestion: { candidateIncidentId: string; candidateNumber: number | null; score: number } | null;
 };
 
-export type CrewMemberView = { id: string; name: string; role: "lead" | "volunteer"; zoneId: string | null; onDuty: boolean; nexconnUserId: string; isSimulated: boolean };
+export type CrewMemberView = { id: string; name: string; role: "lead" | "volunteer"; zoneId: string | null; onDuty: boolean; nexconnUserId: string; isSimulated: boolean; /** From the Nexconn connection-status webhook; null until presence is tracked. */ online: boolean | null };
 
 export type EventState = {
   event: { id: string; name: string; slug: string; status: string; groupId: string; botUserId: string; isDemo: boolean };

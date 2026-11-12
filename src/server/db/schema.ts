@@ -159,6 +159,22 @@ export const webhookEvents = pgTable("webhook_events", {
   receivedAt: createdAt(),
 });
 
+/**
+ * Live presence from the `user:connection_status` webhook, one row per device session (a volunteer can be online on
+ * phone and laptop at once). A user is online while any of their sessions is. Rows are only moved forward in time,
+ * so out-of-order deliveries can't flip someone back.
+ */
+export const presenceSessions = pgTable(
+  "presence_sessions",
+  {
+    nexconnUserId: text("nexconn_user_id").notNull(),
+    sessionId: text("session_id").notNull(),
+    online: boolean("online").notNull(),
+    changedAt: timestamp("changed_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.nexconnUserId, t.sessionId] })],
+);
+
 export const nexconnTokens = pgTable("nexconn_tokens", {
   nexconnUserId: text("nexconn_user_id").primaryKey(),
   token: text("token").notNull(),

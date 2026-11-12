@@ -19,6 +19,7 @@ import {
   BatonMark,
   BottomTabs,
   liveLabelFor,
+  PresenceDot,
   SectionHeader,
   type ShellSection,
   Sidebar,
@@ -634,7 +635,8 @@ export function CrewApp({
                             {c.name.slice(0, 1).toUpperCase()}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">
+                            <p className="flex items-center gap-1.5 truncate text-sm font-medium">
+                              <PresenceDot online={c.online} />
                               {c.name}{" "}
                               {c.id === state.me?.id && (
                                 <span className="font-normal text-text-3">
