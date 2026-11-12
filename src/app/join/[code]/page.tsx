@@ -11,7 +11,7 @@ export default async function JoinPage(props: PageProps<"/join/[code]">) {
   if (!ev) {
     return (
       <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-2 p-6 text-center">
-        <h1 className="text-lg font-semibold">This invite doesn&apos;t work anymore</h1>
+        <h1 className="font-serif font-normal tracking-[-0.025em] text-[30px] leading-[1.05]">This invite doesn&apos;t work anymore</h1>
         <p className="text-sm text-text-2">The organizer may have rotated the crew code. Ask them for the current QR code.</p>
       </main>
     );

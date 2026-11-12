@@ -1,59 +1,37 @@
 @import "tailwindcss";
 
-/* Calm operational palette: neutral surfaces, one brand accent, status colours reserved for state. */
+/*
+ * One look across the app and the landing page: warm white surfaces, near-black ink and pill buttons, a sunset
+ * coral for brand detail. Status colours stay distinct because they carry meaning (open / on it / fixed / urgent).
+ * Light only, to match the landing page's sunset hero.
+ */
 :root {
-  --bg: #fbfbfa;
+  color-scheme: light;
+  --bg: #fbf8f6;
   --surface: #ffffff;
-  --surface-2: #f4f4f2;
-  --border: #e6e6e3;
-  --border-strong: #d4d4d0;
-  --text: #18181b;
-  --text-2: #52525b;
-  --text-3: #8a8a93;
-  --accent: #3b3fc4;
+  --surface-2: #f6f0ec;
+  --border: #ece3de;
+  --border-strong: #ddd0c9;
+  --text: #0a0a0a;
+  --text-2: #57534e;
+  --text-3: #8f8780;
+  --accent: #0a0a0a;
   --accent-ink: #ffffff;
-  --accent-soft: #ececfb;
+  --accent-soft: #f7e3dc;
+  --brand: #c8664f;
+  --brand-ink: #b4533f;
   --open: #b45309;
-  --open-soft: #fef3e2;
-  --claimed: #1d4ed8;
-  --claimed-soft: #e8efff;
+  --open-soft: #fdf1e1;
+  --claimed: #2f4fb8;
+  --claimed-soft: #eaeefb;
   --done: #15803d;
-  --done-soft: #e7f6ec;
+  --done-soft: #e6f4ea;
   --urgent: #c2410c;
-  --urgent-soft: #fff1ea;
-  --danger: #b91c1c;
-  --shadow-pop: 0 8px 24px -8px rgb(24 24 27 / 0.18), 0 2px 6px -2px rgb(24 24 27 / 0.08);
-  /* Chart series (validated: lightness band, CVD separation, contrast vs surface). */
-  --chart-1: #3b3fc4;
+  --urgent-soft: #fdeee6;
+  --danger: #b42318;
+  --shadow-pop: 0 24px 60px -28px rgb(120 40 20 / 0.35), 0 2px 8px -2px rgb(10 10 10 / 0.06);
+  --chart-1: #c8664f;
   --chart-2: #15803d;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d0d0f;
-    --surface: #151518;
-    --surface-2: #1c1c20;
-    --border: #2a2a30;
-    --border-strong: #3a3a42;
-    --text: #f4f4f5;
-    --text-2: #b4b4bc;
-    --text-3: #7c7c86;
-    --accent: #8b8ff5;
-    --accent-ink: #0d0d0f;
-    --accent-soft: #23244a;
-    --open: #f5a524;
-    --open-soft: #2c2110;
-    --claimed: #7aa2ff;
-    --claimed-soft: #15203b;
-    --done: #4ade80;
-    --done-soft: #0f2a1a;
-    --urgent: #fb8b5b;
-    --urgent-soft: #2e1810;
-    --danger: #f87171;
-    --shadow-pop: 0 8px 24px -8px rgb(0 0 0 / 0.6);
-    --chart-1: #7c80ee;
-    --chart-2: #16a34a;
-  }
 }
 
 @theme inline {
@@ -68,6 +46,8 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
   --color-open: var(--open);
   --color-open-soft: var(--open-soft);
   --color-claimed: var(--claimed);
@@ -79,7 +59,8 @@
   --color-danger: var(--danger);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-display), Georgia, serif;
   --font-mono: var(--font-geist-mono);
   --shadow-pop: var(--shadow-pop);
 }
@@ -87,12 +68,12 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  font-feature-settings: "cv11", "ss01";
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 

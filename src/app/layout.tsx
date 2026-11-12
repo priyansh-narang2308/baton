@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Instrument_Serif, Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+// Same faces as the landing hero: Instrument Serif for titles, Inter for everything else.
+const display = Instrument_Serif({ weight: "400", style: ["normal", "italic"], subsets: ["latin"], variable: "--font-display" });
+const body = Inter({ subsets: ["latin"], variable: "--font-body" });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -10,11 +12,11 @@ export const metadata: Metadata = {
   description: "Real-time coordination for event crews: QR onboarding, live incident cards, duplicate-report merging and closed-loop updates for attendees.",
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#3b3fc4" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#fbf8f6" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

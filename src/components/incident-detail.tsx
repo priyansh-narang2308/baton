@@ -76,7 +76,7 @@ export function IncidentDetail({ eventId, incident: i, crew, me, isLead, as, now
   }
 
   return (
-    <Sheet onClose={onClose} title={<span className="font-mono text-text-2">Incident #{i.number}</span>}>
+    <Sheet onClose={onClose} title={<span className="font-serif text-[26px] font-normal leading-none tracking-[-0.02em]">Incident <span className="text-text-3">#{i.number}</span></span>}>
       <div className="space-y-5 p-4">
         <IncidentCard eventId={eventId} incident={i} meId={me?.id ?? null} isLead={isLead} now={now} flashAt={flashAt} as={as} onPatch={onPatch} onRefresh={onRefresh} />
 

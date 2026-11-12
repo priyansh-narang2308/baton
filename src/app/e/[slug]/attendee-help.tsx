@@ -78,11 +78,11 @@ export function AttendeeHelp({ slug, eventId, eventName, zone, ended, isDemo }: 
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       {reports && reports.length > 0 && <ConnectionBanner state={conn.state === "not_configured" ? "not_configured" : conn.state === "connected" || conn.state === "idle" ? "idle" : conn.state} />}
       <div className="flex-1 p-5">
-        <p className="text-sm font-medium text-accent">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-ink">
           {eventName}
           {isDemo && " · Demo"}
         </p>
-        <h1 className="mt-1 text-[26px] font-semibold leading-tight tracking-tight">{showForm ? "What do you need?" : "Your requests"}</h1>
+        <h1 className="font-serif font-normal tracking-[-0.025em] mt-1 text-[38px]">{showForm ? "What do you need?" : "Your requests"}</h1>
         {zone && (
           <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-[13px] text-text-2">
             <MapPin className="size-3.5" aria-hidden /> {zone.name}
@@ -101,7 +101,7 @@ export function AttendeeHelp({ slug, eventId, eventName, zone, ended, isDemo }: 
                   aria-checked={category === c.key}
                   onClick={() => setCategory(c.key)}
                   className={cx(
-                    "min-h-14 rounded-xl border px-3 py-3 text-left text-[15px] font-medium transition-colors",
+                    "min-h-14 rounded-2xl border px-3.5 py-3 text-left text-[15px] font-medium transition-colors",
                     category === c.key
                       ? c.key === "medical"
                         ? "border-urgent bg-urgent-soft text-urgent"

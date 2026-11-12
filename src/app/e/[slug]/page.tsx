@@ -8,7 +8,7 @@ export default async function AttendeePage(props: PageProps<"/e/[slug]">) {
   if (!ev) {
     return (
       <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-2 p-6 text-center">
-        <h1 className="text-lg font-semibold">We couldn&apos;t find this event</h1>
+        <h1 className="font-serif font-normal tracking-[-0.025em] text-[30px] leading-[1.05]">We couldn&apos;t find this event</h1>
         <p className="text-sm text-text-2">The QR code may be from an old event.</p>
       </main>
     );

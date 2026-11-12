@@ -41,7 +41,7 @@ export default function NewEventPage() {
         <span className="grid size-10 place-items-center rounded-full bg-done-soft text-done">
           <Check className="size-5" aria-hidden />
         </span>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Your event is live</h1>
+        <h1 className="font-serif font-normal tracking-[-0.025em] mt-4 text-[38px] leading-[1.02] sm:text-5xl">Your event is live</h1>
         <p className="mt-2 text-sm text-text-2">Save this private organizer link — it&apos;s how you get back to the board from any device. Anyone with it can manage the event.</p>
         <button
           onClick={() => navigator.clipboard?.writeText(link).then(() => setCopied(true))}
@@ -51,10 +51,10 @@ export default function NewEventPage() {
           {copied ? <Check className="size-4 text-done" /> : <Copy className="size-4" />}
         </button>
         <div className="mt-6 flex gap-2">
-          <Link href={`/o/${created.eventId}`} className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-accent text-sm font-medium text-accent-ink">
+          <Link href={`/o/${created.eventId}`} className="inline-flex h-11 flex-1 items-center justify-center rounded-full bg-accent text-sm font-medium text-accent-ink">
             Open the board
           </Link>
-          <Link href={`/o/${created.eventId}/share`} className="inline-flex h-11 flex-1 items-center justify-center rounded-lg border border-border text-sm font-medium">
+          <Link href={`/o/${created.eventId}/share`} className="inline-flex h-11 flex-1 items-center justify-center rounded-full border border-border bg-surface text-sm font-medium">
             Print QR codes
           </Link>
         </div>
@@ -64,10 +64,10 @@ export default function NewEventPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center p-6">
-      <Link href="/" className="text-sm font-medium text-accent">
+      <Link href="/" className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-ink">
         Baton
       </Link>
-      <h1 className="mt-1 text-2xl font-semibold tracking-tight">Set up your event</h1>
+      <h1 className="font-serif font-normal tracking-[-0.025em] mt-1 text-[38px] leading-[1.02] sm:text-5xl">Set up your event</h1>
       <p className="mt-1 text-sm text-text-2">Two minutes. Your crew joins by QR code; attendees report issues from posters.</p>
       <form onSubmit={submit} className="mt-6 space-y-4">
         <Field label="Event name">

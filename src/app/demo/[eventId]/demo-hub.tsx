@@ -37,8 +37,8 @@ export function DemoHub({ eventId, crewCode, slug }: { eventId: string; crewCode
 
   return (
     <main className="mx-auto max-w-5xl p-6">
-      <p className="text-sm font-medium text-accent">Baton · Live demo</p>
-      <h1 className="mt-1 text-2xl font-semibold tracking-tight">Open the three views side by side</h1>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-ink">Baton · Live demo</p>
+      <h1 className="font-serif font-normal tracking-[-0.025em] mt-1 text-[38px] leading-[1.02] sm:text-5xl">Open the three views side by side</h1>
       <p className="mt-1 max-w-2xl text-sm text-text-2">
         This is a private demo event running on the real product and real Nexconn messaging. Open each view in its own window — or scan the codes with phones — then report “water” as the attendee and claim it as the volunteer.
       </p>
@@ -49,7 +49,7 @@ export function DemoHub({ eventId, crewCode, slug }: { eventId: string; crewCode
             <p className="mt-1 flex-1 text-sm text-text-2">{r.body}</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/api/qr?path=${encodeURIComponent(r.path)}`} alt={`QR code for ${r.title}`} className="mx-auto my-4 size-36" />
-            <a href={`${origin}${r.path}`} target="_blank" rel="noopener" className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-accent text-sm font-medium text-accent-ink">
+            <a href={`${origin}${r.path}`} target="_blank" rel="noopener" className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-accent text-sm font-medium text-accent-ink">
               Open <ExternalLink className="size-3.5" aria-hidden />
             </a>
           </section>

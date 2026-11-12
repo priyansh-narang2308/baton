@@ -78,7 +78,7 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
   if (error?.code === "forbidden") {
     return (
       <Centered>
-        <h1 className="text-lg font-semibold">You&apos;re not on this crew yet</h1>
+        <h1 className="font-serif font-normal tracking-[-0.025em] text-[30px] leading-[1.05]">You&apos;re not on this crew yet</h1>
         <p className="text-sm text-text-2">Scan the crew QR code from your organizer to join.</p>
       </Centered>
     );
@@ -91,7 +91,7 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
     <div className="mx-auto flex h-dvh w-full max-w-xl flex-col bg-bg">
       <header className="flex items-center gap-3 border-b border-border bg-surface px-4 py-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-semibold">{state?.event.name ?? "Loading…"}</p>
+          <p className="truncate font-serif text-[24px] leading-none tracking-[-0.02em]">{state?.event.name ?? "Loading…"}</p>
           <p className="text-xs text-text-3">
             {state?.me ? `${state.me.name} · ${state.me.role === "lead" ? "Lead" : "Crew"}` : " "} {openCount > 0 && <span className="text-open">· {openCount} open</span>}
           </p>

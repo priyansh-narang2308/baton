@@ -13,8 +13,8 @@ export default async function SharePage(props: PageProps<"/o/[eventId]/share">) 
     <main className="mx-auto max-w-5xl p-6 print:p-0">
       <div className="mb-6 flex items-center justify-between print:hidden">
         <div>
-          <p className="text-xs font-medium text-accent">{ev.name}</p>
-          <h1 className="text-xl font-semibold tracking-tight">QR codes</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-ink">{ev.name}</p>
+          <h1 className="font-serif font-normal tracking-[-0.025em] text-4xl leading-none">QR codes</h1>
         </div>
         <Link href={`/o/${ev.id}`} className="text-sm text-text-2 underline underline-offset-2">
           Back to board
@@ -30,7 +30,7 @@ export default async function SharePage(props: PageProps<"/o/[eventId]/share">) 
         {posters.map((p) => (
           <section key={p.path} className="flex flex-col items-center rounded-xl border border-border bg-surface p-6 text-center print:break-inside-avoid">
             <p className="text-sm text-text-2">{ev.name}</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight">Need help? Scan me.</h2>
+            <h2 className="mt-1 font-serif text-5xl font-normal leading-none tracking-[-0.025em]">Need help? Scan me.</h2>
             <p className="mt-1 text-sm text-text-2">{p.name} · no app needed</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/api/qr?path=${encodeURIComponent(p.path)}`} alt={`Help QR code for ${p.name}`} className="mt-4 size-48" />

@@ -27,8 +27,8 @@ export function JoinForm({ code, eventName, zones, defaultName, isDemo }: { code
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center p-6">
-      <p className="text-sm font-medium text-accent">Baton {isDemo && "· Demo"}</p>
-      <h1 className="mt-1 text-2xl font-semibold tracking-tight">Join the {eventName} crew</h1>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-ink">Baton {isDemo && "· Demo"}</p>
+      <h1 className="font-serif font-normal tracking-[-0.025em] mt-1 text-[38px] leading-[1.02] sm:text-5xl">Join the {eventName} crew</h1>
       <p className="mt-1 text-sm text-text-2">No app, no account. You&apos;ll see requests as live cards and can claim them.</p>
       <form onSubmit={submit} className="mt-6 space-y-4">
         <Field label="Your name" hint="Shown to the crew and to attendees whose request you take.">

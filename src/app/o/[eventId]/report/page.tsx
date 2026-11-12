@@ -24,7 +24,7 @@ export default async function ReportPage(props: PageProps<"/o/[eventId]/report">
   if (!data) {
     return (
       <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-2 p-6 text-center">
-        <h1 className="text-lg font-semibold">Open your organizer link</h1>
+        <h1 className="font-serif font-normal tracking-[-0.025em] text-[30px] leading-[1.05]">Open your organizer link</h1>
         <p className="text-sm text-text-2">The impact report is private to the organizer.</p>
       </main>
     );
@@ -45,10 +45,10 @@ export default async function ReportPage(props: PageProps<"/o/[eventId]/report">
       </div>
 
       <header>
-        <p className="text-xs font-medium text-accent">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-ink">
           Baton · Impact report{event.isDemo && " · Demo event"}
         </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{event.name}</h1>
+        <h1 className="font-serif font-normal tracking-[-0.025em] mt-1 text-[38px] leading-[1.02] sm:text-5xl">{event.name}</h1>
       </header>
 
       {t.reports === 0 ? (
@@ -58,8 +58,8 @@ export default async function ReportPage(props: PageProps<"/o/[eventId]/report">
         </section>
       ) : (
         <>
-          <section className="mt-6 rounded-2xl border border-border bg-surface p-6" aria-label="Headline">
-            <p className="text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl">
+          <section className="mt-6 rounded-[2rem] bg-[linear-gradient(160deg,#FBE6DF_0%,#F7D3C8_45%,#F4A493_100%)] p-8 sm:p-10 print:bg-none print:border print:border-border" aria-label="Headline">
+            <p className="font-serif text-5xl font-normal leading-none tracking-[-0.03em] tabular-nums sm:text-7xl">
               {t.reports} {t.reports === 1 ? "report" : "reports"} <span className="text-text-3">→</span> {t.incidents} {t.incidents === 1 ? "issue" : "issues"}
             </p>
             <p className="mt-2 text-[15px] text-text-2">
@@ -162,7 +162,7 @@ function Stat({ label, value, note, tone }: { label: string; value: string; note
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <p className="text-xs text-text-2">{label}</p>
-      <p className={tone === "open" ? "mt-1 text-2xl font-semibold tabular-nums text-open" : "mt-1 text-2xl font-semibold tabular-nums"}>{value}</p>
+      <p className={tone === "open" ? "mt-1.5 font-serif text-[34px] leading-none tabular-nums text-open" : "mt-1.5 font-serif text-[34px] leading-none tabular-nums"}>{value}</p>
       <p className="mt-0.5 text-xs text-text-3">{note}</p>
     </div>
   );

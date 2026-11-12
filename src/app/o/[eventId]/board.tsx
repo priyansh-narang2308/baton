@@ -73,7 +73,7 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
   if (error?.code === "forbidden") {
     return (
       <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-2 p-6 text-center">
-        <h1 className="text-lg font-semibold">Open your organizer link</h1>
+        <h1 className="font-serif font-normal tracking-[-0.025em] text-[30px] leading-[1.05]">Open your organizer link</h1>
         <p className="text-sm text-text-2">This command centre is private. Use the organizer link you saved when you created the event.</p>
         <Link href="/" className="mt-2 text-sm text-accent underline-offset-2 hover:underline">
           Back to Baton
@@ -86,11 +86,11 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
     <div className="flex min-h-dvh flex-col">
       <header className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border bg-surface px-4 py-3 sm:px-5">
         <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-1.5 text-xs font-medium text-accent">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-ink">
             <span className={cx("size-1.5 rounded-full", connected ? "bg-done" : "bg-open")} aria-hidden />
             Command centre{state?.event.isDemo && " · Demo"}
           </p>
-          <h1 className="truncate text-lg font-semibold tracking-tight">{state?.event.name ?? "Loading…"}</h1>
+          <h1 className="font-serif font-normal tracking-[-0.025em] truncate text-[30px] leading-[1.05]">{state?.event.name ?? "Loading…"}</h1>
         </div>
         <nav className="flex flex-wrap gap-2" aria-label="Event">
           <HeaderLink href={`/c/${eventId}`} icon={<ExternalLink className="size-4" aria-hidden />}>
@@ -122,7 +122,7 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
       )}
 
       <div className="flex flex-wrap items-center gap-2 px-4 pt-4 sm:px-5" role="group" aria-label="Filters">
-        <select aria-label="Filter by location" value={zone} onChange={(e) => setZone(e.target.value)} className="h-9 rounded-lg border border-border bg-surface px-2.5 text-sm">
+        <select aria-label="Filter by location" value={zone} onChange={(e) => setZone(e.target.value)} className="h-9 rounded-full border border-border bg-surface px-3.5 text-sm">
           <option value="">All locations</option>
           {state?.zones.map((z) => (
             <option key={z.id} value={z.id}>
@@ -130,7 +130,7 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
             </option>
           ))}
         </select>
-        <select aria-label="Filter by category" value={category} onChange={(e) => setCategory(e.target.value)} className="h-9 rounded-lg border border-border bg-surface px-2.5 text-sm">
+        <select aria-label="Filter by category" value={category} onChange={(e) => setCategory(e.target.value)} className="h-9 rounded-full border border-border bg-surface px-3.5 text-sm">
           <option value="">All categories</option>
           {categories.map((c) => (
             <option key={c} value={c}>
@@ -138,7 +138,7 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
             </option>
           ))}
         </select>
-        <label className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-2.5 text-sm">
+        <label className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface px-3.5 text-sm">
           <input type="checkbox" checked={urgentOnly} onChange={(e) => setUrgentOnly(e.target.checked)} /> Urgent only
         </label>
         {filtering && (
@@ -155,7 +155,7 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
         )}
       </div>
 
-      <div className="grid flex-1 gap-4 p-4 sm:px-5 lg:grid-cols-[1fr_1fr_1fr_300px]">
+      <div className="grid flex-1 grid-cols-1 gap-4 p-4 sm:px-5 lg:grid-cols-[1fr_1fr_1fr_300px]">
         {!state && !error && (
           <div className="space-y-2.5 lg:col-span-3" aria-hidden>
             {[0, 1, 2].map((k) => (
@@ -196,7 +196,7 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
             </section>
           ))}
 
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <section className="rounded-xl border border-border bg-surface p-4" aria-labelledby="crew-h">
             <h2 id="crew-h" className="flex items-center gap-2 text-[13px] font-semibold text-text-2">
               <Users className="size-4" aria-hidden /> Crew <span className="font-normal text-text-3">{others.length}</span>
@@ -282,7 +282,7 @@ export function Board({ eventId, crewCode, slug }: { eventId: string; crewCode: 
 
 function HeaderLink({ href, icon, children }: { href: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <Link href={href} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-sm hover:bg-surface-2">
+    <Link href={href} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-sm hover:border-text/40">
       {icon} {children}
     </Link>
   );
@@ -292,7 +292,7 @@ function Kpi({ label, value, tone, hint }: { label: string; value: string | numb
   return (
     <div className="bg-surface px-4 py-3">
       <p className="text-[11px] uppercase tracking-wide text-text-3">{label}</p>
-      <p className={cx("mt-0.5 font-mono text-xl font-semibold tabular-nums", tone === "open" && "text-open", tone === "urgent" && "text-urgent")}>{value}</p>
+      <p className={cx("mt-1 font-serif text-[34px] leading-none font-normal tabular-nums", tone === "open" && "text-open", tone === "urgent" && "text-urgent")}>{value}</p>
       {hint && <p className="text-[11px] text-text-3">{hint}</p>}
     </div>
   );
