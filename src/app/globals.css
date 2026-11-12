@@ -65,6 +65,13 @@
   --shadow-pop: var(--shadow-pop);
 }
 
+/* Smooth in-page scrolling (nav links, back to top), unless the visitor asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   background: var(--bg);
   color: var(--text);

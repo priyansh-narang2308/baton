@@ -112,7 +112,15 @@
   line-height: 1;
   letter-spacing: -0.035em;
 }
-.hero-57 .hero-copy h1 span {
+/* each headline word is its own animated span */
+.hero-57 .hero-copy h1 .word {
+  display: inline-block;
+  will-change: transform, filter;
+}
+.hero-57 .hero-copy h1 .word + .word {
+  margin-left: 0.22em;
+}
+.hero-57 .hero-copy h1 .muted {
   color: #737373;
 }
 .hero-57 .hero-copy p {
@@ -249,5 +257,58 @@
     .hero-57 .hero-actions .cta {
     padding: 18px 30px;
     font-size: 14px;
+  }
+}
+
+/* compact nav that follows the page once the hero has scrolled away */
+.hero-57 .float-nav {
+  position: fixed;
+  z-index: 50;
+  top: 14px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(1120px, calc(100% - 24px));
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 8px 8px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 18px 40px -24px rgba(120, 40, 20, 0.35);
+}
+.hero-57 .float-nav .logo {
+  font-size: 24px;
+}
+.hero-57 .float-nav .logo svg {
+  width: 22px;
+  margin-top: 2px;
+}
+.hero-57 .float-nav nav {
+  display: flex;
+  gap: 26px;
+  font-size: 14px;
+}
+.hero-57 .float-nav nav a {
+  color: #6b6b6b;
+  transition: color 0.2s;
+}
+.hero-57 .float-nav nav a:hover {
+  color: #0a0a0a;
+}
+.hero-57 .float-nav .btn {
+  padding: 10px 20px;
+  font-size: 14px;
+}
+@media (max-width: 900px) {
+  .hero-57 .float-nav {
+    grid-template-columns: 1fr auto;
+  }
+  .hero-57 .float-nav nav {
+    display: none;
   }
 }

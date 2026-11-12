@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import type { ReactNode } from "react";
 import Hero57 from "@/components/originkit/hero-57";
+import { MotionRoot, Reveal, Stagger, StaggerItem } from "@/components/landing-motion";
 import { TryDemoButton } from "./try-demo";
 
 /*
@@ -161,13 +162,14 @@ export default async function Home(props: PageProps<"/">) {
     <div
       className={`flex flex-1 flex-col bg-white font-(family-name:--font-body) text-neutral-950 antialiased [color-scheme:light]`}
     >
+      <MotionRoot>
       <Hero57 error={typeof sp.error === "string" ? sp.error : undefined} />
 
       <main>
         {/* The problem */}
         <Section id="problem">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-20">
-            <div>
+            <Reveal>
               <Eyebrow>The problem</Eyebrow>
               <h2
                 className={`${serif} mt-4 text-[40px] leading-[1.02] tracking-[-0.03em] sm:text-6xl`}
@@ -176,10 +178,10 @@ export default async function Home(props: PageProps<"/">) {
                 <em className="text-neutral-400">never built</em> for
                 operations.
               </h2>
-            </div>
-            <ol className="divide-y divide-neutral-200 border-y border-neutral-200">
+            </Reveal>
+            <Stagger as="ol" gap={0.1} delay={0.15} className="divide-y divide-neutral-200 border-y border-neutral-200">
               {PROBLEMS.map((p, k) => (
-                <li key={p.t} className="flex gap-5 py-6">
+                <StaggerItem as="li" key={p.t} className="flex gap-5 py-6">
                   <span
                     className={`${serif} w-8 shrink-0 text-3xl leading-none text-[#c8664f]`}
                   >
@@ -191,9 +193,9 @@ export default async function Home(props: PageProps<"/">) {
                       {p.d}
                     </p>
                   </div>
-                </li>
+                </StaggerItem>
               ))}
-            </ol>
+            </Stagger>
           </div>
         </Section>
 
@@ -208,9 +210,9 @@ export default async function Home(props: PageProps<"/">) {
               </>
             }
           />
-          <ol className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          <Stagger as="ol" gap={0.12} className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, k) => (
-              <li key={s.t} className="border-t border-neutral-950 pt-6">
+              <StaggerItem as="li" key={s.t} className="border-t border-neutral-950 pt-6">
                 <div className="flex items-center justify-between">
                   <span className={`${serif} text-4xl leading-none`}>
                     0{k + 1}
@@ -221,18 +223,18 @@ export default async function Home(props: PageProps<"/">) {
                 <p className="mt-2 text-[15px] leading-relaxed text-neutral-600">
                   {s.d}
                 </p>
-              </li>
+              </StaggerItem>
             ))}
-          </ol>
+          </Stagger>
         </Section>
 
         {/* The closed loop */}
         <section
           id="lifecycle"
           aria-labelledby="lifecycle-h"
-          className="mx-auto w-full max-w-6xl scroll-mt-8 px-4 sm:px-6"
+          className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 sm:px-6"
         >
-          <div className="grid items-center gap-10 overflow-hidden rounded-[2rem] bg-[linear-gradient(160deg,#FBE6DF_0%,#F7D3C8_45%,#F4A493_100%)] px-6 py-12 sm:px-12 sm:py-16 lg:grid-cols-[1fr_1fr] lg:gap-16">
+          <Reveal className="grid items-center gap-10 overflow-hidden rounded-[2rem] bg-[linear-gradient(160deg,#FBE6DF_0%,#F7D3C8_45%,#F4A493_100%)] px-6 py-12 sm:px-12 sm:py-16 lg:grid-cols-[1fr_1fr] lg:gap-16">
             <div>
               <Eyebrow>The closed loop</Eyebrow>
               <h2
@@ -266,8 +268,10 @@ export default async function Home(props: PageProps<"/">) {
                 )}
               </ol>
             </div>
-            <ProductIllustration />
-          </div>
+            <Reveal delay={0.2}>
+              <ProductIllustration />
+            </Reveal>
+          </Reveal>
         </section>
 
         {/* Roles */}
@@ -281,7 +285,7 @@ export default async function Home(props: PageProps<"/">) {
               </>
             }
           />
-          <div className="mt-14 grid gap-4 md:grid-cols-3">
+          <Stagger gap={0.12} className="mt-14 grid gap-4 md:grid-cols-3">
             <RoleCard
               icon={<BarChart3 className="size-5" />}
               who="Organizers"
@@ -312,7 +316,7 @@ export default async function Home(props: PageProps<"/">) {
                 "See “on it”, then “fixed”, with no account",
               ]}
             />
-          </div>
+          </Stagger>
         </Section>
 
         {/* Features */}
@@ -326,26 +330,26 @@ export default async function Home(props: PageProps<"/">) {
               </>
             }
           />
-          <div className="mt-14 grid gap-px overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-200 sm:grid-cols-2 lg:grid-cols-4">
+          <Stagger gap={0.06} className="mt-14 grid gap-px overflow-hidden rounded-3xl border border-neutral-200 bg-neutral-200 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((f) => (
-              <div key={f.t} className="bg-white p-6">
+              <StaggerItem key={f.t} className="bg-white p-6">
                 <f.icon className="size-5 text-[#c8664f]" aria-hidden />
                 <h3 className="mt-5 font-semibold">{f.t}</h3>
                 <p className="mt-2 text-[14px] leading-relaxed text-neutral-600">
                   {f.d}
                 </p>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         </Section>
 
         {/* Built on Nexconn */}
         <section
           id="realtime"
           aria-labelledby="realtime-h"
-          className="mx-auto w-full max-w-6xl scroll-mt-8 px-4 sm:px-6"
+          className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 sm:px-6"
         >
-          <div className="rounded-[2rem] bg-neutral-950 px-6 py-14 text-white sm:px-12 sm:py-20">
+          <Reveal className="rounded-[2rem] bg-neutral-950 px-6 py-14 text-white sm:px-12 sm:py-20">
             <Eyebrow dark>Real-time by Nexconn</Eyebrow>
             <h2
               id="realtime-h"
@@ -354,7 +358,7 @@ export default async function Home(props: PageProps<"/">) {
               The chat message <em className="text-[#F4A493]">is</em> the
               incident.
             </h2>
-            <div className="mt-12 grid gap-8 border-t border-white/15 pt-10 md:grid-cols-3">
+            <Stagger gap={0.12} delay={0.2} className="mt-12 grid gap-8 border-t border-white/15 pt-10 md:grid-cols-3">
               <TechPoint
                 title="Live state on the message"
                 body="Each incident is a Nexconn group message. Its status, owner and report count live in message metadata, so a claim updates the same card on every phone."
@@ -367,8 +371,8 @@ export default async function Home(props: PageProps<"/">) {
                 title="The database decides"
                 body="Claims are settled in Postgres first, then projected to Nexconn in the background, with a repair loop that re-syncs anything that didn’t arrive."
               />
-            </div>
-          </div>
+            </Stagger>
+          </Reveal>
         </section>
 
         {/* Comparison */}
@@ -382,7 +386,7 @@ export default async function Home(props: PageProps<"/">) {
               </>
             }
           />
-          <div className="mt-12 overflow-hidden rounded-3xl border border-neutral-200">
+          <Reveal className="mt-12 overflow-hidden rounded-3xl border border-neutral-200">
             <table className="w-full text-left text-[15px]">
               <thead className="bg-[#faf6f4] text-[13px] text-neutral-500">
                 <tr>
@@ -413,7 +417,7 @@ export default async function Home(props: PageProps<"/">) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </Reveal>
         </Section>
 
         {/* Setup */}
@@ -427,7 +431,7 @@ export default async function Home(props: PageProps<"/">) {
               </>
             }
           />
-          <ol className="mt-12 grid gap-4 md:grid-cols-3">
+          <Stagger as="ol" gap={0.12} className="mt-12 grid gap-4 md:grid-cols-3">
             {[
               [
                 "Create the event",
@@ -442,7 +446,7 @@ export default async function Home(props: PageProps<"/">) {
                 "Keep the command centre open. Requests arrive, get owners, get fixed.",
               ],
             ].map(([t, d], k) => (
-              <li key={t} className="rounded-3xl bg-[#faf6f4] p-7">
+              <StaggerItem as="li" key={t} className="rounded-3xl bg-[#faf6f4] p-7">
                 <span
                   className={`${serif} text-5xl leading-none text-[#c8664f]`}
                 >
@@ -452,9 +456,9 @@ export default async function Home(props: PageProps<"/">) {
                 <p className="mt-2 text-[15px] leading-relaxed text-neutral-600">
                   {d}
                 </p>
-              </li>
+              </StaggerItem>
             ))}
-          </ol>
+          </Stagger>
         </Section>
 
         {/* Privacy and reliability */}
@@ -468,7 +472,7 @@ export default async function Home(props: PageProps<"/">) {
               </>
             }
           />
-          <div className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          <Stagger gap={0.1} className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
             <TrustPoint
               icon={<Lock className="size-5" />}
               t="No attendee identity"
@@ -489,7 +493,7 @@ export default async function Home(props: PageProps<"/">) {
               t="Simulated data is labelled"
               d="Demo activity is marked and never counted in impact numbers."
             />
-          </div>
+          </Stagger>
         </Section>
 
         {/* FAQ */}
@@ -504,9 +508,10 @@ export default async function Home(props: PageProps<"/">) {
                 </>
               }
             />
-            <div className="divide-y divide-neutral-200 border-y border-neutral-200">
+            <Stagger gap={0.07} delay={0.1} className="divide-y divide-neutral-200 border-y border-neutral-200">
               {FAQ.map((f) => (
-                <details key={f.q} className="group py-5">
+                <StaggerItem key={f.q}>
+                <details className="group py-5">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-[17px] font-medium [&::-webkit-details-marker]:hidden">
                     {f.q}
                     <span
@@ -520,14 +525,15 @@ export default async function Home(props: PageProps<"/">) {
                     {f.a}
                   </p>
                 </details>
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
           </div>
         </Section>
 
         {/* Final call to action */}
         <section className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
-          <div className="rounded-[2rem] bg-[linear-gradient(180deg,#FBE6DF_0%,#F7D3C8_50%,#F4A493_100%)] px-6 py-16 text-center sm:px-12 sm:py-24">
+          <Reveal className="rounded-[2rem] bg-[linear-gradient(180deg,#FBE6DF_0%,#F7D3C8_50%,#F4A493_100%)] px-6 py-16 text-center sm:px-12 sm:py-24">
             <h2
               className={`${serif} mx-auto max-w-3xl text-[44px] leading-none tracking-[-0.035em] sm:text-7xl`}
             >
@@ -548,7 +554,7 @@ export default async function Home(props: PageProps<"/">) {
                 Set up your event
               </Link>
             </div>
-          </div>
+          </Reveal>
         </section>
       </main>
 
@@ -557,6 +563,7 @@ export default async function Home(props: PageProps<"/">) {
           <span className={`${serif} text-2xl text-neutral-950`}>Baton</span>
         </div>
       </footer>
+      </MotionRoot>
     </div>
   );
 }
@@ -573,7 +580,7 @@ function Section({
   return (
     <section
       id={id}
-      className={`mx-auto w-full max-w-6xl scroll-mt-8 px-4 py-20 sm:px-6 sm:py-28 ${className}`}
+      className={`mx-auto w-full max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6 sm:py-28 ${className}`}
     >
       {children}
     </section>
@@ -592,14 +599,14 @@ function Eyebrow({ children, dark }: { children: ReactNode; dark?: boolean }) {
 
 function Heading({ eyebrow, title }: { eyebrow: string; title: ReactNode }) {
   return (
-    <div className="max-w-3xl">
+    <Reveal className="max-w-3xl">
       <Eyebrow>{eyebrow}</Eyebrow>
       <h2
         className={`${serif} mt-4 text-[40px] leading-[1.02] tracking-[-0.03em] sm:text-6xl`}
       >
         {title}
       </h2>
-    </div>
+    </Reveal>
   );
 }
 
@@ -615,7 +622,7 @@ function RoleCard({
   points: string[];
 }) {
   return (
-    <div className="flex flex-col rounded-3xl bg-[#faf6f4] p-7">
+    <StaggerItem className="flex flex-col rounded-3xl bg-[#faf6f4] p-7">
       <span
         className="grid size-11 place-items-center rounded-full bg-white text-[#c8664f] shadow-sm"
         aria-hidden
@@ -635,28 +642,28 @@ function RoleCard({
           </li>
         ))}
       </ul>
-    </div>
+    </StaggerItem>
   );
 }
 
 function TechPoint({ title, body }: { title: string; body: string }) {
   return (
-    <div>
+    <StaggerItem>
       <h3 className="text-[17px] font-semibold">{title}</h3>
       <p className="mt-2 text-[15px] leading-relaxed text-white/65">{body}</p>
-    </div>
+    </StaggerItem>
   );
 }
 
 function TrustPoint({ icon, t, d }: { icon: ReactNode; t: string; d: string }) {
   return (
-    <div className="border-t border-neutral-200 pt-6">
+    <StaggerItem className="border-t border-neutral-200 pt-6">
       <span className="text-[#c8664f]" aria-hidden>
         {icon}
       </span>
       <h3 className="mt-4 font-semibold">{t}</h3>
       <p className="mt-1.5 text-[15px] leading-relaxed text-neutral-600">{d}</p>
-    </div>
+    </StaggerItem>
   );
 }
 
