@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import type { ReactNode } from "react";
 import Hero57 from "@/components/originkit/hero-57";
+import { Footer29 } from "@/components/footer-29";
 import { MotionRoot, Reveal, Stagger, StaggerItem } from "@/components/landing-motion";
 import { TryDemoButton } from "./try-demo";
 
@@ -557,11 +558,27 @@ export default async function Home(props: PageProps<"/">) {
         </section>
       </main>
 
-      <footer className="border-t border-neutral-200">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-8 text-[13px] text-neutral-500 sm:px-6">
-          <span className={`${serif} text-2xl text-neutral-950`}>Baton</span>
-        </div>
-      </footer>
+      <Footer29
+        logo={<BatonMark />}
+        brandName="Baton"
+        tagline="Every request has an owner. Real-time incident coordination for event crews."
+        note="Real-time chat and calls powered by Nexconn."
+        backgroundImage="/footer/bg-footer-29.avif"
+        linkGroups={[
+          {
+            title: "Product",
+            links: [
+              { label: "How it works", href: "#how" },
+              { label: "Features", href: "#features" },
+              { label: "FAQ", href: "#faq" },
+            ],
+          },
+          {
+            title: "Get started",
+            links: [{ label: "Set up your event", href: "/new" }],
+          },
+        ]}
+      />
       </MotionRoot>
     </div>
   );
@@ -743,5 +760,19 @@ function ProductIllustration() {
         Illustration of the product, not live data
       </figcaption>
     </figure>
+  );
+}
+
+/** The striped half-sun mark from the hero, sized for the footer. */
+function BatonMark() {
+  return (
+    <svg viewBox="0 0 28 20" className="h-5 w-7" aria-hidden>
+      <clipPath id="footer-sun-bands">
+        <rect width="28" height="9" />
+        <rect y="11" width="28" height="3" />
+        <rect y="16" width="28" height="2" />
+      </clipPath>
+      <circle cx="14" cy="18" r="13" clipPath="url(#footer-sun-bands)" fill="currentColor" />
+    </svg>
   );
 }
