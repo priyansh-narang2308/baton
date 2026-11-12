@@ -194,7 +194,10 @@ function StatusCard({ r }: { r: MyReport }) {
             <span className={cx("grid size-7 place-items-center rounded-full", s.done ? (s.key === "resolved" ? "bg-done text-white" : s.key === "claimed" ? "bg-claimed text-white" : "bg-accent text-accent-ink") : "border border-border text-text-3")}>
               <s.icon className="size-3.5" aria-hidden />
             </span>
-            <span className={cx("text-[15px]", s.done ? "text-text" : "text-text-3")}>{s.label}</span>
+            <span className={cx("text-[15px]", s.done ? "text-text" : "text-text-3")}>
+              <span className="sr-only">{s.done ? "Done: " : "Not yet: "}</span>
+              {s.label}
+            </span>
           </li>
         ))}
       </ol>
