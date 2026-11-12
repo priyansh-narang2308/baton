@@ -1,37 +1,102 @@
 "use client";
 
-import { BellRing, Inbox as InboxIcon, ListTodo, MessageCircle, MessageSquare, Plus, Send, Sparkles, Users, X } from "lucide-react";
+import {
+  BellRing,
+  Inbox as InboxIcon,
+  LayoutDashboard,
+  ListTodo,
+  MessageCircle,
+  MessageSquare,
+  Plus,
+  Send,
+  Sparkles,
+  Users,
+  X,
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { DirectThread } from "@/components/direct-thread";
 import { Inbox, useDirectThreads } from "@/components/inbox";
 import { IncidentCard } from "@/components/incident-card";
 import { IncidentDetail } from "@/components/incident-detail";
 import { Sheet } from "@/components/sheet";
-import { Button, ConnectionBanner, cx, ErrorNote, inputClass } from "@/components/ui";
-import { loadHistory, onMessage, sendGroupText, useNexconn, type ChatMessage } from "@/lib/nexconn-client";
-import { api, CATEGORY_LABEL, type CrewMemberView } from "@/lib/types";
+import {
+  Button,
+  ConnectionBanner,
+  cx,
+  ErrorNote,
+  inputClass,
+} from "@/components/ui";
+import {
+  loadHistory,
+  onMessage,
+  sendGroupText,
+  useNexconn,
+  type ChatMessage,
+} from "@/lib/nexconn-client";
+import {
+  api,
+  CATEGORY_LABEL,
+  type CrewMemberView,
+  type IncidentView,
+} from "@/lib/types";
 import { useEventState } from "@/lib/use-event-state";
 
 type Tab = "stream" | "mine" | "inbox" | "crew";
-type NudgeKind = "escalation" | "assigned" | "pass_offered" | "pass_accepted" | "pass_declined";
-type Nudge = { kind: NudgeKind; incidentId: string; number: number; title: string; byName?: string };
-const NUDGE_KINDS: NudgeKind[] = ["assigned", "pass_offered", "pass_accepted", "pass_declined"];
+type NudgeKind =
+  | "escalation"
+  | "assigned"
+  | "pass_offered"
+  | "pass_accepted"
+  | "pass_declined";
+type Nudge = {
+  kind: NudgeKind;
+  incidentId: string;
+  number: number;
+  title: string;
+  byName?: string;
+};
+const NUDGE_KINDS: NudgeKind[] = [
+  "assigned",
+  "pass_offered",
+  "pass_accepted",
+  "pass_declined",
+];
 
-export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: "member" | "organizer" }) {
+export function CrewApp({
+  eventId,
+  role = "member",
+}: {
+  eventId: string;
+  role?: "member" | "organizer";
+}) {
   const conn = useNexconn(eventId, role);
-  const { state, error, refresh, patchIncident, flash } = useEventState(eventId, conn.state);
+  const { state, error, refresh, patchIncident, flash } = useEventState(
+    eventId,
+    conn.state,
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [nudge, setNudge] = useState<Nudge | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [dmPeer, setDmPeer] = useState<CrewMemberView | null>(null);
   const connected = conn.state === "connected";
-  const dms = useDirectThreads(connected, state?.crew, state?.me?.nexconnUserId);
+  const dms = useDirectThreads(
+    connected,
+    state?.crew,
+    state?.me?.nexconnUserId,
+  );
   const [tab, setTab] = useState<Tab>("stream");
   const [selected, setSelected] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const bottom = useRef<HTMLDivElement>(null);
   const groupId = state?.event.groupId;
+  const desktop = useIsDesktop();
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 10_000);
@@ -54,9 +119,24 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
     return onMessage((m) => {
       if (m.channelId !== groupId) return;
       if (m.messageType === "BTN:Nudge") {
-        const c = m.content as { kind?: string; incidentId: string; number: number; title: string; byName?: string };
-        setNudge({ kind: NUDGE_KINDS.includes(c.kind as NudgeKind) ? (c.kind as NudgeKind) : "escalation", incidentId: c.incidentId, number: c.number, title: c.title, byName: c.byName });
-        if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(200);
+        const c = m.content as {
+          kind?: string;
+          incidentId: string;
+          number: number;
+          title: string;
+          byName?: string;
+        };
+        setNudge({
+          kind: NUDGE_KINDS.includes(c.kind as NudgeKind)
+            ? (c.kind as NudgeKind)
+            : "escalation",
+          incidentId: c.incidentId,
+          number: c.number,
+          title: c.title,
+          byName: c.byName,
+        });
+        if (typeof navigator !== "undefined" && "vibrate" in navigator)
+          navigator.vibrate?.(200);
       }
       setMessages((cur) => mergeMessages(cur, [m]));
     });
@@ -66,206 +146,683 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
     if (tab === "stream") bottom.current?.scrollIntoView({ block: "end" });
   }, [messages.length, tab]);
 
-  const incidentsById = useMemo(() => new Map(state?.incidents.map((i) => [i.id, i]) ?? []), [state]);
+  const incidentsById = useMemo(
+    () => new Map(state?.incidents.map((i) => [i.id, i]) ?? []),
+    [state],
+  );
   // Chat-detected requests live on the crew message itself (cardMessageId = that message).
-  const incidentsByMessage = useMemo(() => new Map(state?.incidents.filter((i) => i.origin === "chat" && i.cardMessageId).map((i) => [i.cardMessageId!, i]) ?? []), [state]);
-  const nameByUser = useMemo(() => new Map(state?.crew.map((c) => [c.nexconnUserId, c.name]) ?? []), [state]);
+  const incidentsByMessage = useMemo(
+    () =>
+      new Map(
+        state?.incidents
+          .filter((i) => i.origin === "chat" && i.cardMessageId)
+          .map((i) => [i.cardMessageId!, i]) ?? [],
+      ),
+    [state],
+  );
+  const nameByUser = useMemo(
+    () => new Map(state?.crew.map((c) => [c.nexconnUserId, c.name]) ?? []),
+    [state],
+  );
   const isLead = state?.me?.role === "lead";
   // Requests whose card isn't in the loaded history (joined mid-event, or history beyond the first page).
   const earlier = useMemo(() => {
     const loaded = new Set(messages.map((m) => m.messageId));
-    return state?.incidents.filter((i) => (i.status === "open" || i.status === "claimed") && !(i.cardMessageId && loaded.has(i.cardMessageId))) ?? [];
+    return (
+      state?.incidents.filter(
+        (i) =>
+          (i.status === "open" || i.status === "claimed") &&
+          !(i.cardMessageId && loaded.has(i.cardMessageId)),
+      ) ?? []
+    );
   }, [state, messages]);
 
   if (error?.code === "forbidden") {
     return (
       <Centered>
-        <h1 className="font-serif font-normal tracking-[-0.025em] text-[30px] leading-[1.05]">You&apos;re not on this crew yet</h1>
-        <p className="text-sm text-text-2">Scan the crew QR code from your organizer to join.</p>
+        <h1 className="font-serif font-normal tracking-[-0.025em] text-[30px] leading-[1.05]">
+          You&apos;re not on this crew yet
+        </h1>
+        <p className="text-sm text-text-2">
+          Scan the crew QR code from your organizer to join.
+        </p>
       </Centered>
     );
   }
 
   // My tasks: what I own, plus anything a teammate is passing to me (it needs my answer).
-  const mine = state?.incidents.filter((i) => i.status === "claimed" && (i.ownerMemberId === state.me?.id || i.passToMemberId === state.me?.id)) ?? [];
-  const openCount = state?.incidents.filter((i) => i.status === "open").length ?? 0;
+  // My tasks: what I own, plus anything a teammate is passing to me (it needs my answer).
+  const mine =
+    state?.incidents.filter(
+      (i) =>
+        i.status === "claimed" &&
+        (i.ownerMemberId === state.me?.id || i.passToMemberId === state.me?.id),
+    ) ?? [];
+  const waiting = (
+    state?.incidents.filter((i) => i.status === "open") ?? []
+  ).sort((a, b) =>
+    a.priority === b.priority
+      ? a.createdAt - b.createdAt
+      : a.priority === "urgent"
+        ? -1
+        : 1,
+  );
+  const openCount = waiting.length;
+  const loadOf = (memberId: string) =>
+    state?.incidents.filter(
+      (i) => i.status === "claimed" && i.ownerMemberId === memberId,
+    ).length ?? 0;
+
+  const card = (
+    inc: IncidentView,
+    extra: { attached?: boolean; compact?: boolean } = {},
+  ) => (
+    <IncidentCard
+      key={inc.id}
+      eventId={eventId}
+      incident={inc}
+      meId={state?.me?.id ?? null}
+      isLead={isLead}
+      now={now}
+      flashAt={flash[inc.id]}
+      onOpen={() => setOpenId(inc.id)}
+      onPatch={patchIncident}
+      onRefresh={refresh}
+      {...extra}
+    />
+  );
+
+  // On a laptop a conversation opens next to the inbox; on a phone it opens as a sheet.
+  function openDm(c: CrewMemberView) {
+    setDmPeer(c);
+    if (desktop) setTab("inbox");
+  }
+
+  const NAV: {
+    key: Tab;
+    Icon: typeof MessageSquare;
+    label: string;
+    hint: string;
+    count?: number;
+  }[] = [
+    {
+      key: "stream",
+      Icon: MessageSquare,
+      label: "Stream",
+      hint: "Crew chat and live requests",
+    },
+    {
+      key: "mine",
+      Icon: ListTodo,
+      label: "My tasks",
+      hint: "What you own, and passes waiting for your answer",
+      count: mine.length,
+    },
+    {
+      key: "inbox",
+      Icon: InboxIcon,
+      label: "Inbox",
+      hint: "Private conversations with your crew",
+      count: dms.unread,
+    },
+    {
+      key: "crew",
+      Icon: Users,
+      label: "Crew",
+      hint: "Everyone on this event and what they're handling",
+      count: state?.crew.length,
+    },
+  ];
+  const current = NAV.find((n) => n.key === tab)!;
+  const liveLabel =
+    conn.state === "connected"
+      ? "Live"
+      : conn.state === "connecting" || conn.state === "idle"
+        ? "Connecting…"
+        : "Offline";
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-xl flex-col bg-bg">
-      <header className="flex items-center gap-3 border-b border-border bg-surface px-4 py-3">
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-serif text-[24px] leading-none tracking-[-0.02em]">{state?.event.name ?? "Loading…"}</p>
-          <p className="text-xs text-text-3">
-            {state?.me ? `${state.me.name} · ${state.me.role === "lead" ? "Lead" : "Crew"}` : " "} {openCount > 0 && <span className="text-open">· {openCount} open</span>}
+    <div className="flex h-dvh bg-bg">
+      {/* Laptop: sidebar */}
+      <aside
+        className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface lg:flex"
+        aria-label="Crew navigation"
+      >
+        <div className="border-b border-border px-5 pb-5 pt-5">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-text"
+            aria-label="Baton home"
+          >
+            <BatonMark className="h-[15px] w-[21px]" />
+            <span className="font-serif text-[22px] leading-none tracking-[-0.02em]">
+              Baton
+            </span>
+          </Link>
+          <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-ink">
+            Crew{state?.event.isDemo ? " · Demo" : ""}
+          </p>
+          <p className="mt-1 font-serif text-[24px] leading-[1.1] tracking-[-0.02em]">
+            {state?.event.name ?? "Loading…"}
           </p>
         </div>
-        {state?.event.isDemo && <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent">Demo</span>}
-      </header>
-      <ConnectionBanner state={conn.state} error={conn.error} onRetry={conn.retry} />
-      {nudge && (
-        <div role="alert" className="flex items-center gap-2 bg-urgent-soft px-4 py-2.5 text-[13px] text-urgent">
-          <BellRing className="size-4" aria-hidden />
-          <span className="flex-1">
-            {nudge.kind === "assigned" ? (
-              <>
-                {nudge.byName ?? "A lead"} assigned you <strong>#{nudge.number}</strong> — {nudge.title}
-              </>
-            ) : nudge.kind === "pass_offered" ? (
-              <>
-                {nudge.byName ?? "A teammate"} wants to pass you <strong>#{nudge.number}</strong> — {nudge.title}
-              </>
-            ) : nudge.kind === "pass_accepted" ? (
-              <>
-                {nudge.byName ?? "Your teammate"} took over <strong>#{nudge.number}</strong>. You&apos;re free.
-              </>
-            ) : nudge.kind === "pass_declined" ? (
-              <>
-                {nudge.byName ?? "Your teammate"} can&apos;t take <strong>#{nudge.number}</strong>. It&apos;s still yours.
-              </>
-            ) : (
-              <>
-                <strong>#{nudge.number}</strong> is unclaimed — {nudge.title}. You were asked to handle it.
-              </>
-            )}
-          </span>
-          {incidentsById.has(nudge.incidentId) && (
+        <nav className="flex-1 space-y-0.5 p-3" aria-label="Sections">
+          {NAV.map(({ key, Icon, label, count }) => (
             <button
-              className="font-medium underline underline-offset-2"
-              onClick={() => {
-                setOpenId(nudge.incidentId);
-                setNudge(null);
-              }}
+              key={key}
+              onClick={() => setTab(key)}
+              aria-current={tab === key ? "page" : undefined}
+              className={cx(
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                tab === key
+                  ? "bg-surface-2 font-medium text-text"
+                  : "text-text-2 hover:bg-surface-2/60 hover:text-text",
+              )}
             >
-              Open
+              <Icon className="size-[18px]" aria-hidden />
+              <span className="flex-1">{label}</span>
+              {!!count && (
+                <span
+                  className={cx(
+                    "min-w-5 rounded-full px-1.5 text-center text-[11px] font-semibold tabular-nums",
+                    key === "inbox"
+                      ? "bg-accent text-accent-ink"
+                      : "bg-surface-2 text-text-2",
+                    tab === key && key !== "inbox" && "bg-bg",
+                  )}
+                >
+                  {count}
+                </span>
+              )}
             </button>
+          ))}
+        </nav>
+        <div className="space-y-3 border-t border-border p-4">
+          {role === "organizer" && (
+            <Link
+              href={`/o/${eventId}`}
+              className="flex items-center gap-2 rounded-lg px-1 text-sm text-text-2 hover:text-text"
+            >
+              <LayoutDashboard className="size-4" aria-hidden /> Command centre
+            </Link>
           )}
-          <button aria-label="Dismiss" onClick={() => setNudge(null)}>
-            <X className="size-4" />
-          </button>
+          {state?.me && (
+            <div className="flex items-center gap-3">
+              <span className="grid size-9 place-items-center rounded-full bg-brand text-sm font-semibold text-white">
+                {state.me.name.slice(0, 1).toUpperCase()}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{state.me.name}</p>
+                <p className="flex items-center gap-1.5 text-xs text-text-3">
+                  <span
+                    className={cx(
+                      "size-1.5 rounded-full",
+                      connected ? "bg-done" : "bg-open",
+                    )}
+                    aria-hidden
+                  />
+                  {state.me.role === "lead" ? "Lead" : "Crew"} · {liveLabel}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </aside>
 
-      <main className="flex-1 overflow-y-auto px-3 py-3">
-        {!state && !error && <p className="p-6 text-center text-sm text-text-3">Loading the crew stream…</p>}
-        {error && error.code !== "forbidden" && <ErrorNote>{error.message}</ErrorNote>}
-        {state && tab === "stream" && (
-          <ol className="space-y-2.5" aria-label="Crew stream">
-            {earlier.length > 0 && (
-              <li>
-                <section aria-label="Earlier requests" className="space-y-2.5">
-                  <h2 className="px-1 text-xs font-medium text-text-3">Earlier requests still open</h2>
-                  {earlier.map((inc) => (
-                    <IncidentCard key={inc.id} eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onOpen={() => setOpenId(inc.id)} onPatch={patchIncident} onRefresh={refresh} />
-                  ))}
-                </section>
-              </li>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Phone: compact header */}
+        <header className="flex items-center gap-3 border-b border-border bg-surface px-4 py-3 lg:hidden">
+          <BatonMark className="h-[13px] w-[18px] shrink-0 text-text" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-serif text-[22px] leading-none tracking-[-0.02em]">
+              {state?.event.name ?? "Loading…"}
+            </p>
+            <p className="mt-0.5 text-xs text-text-3">
+              {state?.me
+                ? `${state.me.name} · ${state.me.role === "lead" ? "Lead" : "Crew"}`
+                : " "}
+              {openCount > 0 && (
+                <span className="text-open"> · {openCount} open</span>
+              )}
+            </p>
+          </div>
+          {role === "organizer" && (
+            <Link
+              href={`/o/${eventId}`}
+              className="rounded-full border border-border px-3 py-1 text-xs text-text-2"
+            >
+              Board
+            </Link>
+          )}
+          {state?.event.isDemo && (
+            <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent">
+              Demo
+            </span>
+          )}
+        </header>
+
+        {/* Laptop: section header */}
+        <header className="hidden items-end gap-4 border-b border-border px-8 pb-5 pt-7 lg:flex">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-serif text-[34px] font-normal leading-none tracking-[-0.025em]">
+              {current.label}
+            </h1>
+            <p className="mt-2 text-sm text-text-3">{current.hint}</p>
+          </div>
+          {openCount > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-open-soft px-3 py-1 text-[13px] font-medium text-open">
+              <span className="size-1.5 rounded-full bg-open" aria-hidden />{" "}
+              {openCount} need{openCount === 1 ? "s" : ""} an owner
+            </span>
+          )}
+        </header>
+
+        <ConnectionBanner
+          state={conn.state}
+          error={conn.error}
+          onRetry={conn.retry}
+        />
+        {nudge && (
+          <div
+            role="alert"
+            className="flex items-center gap-2 bg-urgent-soft px-4 py-2.5 text-[13px] text-urgent lg:px-8"
+          >
+            <BellRing className="size-4 shrink-0" aria-hidden />
+            <span className="flex-1">
+              {nudge.kind === "assigned" ? (
+                <>
+                  {nudge.byName ?? "A lead"} assigned you{" "}
+                  <strong>#{nudge.number}</strong> — {nudge.title}
+                </>
+              ) : nudge.kind === "pass_offered" ? (
+                <>
+                  {nudge.byName ?? "A teammate"} wants to pass you{" "}
+                  <strong>#{nudge.number}</strong> — {nudge.title}
+                </>
+              ) : nudge.kind === "pass_accepted" ? (
+                <>
+                  {nudge.byName ?? "Your teammate"} took over{" "}
+                  <strong>#{nudge.number}</strong>. You&apos;re free.
+                </>
+              ) : nudge.kind === "pass_declined" ? (
+                <>
+                  {nudge.byName ?? "Your teammate"} can&apos;t take{" "}
+                  <strong>#{nudge.number}</strong>. It&apos;s still yours.
+                </>
+              ) : (
+                <>
+                  <strong>#{nudge.number}</strong> is unclaimed — {nudge.title}.
+                  You were asked to handle it.
+                </>
+              )}
+            </span>
+            {incidentsById.has(nudge.incidentId) && (
+              <button
+                className="font-medium underline underline-offset-2"
+                onClick={() => {
+                  setOpenId(nudge.incidentId);
+                  setNudge(null);
+                }}
+              >
+                Open
+              </button>
             )}
-            {messages.length === 0 && earlier.length === 0 && conn.state === "connected" && (
-              <li className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-text-3">
-                No messages yet. Requests from attendees and crew show up here as cards.
-              </li>
-            )}
-            {messages.map((m) => {
-              if (m.messageType === "BTN:Incident") {
-                const inc = incidentsById.get(String(m.content.incidentId));
-                if (!inc) return null;
-                return (
-                  <li key={m.messageId}>
-                    <IncidentCard eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onOpen={() => setOpenId(inc.id)} onPatch={patchIncident} onRefresh={refresh} />
-                  </li>
-                );
-              }
-              if (m.messageType === "BTN:Nudge") return null; // shown as the alert banner
-              if (m.messageType !== "RC:TxtMsg") return null;
-              const own = m.senderUserId === state.me?.nexconnUserId;
-              const text = String((m.content as { text?: string; content?: string }).text ?? (m.content as { content?: string }).content ?? "");
-              const inc = incidentsByMessage.get(m.messageId) ?? (m.metadata.inc ? incidentsById.get(m.metadata.inc) : undefined);
-              const fromCrew = nameByUser.has(m.senderUserId);
-              return (
-                <li key={m.messageId} className={cx("flex flex-col", own ? "items-end" : "items-start")}>
-                  <button
-                    type="button"
-                    onClick={() => setSelected((cur) => (cur === m.messageId ? null : m.messageId))}
-                    aria-expanded={!inc && fromCrew ? selected === m.messageId : undefined}
-                    className={cx("max-w-[80%] rounded-2xl px-3.5 py-2 text-left text-[15px]", own ? "bg-accent text-accent-ink" : "border border-border bg-surface", inc && (own ? "rounded-br-md" : "rounded-bl-md"))}
-                  >
-                    {!own && <span className="mb-0.5 block text-xs font-medium text-text-3">{nameByUser.get(m.senderUserId) ?? "Crew"}</span>}
-                    <span className="block whitespace-pre-wrap break-words">{text}</span>
-                  </button>
-                  {inc && (
-                    <div className="mt-1 w-[88%] max-w-sm">
-                      <IncidentCard attached eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onOpen={() => setOpenId(inc.id)} onPatch={patchIncident} onRefresh={refresh} />
-                    </div>
-                  )}
-                  {!inc && fromCrew && selected === m.messageId && (
-                    <MakeRequest eventId={eventId} messageId={m.messageId} senderUserId={m.senderUserId} text={text} onDone={() => { setSelected(null); refresh(); }} />
-                  )}
-                </li>
-              );
-            })}
-            <div ref={bottom} />
-          </ol>
-        )}
-        {state && tab === "mine" && (
-          <div className="space-y-2.5">
-            {mine.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-text-3">Nothing claimed yet. Tap “I’ll take it” on a card to own it.</p>
-            ) : (
-              mine.map((inc) => <IncidentCard key={inc.id} eventId={eventId} incident={inc} meId={state.me?.id ?? null} isLead={isLead} now={now} flashAt={flash[inc.id]} onOpen={() => setOpenId(inc.id)} onPatch={patchIncident} onRefresh={refresh} />)
-            )}
+            <button aria-label="Dismiss" onClick={() => setNudge(null)}>
+              <X className="size-4" />
+            </button>
           </div>
         )}
-        {state && tab === "inbox" && (
-          <Inbox threads={dms.threads} crew={state.crew} meId={state.me?.nexconnUserId ?? null} now={now} onOpen={setDmPeer} onStart={() => setTab("crew")} />
-        )}
-        {state && tab === "crew" && (
-          <ul className="divide-y divide-border rounded-xl border border-border bg-surface">
-            {state.crew.map((c) => (
-              <li key={c.id} className="flex items-center gap-3 px-4 py-3">
-                <span className="grid size-8 place-items-center rounded-full bg-surface-2 text-sm font-semibold">{c.name.slice(0, 1).toUpperCase()}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">
-                    {c.name} {c.id === state.me?.id && <span className="text-text-3">(you)</span>}
-                  </p>
-                  <p className="text-xs text-text-3">
-                    {c.role === "lead" ? "Lead" : "Crew"}
-                    {c.zoneId ? ` · ${state.zones.find((z) => z.id === c.zoneId)?.name ?? ""}` : ""}
-                    {c.isSimulated ? " · simulated" : ""}
-                  </p>
-                </div>
-                {c.id !== state.me?.id && !c.isSimulated && (
-                  <Button size="sm" variant="ghost" onClick={() => setDmPeer(c)} aria-label={`Message ${c.name}`}>
-                    <MessageCircle className="size-4" aria-hidden /> Message
-                  </Button>
+
+        <div className="flex min-h-0 flex-1">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <main className="flex-1 overflow-y-auto">
+              <div
+                className={cx(
+                  "mx-auto w-full px-3 py-3 lg:px-8 lg:py-6",
+                  tab === "inbox" || tab === "crew" ? "max-w-5xl" : "max-w-3xl",
                 )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </main>
-
-      {state && tab === "stream" && <Composer eventId={eventId} groupId={state.event.groupId} zones={state.zones} connected={conn.state === "connected"} onSent={(m) => setMessages((cur) => mergeMessages(cur, [m]))} onRequested={refresh} />}
-
-      <nav className="grid grid-cols-4 border-t border-border bg-surface" aria-label="Sections">
-        {(
-          [
-            ["stream", MessageSquare, "Stream"],
-            ["mine", ListTodo, `My tasks${mine.length ? ` (${mine.length})` : ""}`],
-            ["inbox", InboxIcon, "Inbox"],
-            ["crew", Users, "Crew"],
-          ] as const
-        ).map(([key, Icon, label]) => (
-          <button key={key} onClick={() => setTab(key)} aria-current={tab === key} className={cx("relative flex flex-col items-center gap-0.5 py-2 text-[11px]", tab === key ? "text-accent" : "text-text-3")}>
-            <Icon className="size-5" aria-hidden />
-            {label}
-            {key === "inbox" && dms.unread > 0 && (
-              <span className="absolute left-1/2 top-1 ml-2 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-semibold text-accent-ink" aria-label={`${dms.unread} unread`}>
-                {dms.unread}
-              </span>
+              >
+                {!state && !error && (
+                  <div className="space-y-2.5" aria-label="Loading">
+                    {[0, 1, 2].map((k) => (
+                      <div
+                        key={k}
+                        className="h-24 animate-pulse rounded-xl bg-surface-2"
+                      />
+                    ))}
+                  </div>
+                )}
+                {error && error.code !== "forbidden" && (
+                  <ErrorNote>{error.message}</ErrorNote>
+                )}
+                {state && tab === "stream" && (
+                  <ol
+                    className="space-y-2.5 lg:space-y-3"
+                    aria-label="Crew stream"
+                  >
+                    {earlier.length > 0 && (
+                      <li>
+                        <section
+                          aria-label="Earlier requests"
+                          className="space-y-2.5"
+                        >
+                          <h2 className="px-1 text-xs font-medium text-text-3">
+                            Earlier requests still open
+                          </h2>
+                          {earlier.map((inc) => card(inc))}
+                        </section>
+                      </li>
+                    )}
+                    {messages.length === 0 &&
+                      earlier.length === 0 &&
+                      conn.state === "connected" && (
+                        <li className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-text-3">
+                          <MessageSquare
+                            className="mx-auto mb-2 size-5"
+                            aria-hidden
+                          />
+                          No messages yet. Requests from attendees and crew show
+                          up here as cards.
+                        </li>
+                      )}
+                    {messages.map((m) => {
+                      if (m.messageType === "BTN:Incident") {
+                        const inc = incidentsById.get(
+                          String(m.content.incidentId),
+                        );
+                        if (!inc) return null;
+                        return <li key={m.messageId}>{card(inc)}</li>;
+                      }
+                      if (m.messageType === "BTN:Nudge") return null; // shown as the alert banner
+                      if (m.messageType !== "RC:TxtMsg") return null;
+                      const own = m.senderUserId === state.me?.nexconnUserId;
+                      const text = String(
+                        (m.content as { text?: string; content?: string })
+                          .text ??
+                          (m.content as { content?: string }).content ??
+                          "",
+                      );
+                      const inc =
+                        incidentsByMessage.get(m.messageId) ??
+                        (m.metadata.inc
+                          ? incidentsById.get(m.metadata.inc)
+                          : undefined);
+                      const fromCrew = nameByUser.has(m.senderUserId);
+                      return (
+                        <li
+                          key={m.messageId}
+                          className={cx(
+                            "flex flex-col",
+                            own ? "items-end" : "items-start",
+                          )}
+                        >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelected((cur) =>
+                                cur === m.messageId ? null : m.messageId,
+                              )
+                            }
+                            aria-expanded={
+                              !inc && fromCrew
+                                ? selected === m.messageId
+                                : undefined
+                            }
+                            className={cx(
+                              "max-w-[80%] rounded-2xl px-3.5 py-2 text-left text-[15px] lg:max-w-[70%]",
+                              own
+                                ? "bg-accent text-accent-ink"
+                                : "border border-border bg-surface",
+                              inc && (own ? "rounded-br-md" : "rounded-bl-md"),
+                            )}
+                          >
+                            {!own && (
+                              <span className="mb-0.5 block text-xs font-medium text-text-3">
+                                {nameByUser.get(m.senderUserId) ?? "Crew"}
+                              </span>
+                            )}
+                            <span className="block whitespace-pre-wrap break-words">
+                              {text}
+                            </span>
+                          </button>
+                          {inc && (
+                            <div className="mt-1 w-[88%] max-w-sm">
+                              {card(inc, { attached: true })}
+                            </div>
+                          )}
+                          {!inc && fromCrew && selected === m.messageId && (
+                            <MakeRequest
+                              eventId={eventId}
+                              messageId={m.messageId}
+                              senderUserId={m.senderUserId}
+                              text={text}
+                              onDone={() => {
+                                setSelected(null);
+                                refresh();
+                              }}
+                            />
+                          )}
+                        </li>
+                      );
+                    })}
+                    <div ref={bottom} />
+                  </ol>
+                )}
+                {state && tab === "mine" && (
+                  <div className="grid gap-2.5 lg:gap-3">
+                    {mine.length === 0 ? (
+                      <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-text-3">
+                        Nothing claimed yet. Tap “I’ll take it” on a card to own
+                        it.
+                      </p>
+                    ) : (
+                      mine.map((inc) => card(inc))
+                    )}
+                  </div>
+                )}
+                {state && tab === "inbox" && (
+                  <div className="lg:grid lg:h-[calc(100dvh-190px)] lg:grid-cols-[320px_1fr] lg:gap-5">
+                    <div className="min-h-0 lg:overflow-y-auto">
+                      <Inbox
+                        threads={dms.threads}
+                        crew={state.crew}
+                        meId={state.me?.nexconnUserId ?? null}
+                        now={now}
+                        onOpen={openDm}
+                        onStart={() => setTab("crew")}
+                      />
+                    </div>
+                    <section
+                      className="hidden min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface lg:flex"
+                      aria-label="Conversation"
+                    >
+                      {dmPeer ? (
+                        <>
+                          <header className="flex items-center gap-3 border-b border-border px-5 py-3.5">
+                            <span className="grid size-8 place-items-center rounded-full bg-surface-2 text-sm font-semibold">
+                              {dmPeer.name.slice(0, 1).toUpperCase()}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold">
+                                {dmPeer.name}
+                              </p>
+                              <p className="text-xs text-text-3">
+                                {dmPeer.role === "lead" ? "Lead" : "Crew"} ·
+                                private Nexconn conversation
+                              </p>
+                            </div>
+                          </header>
+                          <div className="flex min-h-0 flex-1 flex-col">
+                            <DirectThread
+                              key={dmPeer.id}
+                              peerUserId={dmPeer.nexconnUserId}
+                              peerName={dmPeer.name}
+                              meUserId={state.me?.nexconnUserId ?? null}
+                              connected={connected}
+                              onActivity={dms.refresh}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="grid flex-1 place-items-center p-8 text-center text-sm text-text-3">
+                          <div>
+                            <MessageCircle
+                              className="mx-auto mb-2 size-6"
+                              aria-hidden
+                            />
+                            Pick a conversation, or message someone from Crew.
+                          </div>
+                        </div>
+                      )}
+                    </section>
+                  </div>
+                )}
+                {state && tab === "crew" && (
+                  <ul className="grid gap-2.5 sm:grid-cols-2 lg:gap-3 2xl:grid-cols-3">
+                    {state.crew.map((c) => {
+                      const load = loadOf(c.id);
+                      const zone = c.zoneId
+                        ? state.zones.find((z) => z.id === c.zoneId)?.name
+                        : null;
+                      return (
+                        <li
+                          key={c.id}
+                          className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3.5"
+                        >
+                          <span
+                            className={cx(
+                              "grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold",
+                              c.id === state.me?.id
+                                ? "bg-brand text-white"
+                                : "bg-surface-2",
+                            )}
+                          >
+                            {c.name.slice(0, 1).toUpperCase()}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {c.name}{" "}
+                              {c.id === state.me?.id && (
+                                <span className="font-normal text-text-3">
+                                  (you)
+                                </span>
+                              )}
+                            </p>
+                            <p className="truncate text-xs text-text-3">
+                              {c.role === "lead" ? "Lead" : "Crew"}
+                              {zone ? ` · ${zone}` : ""}
+                              {c.isSimulated ? " · simulated" : ""}
+                            </p>
+                            <p
+                              className={cx(
+                                "mt-1 text-xs",
+                                load ? "text-claimed" : "text-text-3",
+                              )}
+                            >
+                              {load
+                                ? `On ${load} request${load === 1 ? "" : "s"}`
+                                : "Free"}
+                            </p>
+                          </div>
+                          {c.id !== state.me?.id && !c.isSimulated && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => openDm(c)}
+                              aria-label={`Message ${c.name}`}
+                            >
+                              <MessageCircle className="size-4" aria-hidden />{" "}
+                              Message
+                            </Button>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </main>
+            {state && tab === "stream" && (
+              <Composer
+                eventId={eventId}
+                groupId={state.event.groupId}
+                zones={state.zones}
+                connected={conn.state === "connected"}
+                onSent={(m) => setMessages((cur) => mergeMessages(cur, [m]))}
+                onRequested={refresh}
+              />
             )}
-          </button>
-        ))}
-      </nav>
+          </div>
+
+          {/* Wide laptop: the queue that needs an owner, always in view */}
+          {state && (
+            <aside
+              className="hidden w-[340px] shrink-0 flex-col border-l border-border bg-surface/60 xl:flex"
+              aria-labelledby="queue-h"
+            >
+              <h2
+                id="queue-h"
+                className="flex items-center gap-2 border-b border-border px-5 py-4 text-[13px] font-semibold text-text-2"
+              >
+                <span className="size-2 rounded-full bg-open" aria-hidden />
+                Needs an owner
+                <span className="font-normal text-text-3">{openCount}</span>
+              </h2>
+              <div className="flex-1 space-y-2.5 overflow-y-auto p-4">
+                {waiting.length === 0 ? (
+                  <p className="rounded-xl border border-dashed border-border p-5 text-center text-[13px] text-text-3">
+                    Nothing waiting. New requests land here.
+                  </p>
+                ) : (
+                  waiting.map((inc) => card(inc, { compact: true }))
+                )}
+              </div>
+            </aside>
+          )}
+        </div>
+
+        {/* Phone: bottom tabs */}
+        <nav
+          className="grid grid-cols-4 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+          aria-label="Sections"
+        >
+          {NAV.map(({ key, Icon, label, count }) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              aria-current={tab === key ? "page" : undefined}
+              className={cx(
+                "relative flex flex-col items-center gap-1 pb-2 pt-1.5 text-[11px]",
+                tab === key ? "font-medium text-text" : "text-text-3",
+              )}
+            >
+              <span
+                className={cx(
+                  "grid h-7 w-12 place-items-center rounded-full transition-colors",
+                  tab === key && "bg-surface-2",
+                )}
+              >
+                <Icon className="size-[18px]" aria-hidden />
+              </span>
+              {label}
+              {!!count && (key === "inbox" || key === "mine") && (
+                <span
+                  className={cx(
+                    "absolute left-1/2 top-1 ml-3 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] font-semibold",
+                    key === "inbox"
+                      ? "bg-accent text-accent-ink"
+                      : "bg-claimed text-white",
+                  )}
+                  aria-label={`${count} ${key === "inbox" ? "unread" : "tasks"}`}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
       {state && openId && incidentsById.get(openId) && (
         <IncidentDetail
           eventId={eventId}
@@ -281,7 +838,7 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
           onClose={() => setOpenId(null)}
         />
       )}
-      {state && dmPeer && (
+      {state && dmPeer && !desktop && (
         <Sheet
           onClose={() => {
             setDmPeer(null);
@@ -289,27 +846,66 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
           }}
           title={
             <span>
-              {dmPeer.name} <span className="font-normal text-text-3">· {dmPeer.role === "lead" ? "lead" : "crew"}</span>
+              {dmPeer.name}{" "}
+              <span className="font-normal text-text-3">
+                · {dmPeer.role === "lead" ? "lead" : "crew"}
+              </span>
             </span>
           }
         >
           <div className="flex h-full min-h-[60dvh] flex-col lg:min-h-full">
-            <DirectThread peerUserId={dmPeer.nexconnUserId} peerName={dmPeer.name} meUserId={state.me?.nexconnUserId ?? null} connected={connected} onActivity={dms.refresh} />
+            <DirectThread
+              peerUserId={dmPeer.nexconnUserId}
+              peerName={dmPeer.name}
+              meUserId={state.me?.nexconnUserId ?? null}
+              connected={connected}
+              onActivity={dms.refresh}
+            />
           </div>
         </Sheet>
-      )}
-      {role === "organizer" && (
-        <Link href={`/o/${eventId}`} className="fixed right-3 top-3 hidden rounded-md bg-surface px-2 py-1 text-xs text-text-2 shadow-pop sm:block">
-          Board
-        </Link>
       )}
     </div>
   );
 }
 
+const DESKTOP = "(min-width: 1024px)";
+/** True at the `lg` breakpoint and up, where the crew app uses its laptop layout. */
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const m = window.matchMedia(DESKTOP);
+      m.addEventListener("change", onChange);
+      return () => m.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(DESKTOP).matches,
+    () => false,
+  );
+}
+
+/** Baton's striped half-sun, the same mark as the landing page. */
+function BatonMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 28 20" aria-hidden className={className}>
+      <clipPath id="baton-mark-bands">
+        <rect width="28" height="9" />
+        <rect y="11" width="28" height="3" />
+        <rect y="16" width="28" height="2" />
+      </clipPath>
+      <circle
+        cx="14"
+        cy="18"
+        r="13"
+        clipPath="url(#baton-mark-bands)"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 function mergeMessages(a: ChatMessage[], b: ChatMessage[]) {
   const byId = new Map<string, ChatMessage>();
-  for (const m of [...a, ...b]) byId.set(m.messageId, { ...byId.get(m.messageId), ...m });
+  for (const m of [...a, ...b])
+    byId.set(m.messageId, { ...byId.get(m.messageId), ...m });
   return [...byId.values()].sort((x, y) => x.sentTime - y.sentTime);
 }
 
@@ -354,7 +950,15 @@ function Composer({
     setSending(true);
     setError(null);
     try {
-      await api(`/api/events/${eventId}/reports`, { method: "POST", body: JSON.stringify({ category, zoneId: zoneId || null, text: text.trim(), urgent }) });
+      await api(`/api/events/${eventId}/reports`, {
+        method: "POST",
+        body: JSON.stringify({
+          category,
+          zoneId: zoneId || null,
+          text: text.trim(),
+          urgent,
+        }),
+      });
       setText("");
       setSheet(false);
       onRequested();
@@ -366,68 +970,137 @@ function Composer({
   }
 
   return (
-    <div className="border-t border-border bg-surface px-3 py-2.5">
-      {error && <p role="alert" className="mb-2 text-[13px] text-danger">{error}</p>}
-      {sheet && (
-        <div className="mb-3 space-y-3 rounded-xl border border-border bg-surface-2 p-3">
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Category">
-            {Object.entries(CATEGORY_LABEL).map(([k, label]) => (
-              <button key={k} role="radio" aria-checked={category === k} onClick={() => setCategory(k)} className={cx("rounded-full border px-3 py-1 text-[13px]", category === k ? "border-accent bg-accent-soft text-accent" : "border-border bg-surface text-text-2")}>
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <select aria-label="Location" className={cx(inputClass, "h-10 flex-1 text-sm")} value={zoneId} onChange={(e) => setZoneId(e.target.value)}>
-              <option value="">Location (optional)</option>
-              {zones.map((z) => (
-                <option key={z.id} value={z.id}>
-                  {z.name}
-                </option>
+    <div className="border-t border-border bg-surface px-3 py-2.5 lg:px-8 lg:py-4">
+      <div className="mx-auto w-full max-w-3xl">
+        {error && (
+          <p role="alert" className="mb-2 text-[13px] text-danger">
+            {error}
+          </p>
+        )}
+        {sheet && (
+          <div className="mb-3 space-y-3 rounded-xl border border-border bg-surface-2 p-3">
+            <div
+              className="flex flex-wrap gap-1.5"
+              role="radiogroup"
+              aria-label="Category"
+            >
+              {Object.entries(CATEGORY_LABEL).map(([k, label]) => (
+                <button
+                  key={k}
+                  role="radio"
+                  aria-checked={category === k}
+                  onClick={() => setCategory(k)}
+                  className={cx(
+                    "rounded-full border px-3 py-1 text-[13px]",
+                    category === k
+                      ? "border-accent bg-accent-soft text-accent"
+                      : "border-border bg-surface text-text-2",
+                  )}
+                >
+                  {label}
+                </button>
               ))}
-            </select>
-            <label className="flex items-center gap-1.5 text-[13px] text-text-2">
-              <input type="checkbox" checked={urgent} onChange={(e) => setUrgent(e.target.checked)} /> Urgent
-            </label>
+            </div>
+            <div className="flex gap-2">
+              <select
+                aria-label="Location"
+                className={cx(inputClass, "h-10 flex-1 text-sm")}
+                value={zoneId}
+                onChange={(e) => setZoneId(e.target.value)}
+              >
+                <option value="">Location (optional)</option>
+                {zones.map((z) => (
+                  <option key={z.id} value={z.id}>
+                    {z.name}
+                  </option>
+                ))}
+              </select>
+              <label className="flex items-center gap-1.5 text-[13px] text-text-2">
+                <input
+                  type="checkbox"
+                  checked={urgent}
+                  onChange={(e) => setUrgent(e.target.checked)}
+                />{" "}
+                Urgent
+              </label>
+            </div>
           </div>
-        </div>
-      )}
-      <div className="flex items-end gap-2">
-        <Button variant={sheet ? "primary" : "secondary"} size="md" aria-label={sheet ? "Close request form" : "Create a request"} onClick={() => setSheet((s) => !s)} className="w-10 px-0">
-          {sheet ? <X className="size-4" /> : <Plus className="size-4" />}
-        </Button>
-        <textarea
-          rows={1}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-              e.preventDefault();
-              if (sheet) void request();
-              else void send();
+        )}
+        <div className="flex items-end gap-2">
+          <Button
+            variant={sheet ? "primary" : "secondary"}
+            size="md"
+            aria-label={sheet ? "Close request form" : "Create a request"}
+            onClick={() => setSheet((s) => !s)}
+            className="w-10 px-0"
+          >
+            {sheet ? <X className="size-4" /> : <Plus className="size-4" />}
+          </Button>
+          <textarea
+            rows={1}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (
+                e.key === "Enter" &&
+                !e.shiftKey &&
+                !e.nativeEvent.isComposing
+              ) {
+                e.preventDefault();
+                if (sheet) void request();
+                else void send();
+              }
+            }}
+            placeholder={
+              sheet
+                ? "What's needed? (optional)"
+                : connected
+                  ? "Message the crew"
+                  : "Connecting…"
             }
-          }}
-          placeholder={sheet ? "What's needed? (optional)" : connected ? "Message the crew" : "Connecting…"}
-          aria-label={sheet ? "Request details" : "Message"}
-          className={cx(inputClass, "min-h-10 resize-none py-2 text-[15px]")}
-        />
-        <Button variant="primary" busy={sending} disabled={!connected && !sheet} aria-label={sheet ? "Post request" : "Send"} onClick={sheet ? request : send} className={sheet ? "" : "w-10 px-0"}>
-          {sheet ? "Post" : <Send className="size-4" />}
-        </Button>
+            aria-label={sheet ? "Request details" : "Message"}
+            className={cx(inputClass, "min-h-10 resize-none py-2 text-[15px]")}
+          />
+          <Button
+            variant="primary"
+            busy={sending}
+            disabled={!connected && !sheet}
+            aria-label={sheet ? "Post request" : "Send"}
+            onClick={sheet ? request : send}
+            className={sheet ? "" : "w-10 px-0"}
+          >
+            {sheet ? "Post" : <Send className="size-4" />}
+          </Button>
+        </div>
       </div>
     </div>
   );
 }
 
 /** Fallback when detection missed a request: the same chat message becomes claimable in place. */
-function MakeRequest({ eventId, messageId, senderUserId, text, onDone }: { eventId: string; messageId: string; senderUserId: string; text: string; onDone: () => void }) {
+function MakeRequest({
+  eventId,
+  messageId,
+  senderUserId,
+  text,
+  onDone,
+}: {
+  eventId: string;
+  messageId: string;
+  senderUserId: string;
+  text: string;
+  onDone: () => void;
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function make() {
     setBusy(true);
     setError(null);
     try {
-      await api(`/api/events/${eventId}/chat-requests`, { method: "POST", body: JSON.stringify({ messageId, senderUserId, text }) });
+      await api(`/api/events/${eventId}/chat-requests`, {
+        method: "POST",
+        body: JSON.stringify({ messageId, senderUserId, text }),
+      });
       onDone();
     } catch (e) {
       setError((e as Error).message);
@@ -440,11 +1113,19 @@ function MakeRequest({ eventId, messageId, senderUserId, text, onDone }: { event
       <Button size="sm" variant="secondary" busy={busy} onClick={make}>
         <Sparkles className="size-3.5" aria-hidden /> Make it a request
       </Button>
-      {error && <span role="alert" className="text-[13px] text-danger">{error}</span>}
+      {error && (
+        <span role="alert" className="text-[13px] text-danger">
+          {error}
+        </span>
+      )}
     </div>
   );
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center gap-2 p-6 text-center">{children}</div>;
+  return (
+    <div className="mx-auto flex min-h-dvh max-w-sm flex-col items-center justify-center gap-2 p-6 text-center">
+      {children}
+    </div>
+  );
 }
