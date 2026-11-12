@@ -15,7 +15,15 @@
 - **No always-on worker.** `BATON_DISABLE_WORKER=1` turns the in-process loops off. Escalation and reconciliation instead run after `/state` requests, which every open crew or organizer page makes every 30 s (`runWorkerTick`, throttled, row-locked). **Limit:** if no Baton page is open anywhere, escalations wait until one is.
 - Env vars (production): the Nexconn key, secret and data center; a fresh `SESSION_SECRET`; `BATON_DISABLE_WORKER`; `PUBLIC_BASE_URL`; and the Neon-provided `DATABASE_URL*`.
 - The GitHub repository you connected is linked, so **pushes to `main` will auto-deploy.**
-- **Still to do in the Nexconn Console:** set the webhook URL `https://baton-sable.vercel.app/api/nexconn/webhook` with event `message:send`. Until then, crew-chat lines aren't auto-detected as requests; the manual "Make it a request" still works. The Web SDK connected from the new domain without an allowlist change.
+- **Custom domain:** https://baton.priyanshnarang.in (added by the owner) serves the same deployment.
+- **Nexconn Console → Chat → Chat Settings → Webhooks:**
+  - URL: `https://baton.priyanshnarang.in/api/nexconn/webhook`
+  - Events, and why each one:
+    - **Message → `message:send`**: crew chat lines become requests automatically.
+    - **User → `user:connection_status`**: the live online dot for each crew member on the board, the crew list and the assign/pass pickers.
+  - Nothing else: Baton has no use for the remaining events yet. The `pre_messaging` ones are greyed out on our plan.
+- **Checking it:** `/api/health` shows `webhooks.lastType` and `lastAt` once Nexconn has called us. On 12 Nov it was still `null`: no delivery yet, because the Console event selection wasn't saved yet.
+- The Web SDK connected from the new domain without an allowlist change.
 
 ---
 
