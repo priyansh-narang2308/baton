@@ -20,30 +20,19 @@
 
 .hero-57 .hero {
   position: relative;
-  min-height: max(720px, var(--ok-design-h, 100vh));
   overflow: hidden;
+  padding-bottom: 104px;
   background: #fff;
 }
 
-/* component forces position:relative on its root, so it lives in an absolute layer */
-.hero-57 .hero-scene {
-  position: absolute;
-  inset: 0;
-}
-
-/* white wash over the top of the scene, melting into the sky */
-.hero-57 .hero-fade {
+/* soft warm light behind the product screens, in the brand's terracotta */
+.hero-57 .hero-glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    #fff 0%,
-    #fff 42%,
-    rgba(255, 255, 255, 0.85) 50%,
-    rgba(255, 255, 255, 0.35) 58%,
-    rgba(255, 255, 255, 0) 66%
-  );
+  background:
+    radial-gradient(60% 42% at 50% 78%, rgba(244, 164, 147, 0.34), rgba(244, 164, 147, 0) 70%),
+    linear-gradient(to bottom, #fff 0%, #fff 45%, #fbf1ec 100%);
 }
 
 .hero-57 .nav {
@@ -161,22 +150,6 @@
 }
 
 @media (max-width: 900px) {
-  /* scene fits by width, so on narrow screens widen its layer to keep the car and sky large */
-  .hero-57 .hero-scene {
-    top: 46%;
-    left: 50%;
-    right: auto;
-    width: 260%;
-    transform: translateX(-50%);
-  }
-  .hero-57 .hero-fade {
-    background: linear-gradient(
-      to bottom,
-      #fff 0%,
-      #fff 54%,
-      rgba(255, 255, 255, 0) 66%
-    );
-  }
   .hero-57 .nav {
     grid-template-columns: 1fr auto;
     padding: 20px 16px 0;
@@ -310,5 +283,95 @@
   }
   .hero-57 .float-nav nav {
     display: none;
+  }
+}
+
+/* --- Product stage: real screens, board with a crew phone in front --- */
+.hero-57 .hero-stage {
+  position: relative;
+  z-index: 1;
+  width: min(1120px, calc(100% - 96px));
+  margin: 72px auto 0;
+  padding-right: 120px;
+}
+.hero-57 .stage-board {
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(60, 30, 20, 0.06),
+    0 24px 60px -18px rgba(120, 50, 30, 0.28);
+}
+.hero-57 .stage-bar {
+  display: flex;
+  gap: 7px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(10, 10, 10, 0.06);
+  background: #fbf8f6;
+}
+.hero-57 .stage-bar span {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #e4dcd7;
+}
+.hero-57 .hero-stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.hero-57 .stage-phone {
+  position: absolute;
+  right: 0;
+  bottom: -56px;
+  width: 260px;
+  overflow: hidden;
+  border-radius: 34px;
+  border: 7px solid #111;
+  background: #111;
+  box-shadow: 0 30px 70px -20px rgba(60, 25, 15, 0.45);
+}
+.hero-57 .stage-phone img {
+  border-radius: 27px;
+}
+.hero-57 .hero-stage figcaption {
+  margin-top: 18px;
+  font-size: 13px;
+  color: #8a8380;
+}
+@media (max-width: 900px) {
+  .hero-57 .hero {
+    padding-bottom: 64px;
+  }
+  .hero-57 .hero-stage {
+    width: calc(100% - 32px);
+    margin-top: 48px;
+    padding-right: 0;
+  }
+  .hero-57 .stage-board {
+    border-radius: 12px;
+    margin-right: 22%;
+  }
+  .hero-57 .stage-bar {
+    padding: 8px 10px;
+  }
+  .hero-57 .stage-bar span {
+    width: 7px;
+    height: 7px;
+  }
+  .hero-57 .stage-phone {
+    width: 34%;
+    bottom: -28px;
+    border-radius: 20px;
+    border-width: 4px;
+  }
+  .hero-57 .stage-phone img {
+    border-radius: 16px;
+  }
+  .hero-57 .hero-stage figcaption {
+    margin-top: 14px;
+    max-width: 60%;
+    font-size: 12px;
   }
 }

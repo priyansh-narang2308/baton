@@ -1,8 +1,9 @@
 /* eslint-disable */
 // @ts-nocheck
 "use client";
-// Originkit hero-57, adapted for Baton: our nav, copy and calls to action over the original sunset scene,
-// with a staged entrance (Framer Motion) and a compact nav that follows you down the page.
+// Originkit hero-57, adapted for Baton: our nav, copy and calls to action above real product screens
+// (the organizer board and a crew phone, captured from a demo event on production), with a staged entrance
+// (Framer Motion) and a compact nav that follows you down the page.
 import {
   AnimatePresence,
   motion,
@@ -13,7 +14,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { TryDemoButton } from "@/app/try-demo";
 import { EASE } from "@/components/landing-motion";
-import SunsetVelocity from "@/components/originkit/ui/hero-57/sunset-velocity";
+import Image from "next/image";
 
 const links = [
   { href: "#how", label: "How it works" },
@@ -24,8 +25,8 @@ const links = [
 
 const HEADLINE: { text: string; muted?: boolean }[] = [
   { text: "Every" },
-  { text: "report" },
-  { text: "gets", muted: true },
+  { text: "request" },
+  { text: "has", muted: true },
   { text: "an", muted: true },
   { text: "owner." },
 ];
@@ -39,7 +40,7 @@ const rise = (delay: number) => ({
 function Logo() {
   return (
     <>
-      {/* striped half-sun: echoes the sunset in the scene */}
+      {/* striped half-sun: the Baton mark */}
       <svg viewBox="0 0 28 20" aria-hidden>
         <clipPath id="sun-bands">
           <rect width="28" height="9" />
@@ -98,33 +99,7 @@ function FloatingNav() {
 export default function App({ error }: { error?: string }) {
   return (
     <section className="hero" id="top">
-      {/* The outer div keeps the CSS centring transform on phones; motion animates only the inner wrapper. */}
-      <div className="hero-scene" aria-hidden>
-        <motion.div
-          style={{ width: "100%", height: "100%" }}
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.6, ease: EASE, delay: 0.1 }}
-        >
-          <SunsetVelocity
-            background="#ffffff"
-            skyTop="#F7D3C8"
-            skyHorizon="#F4A493"
-            advanced={{
-              sunX: 1,
-              sunY: 61,
-              sunSize: 90,
-              vignette: 0,
-              hazeColor: "#F6C2B4",
-              hazeOpacity: 60,
-              turbineFar: "#D49AA2",
-              cloudColor: "#E7A0A2",
-            }}
-            style={{ minWidth: 0, minHeight: 0 }}
-          />
-        </motion.div>
-      </div>
-      <div className="hero-fade" />
+      <div className="hero-glow" aria-hidden />
 
       <motion.header
         className="nav"
@@ -156,7 +131,7 @@ export default function App({ error }: { error?: string }) {
         <motion.p className="eyebrow" {...rise(0.15)}>
           Real-time incident coordination for event crews
         </motion.p>
-        <h1 aria-label="Every report gets an owner.">
+        <h1 aria-label="Every request has an owner.">
           {HEADLINE.map((w, k) => (
             <motion.span
               key={k}
@@ -184,6 +159,39 @@ export default function App({ error }: { error?: string }) {
           </Link>
         </motion.div>
       </div>
+
+      <motion.figure
+        className="hero-stage"
+        initial={{ opacity: 0, y: 48 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.1, ease: EASE, delay: 0.9 }}
+      >
+        <div className="stage-board">
+          <div className="stage-bar" aria-hidden>
+            <span />
+            <span />
+            <span />
+          </div>
+          <Image
+            src="/hero/board.webp"
+            alt="The Baton board for a demo event: one request still needs an owner, and Riya owns the water-station request."
+            width={2560}
+            height={1440}
+            priority
+            sizes="(max-width: 900px) 100vw, 1120px"
+          />
+        </div>
+        <div className="stage-phone">
+          <Image
+            src="/hero/phone.webp"
+            alt="Riya's crew phone: she is on the water-station request, and a chat message about the Hall B mic became a new request."
+            width={1170}
+            height={2340}
+            sizes="(max-width: 900px) 34vw, 260px"
+          />
+        </div>
+        <figcaption>Real screens from a Baton demo event.</figcaption>
+      </motion.figure>
 
       <FloatingNav />
     </section>

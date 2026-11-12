@@ -3,7 +3,7 @@
 /*
  * One look across the app and the landing page: warm white surfaces, near-black ink and pill buttons, a sunset
  * coral for brand detail. Status colours stay distinct because they carry meaning (open / on it / fixed / urgent).
- * Light only, to match the landing page's sunset hero.
+ * Light only, to match the landing page hero.
  */
 :root {
   color-scheme: light;

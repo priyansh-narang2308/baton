@@ -23,7 +23,7 @@ import { MotionRoot, Reveal, Stagger, StaggerItem } from "@/components/landing-m
 import { TryDemoButton } from "./try-demo";
 
 /*
- * Marketing page. The hero is Originkit's hero-57 (sunset scene), adapted with our copy; the rest follows its
+ * Marketing page. The hero is Originkit's hero-57, adapted with our copy over real product screens; the rest follows its
  * look: white and warm surfaces, a serif display face, black pill buttons. Every claim describes something the
  * product does today; there are no customer logos, testimonials or usage numbers because we don't have them yet.
  */

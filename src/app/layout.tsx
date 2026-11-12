@@ -8,7 +8,7 @@ const body = Inter({ subsets: ["latin"], variable: "--font-body" });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Baton — every request gets an owner",
+  title: "Baton — every request has an owner",
   description: "Real-time coordination for event crews: QR onboarding, live incident cards, duplicate-report merging and closed-loop updates for attendees.",
 };
 
