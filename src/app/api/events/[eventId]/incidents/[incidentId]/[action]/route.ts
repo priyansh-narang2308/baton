@@ -9,6 +9,7 @@ import {
   dismissSuggestion,
   DomainError,
   endPass,
+  logHuddle,
   mergeIncidents,
   offerPass,
   releaseIncident,
@@ -19,6 +20,12 @@ import { body, crewActor, handle, projectLater } from "@/server/http";
 
 const Merge = z.object({ targetIncidentId: z.string().min(1).max(40) });
 const Assign = z.object({ memberId: z.string().min(1).max(40) });
+const Huddle = z.object({
+  callId: z.string().min(1).max(128),
+  withMemberId: z.string().min(1).max(40),
+  outcome: z.enum(["connected", "no_answer", "declined", "cancelled", "failed"]),
+  durationSec: z.number().min(0).max(86400),
+});
 const Pass = z.object({ memberId: z.string().min(1).max(40), note: z.string().max(280).default("") });
 
 export async function POST(
@@ -102,6 +109,13 @@ export async function POST(
         );
         effects = r.effects;
         payload = { targetIncidentId: r.targetId };
+        break;
+      }
+      case "huddle": {
+        // A Nexconn Call voice huddle ended; the timeline gets one line. Nothing to project to the crew group.
+        const input = await body(req, Huddle);
+        payload = await logHuddle(db(), eventId, incidentId, memberId, input);
+        effects = [];
         break;
       }
       case "dismiss-detection": {

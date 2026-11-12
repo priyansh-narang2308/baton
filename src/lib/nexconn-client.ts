@@ -130,6 +130,15 @@ export async function connect(
     AreaCode,
     LogLevel,
   } = sdk;
+  // Crew and organizer pages can place voice huddles; the Call SDK must be installed before NCEngine.initialize.
+  const canCall = role !== "attendee";
+  if (canCall && !conn.initialized) {
+    try {
+      await (await import("./nexconn-call")).installCall();
+    } catch (e) {
+      console.warn("[baton] Nexconn Call unavailable; chat continues without huddles", e);
+    }
+  }
   if (!conn.initialized) {
     NCEngine.initialize({
       appKey: tok.appKey,
@@ -187,6 +196,14 @@ export async function connect(
         },
       }),
     );
+    if (canCall) {
+      // Register call handlers before connect so incoming calls are never missed (Call SDK quickstart, step 6).
+      try {
+        (await import("./nexconn-call")).setupCall(role === "organizer" ? "?as=organizer" : "");
+      } catch (e) {
+        console.warn("[baton] Nexconn Call setup failed; chat continues without huddles", e);
+      }
+    }
     conn.initialized = true;
   }
   let result = await NCEngine.connect({ token: tok.token });

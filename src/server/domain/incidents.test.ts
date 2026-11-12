@@ -11,6 +11,7 @@ import {
   claimIncident,
   incidentDetail,
   listIncidents,
+  logHuddle,
   mergeIncidents,
   releaseIncident,
   resolveIncident,
@@ -316,5 +317,29 @@ describe("Baton Pass (owner hands over, teammate must accept)", () => {
       else if (rel.status === "fulfilled" && acc.status === "rejected") expect(r).toMatchObject({ status: "open", ownerMemberId: null });
       else throw new Error(`exactly one should win: accept=${acc.status} release=${rel.status}`);
     }
+  });
+});
+
+describe("voice huddles (Nexconn Call) in the timeline", () => {
+  it("records one entry per call, with the person called and the duration", async () => {
+    const { incidentId } = await report();
+    const r = await logHuddle(db, EVENT, incidentId, "mbriya", { callId: "call1", withMemberId: "mbsam", outcome: "connected", durationSec: 83.4 });
+    expect(r.logged).toBe(true);
+    const again = await logHuddle(db, EVENT, incidentId, "mbriya", { callId: "call1", withMemberId: "mbsam", outcome: "connected", durationSec: 83 });
+    expect(again.logged).toBe(false);
+    const detail = await incidentDetail(db, EVENT, incidentId);
+    const huddles = detail.activity.filter((a) => a.type === "huddle.ended");
+    expect(huddles).toHaveLength(1);
+    expect(huddles[0].detail).toMatchObject({ withName: "sam", outcome: "connected", durationSec: 83 });
+  });
+
+  it("records an unanswered call with no duration, and rejects outsiders and self-calls", async () => {
+    const { incidentId } = await report();
+    await logHuddle(db, EVENT, incidentId, "mbriya", { callId: "call2", withMemberId: "mbsam", outcome: "no_answer", durationSec: 40 });
+    const detail = await incidentDetail(db, EVENT, incidentId);
+    expect(detail.activity.find((a) => a.type === "huddle.ended")?.detail).toMatchObject({ outcome: "no_answer", durationSec: 0 });
+    await expect(logHuddle(db, EVENT, incidentId, "mbriya", { callId: "c3", withMemberId: "mbnobody", outcome: "connected", durationSec: 5 })).rejects.toBeInstanceOf(DomainError);
+    await expect(logHuddle(db, EVENT, incidentId, "mbriya", { callId: "c4", withMemberId: "mbriya", outcome: "connected", durationSec: 5 })).rejects.toBeInstanceOf(DomainError);
+    await expect(logHuddle(db, EVENT, incidentId, "mbstranger", { callId: "c5", withMemberId: "mbsam", outcome: "connected", durationSec: 5 })).rejects.toBeInstanceOf(DomainError);
   });
 });

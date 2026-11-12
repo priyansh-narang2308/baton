@@ -1,3 +1,4 @@
+import { CallDock } from "@/components/call-dock";
 import { eventById } from "@/server/services";
 import { getSession } from "@/server/session";
 import { Board } from "./board";
@@ -13,5 +14,10 @@ export default async function BoardPage(props: PageProps<"/o/[eventId]">) {
       </main>
     );
   }
-  return <Board eventId={ev.id} crewCode={ev.crewCode} slug={ev.slug} />;
+  return (
+    <>
+      <Board eventId={ev.id} crewCode={ev.crewCode} slug={ev.slug} />
+      <CallDock />
+    </>
+  );
 }

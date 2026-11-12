@@ -568,3 +568,40 @@ export async function attendeeReports(db: Db, attendeeId: string) {
     .orderBy(desc(reports.createdAt));
 }
 
+
+export type HuddleOutcome = "connected" | "no_answer" | "declined" | "cancelled" | "failed";
+
+/**
+ * Records a Nexconn Call voice huddle in the incident timeline. The caller's browser reports it once the call ends
+ * (from the SDK's local call log), so the duration is as the caller's app measured it. One entry per call ID.
+ */
+export async function logHuddle(
+  db: Db,
+  eventId: string,
+  incidentId: string,
+  memberId: string,
+  input: { callId: string; withMemberId: string; outcome: HuddleOutcome; durationSec: number },
+) {
+  return db.transaction(async (tx) => {
+    await activeMember(tx, memberId, eventId);
+    const other = await activeMember(tx, input.withMemberId, eventId).catch(() => {
+      throw new DomainError("invalid", "That person is not on this event's crew");
+    });
+    if (input.withMemberId === memberId) throw new DomainError("invalid", "You can't call yourself");
+    await loadIncident(tx, incidentId, eventId);
+    const [dup] = await tx
+      .select({ id: incidentEvents.id })
+      .from(incidentEvents)
+      .where(and(eq(incidentEvents.incidentId, incidentId), eq(incidentEvents.type, "huddle.ended"), sql`${incidentEvents.payload}->>'callId' = ${input.callId}`));
+    if (dup) return { logged: false };
+    const durationSec = input.outcome === "connected" ? Math.max(0, Math.min(Math.round(input.durationSec), 4 * 3600)) : 0;
+    await audit(tx, incidentId, memberId, "huddle.ended", {
+      callId: input.callId,
+      withMemberId: other.id,
+      withName: other.name,
+      outcome: input.outcome,
+      durationSec,
+    });
+    return { logged: true };
+  });
+}

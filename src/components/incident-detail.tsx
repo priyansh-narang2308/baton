@@ -5,6 +5,7 @@ import {
   ArrowRightLeft,
   ChevronRight,
   MessageCircle,
+  Phone,
   UserPlus,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -15,6 +16,7 @@ import {
   type EventState,
   type IncidentView,
 } from "@/lib/types";
+import { onHuddleLogged, startHuddle, useCall, useCallReady } from "@/lib/nexconn-call";
 import { DirectThread } from "./direct-thread";
 import { IncidentCard } from "./incident-card";
 import { Sheet } from "./sheet";
@@ -88,6 +90,8 @@ export function IncidentDetail({
   const [error, setError] = useState<string | null>(null);
   const [thread, setThread] = useState<CrewMemberView | null>(null);
   const q = as ? `?as=${as}` : "";
+  const [reload, setReload] = useState(0);
+  useEffect(() => onHuddleLogged((id) => id === i.id && setReload((n) => n + 1)), [i.id]);
 
   // Re-read whenever the incident moves (its version bumps on every state change, local or from another device).
   useEffect(() => {
@@ -98,7 +102,7 @@ export function IncidentDetail({
     return () => {
       cancelled = true;
     };
-  }, [eventId, i.id, i.version, i.reportCount, q]);
+  }, [eventId, i.id, i.version, i.reportCount, q, reload]);
 
   const owner = crew.find((c) => c.id === i.ownerMemberId) ?? null;
   const canMessageOwner = owner && owner.id !== me?.id && !owner.isSimulated;
@@ -108,6 +112,8 @@ export function IncidentDetail({
     i.ownerMemberId === me.id &&
     !i.passToMemberId;
   const noop = useCallback(() => {}, []);
+  const canHuddle =
+    !!me && i.status !== "withdrawn" && crew.some((c) => c.id !== me.id && !c.isSimulated);
 
   if (thread) {
     return (
@@ -188,7 +194,7 @@ export function IncidentDetail({
           />
         </dl>
 
-        {(isLead || canMessageOwner || canPass) && i.status !== "withdrawn" && (
+        {(isLead || canMessageOwner || canPass || canHuddle) && i.status !== "withdrawn" && (
           <section className="space-y-2" aria-label="Coordinate">
             {canPass && (
               <PassBaton
@@ -211,6 +217,7 @@ export function IncidentDetail({
                 onRefresh={onRefresh}
               />
             )}
+            {canHuddle && <Huddle eventId={eventId} incident={i} crew={crew} me={me!} />}
             {canMessageOwner && (
               <button
                 onClick={() => setThread(owner)}
@@ -316,6 +323,96 @@ export function IncidentDetail({
         </p>
       </div>
     </Sheet>
+  );
+}
+
+/**
+ * Voice huddle: a real 1-to-1 audio call over Nexconn Call to a teammate, about this incident. The callee's Baton page
+ * rings with the incident's number and title; when it ends, the caller's page writes one line into the timeline.
+ */
+function Huddle({
+  eventId,
+  incident: i,
+  crew,
+  me,
+}: {
+  eventId: string;
+  incident: IncidentView;
+  crew: CrewMemberView[];
+  me: NonNullable<EventState["me"]>;
+}) {
+  const ready = useCallReady();
+  const call = useCall();
+  const options = crew
+    .filter((c) => c.id !== me.id && !c.isSimulated)
+    .sort((a, b) => Number(b.online === true) - Number(a.online === true));
+  const preferred =
+    options.find((c) => c.id === i.ownerMemberId) ??
+    options.find((c) => c.id === i.passToMemberId) ??
+    options[0];
+  const [memberId, setMemberId] = useState(preferred?.id ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const m = options.find((c) => c.id === memberId) ?? preferred;
+  const inCall = call.phase !== "idle" && call.phase !== "ended";
+  if (!m) return null;
+
+  async function ring() {
+    setError(null);
+    try {
+      await startHuddle(
+        {
+          eventId,
+          incidentId: i.id,
+          incidentNumber: i.number,
+          incidentTitle: i.title,
+          callerName: me.name,
+          callerMemberId: me.id,
+          calleeMemberId: m!.id,
+        },
+        m!.nexconnUserId,
+        m!.name,
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-surface px-3 py-2.5">
+      <p className="flex items-center gap-2 text-sm font-medium">
+        <Phone className="size-4 text-accent" aria-hidden /> Voice huddle
+      </p>
+      <p className="mt-0.5 text-xs text-text-3">
+        A real audio call over Nexconn Call. Their Baton page rings with #{i.number}; the call is noted below.
+      </p>
+      <div className="mt-2 flex gap-2">
+        <select
+          value={m.id}
+          onChange={(e) => setMemberId(e.target.value)}
+          className={cx(inputClass, "h-10 min-w-0 flex-1")}
+          aria-label="Who to call"
+        >
+          {options.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+              {c.id === i.ownerMemberId ? " · owner" : ""}
+              {c.online === true ? " · online" : c.online === false ? " · offline" : ""}
+            </option>
+          ))}
+        </select>
+        <Button variant="primary" onClick={ring} disabled={!ready || inCall}>
+          {ready ? (inCall ? "In a call" : "Call") : "Connecting…"}
+        </Button>
+      </div>
+      {m.online === false && (
+        <p className="mt-1.5 text-xs text-text-3">{m.name} isn&apos;t online right now, so it may go unanswered.</p>
+      )}
+      {error && (
+        <div className="mt-2">
+          <ErrorNote>{error}</ErrorNote>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -562,6 +659,7 @@ const DOT: Record<string, string> = {
   "incident.escalated": "bg-urgent",
   "pass.offered": "bg-claimed",
   "pass.accepted": "bg-claimed",
+  "huddle.ended": "bg-brand",
 };
 
 function describe(e: ActivityEntry): string {
@@ -606,6 +704,20 @@ function describe(e: ActivityEntry): string {
       return `${who} couldn't take it — it stayed with the owner`;
     case "pass.cancelled":
       return `${who} withdrew the pass to ${d.toName ?? "a teammate"}`;
+    case "huddle.ended": {
+      const sec = Number(d.durationSec ?? 0);
+      const len = sec >= 60 ? `${Math.floor(sec / 60)}m ${String(sec % 60).padStart(2, "0")}s` : `${sec}s`;
+      const withName = String(d.withName ?? "a teammate");
+      return d.outcome === "connected"
+        ? `${who} had a voice huddle with ${withName} (${len})`
+        : d.outcome === "declined"
+          ? `${who} called ${withName} — they declined`
+          : d.outcome === "cancelled"
+            ? `${who} called ${withName} and hung up before they answered`
+            : d.outcome === "failed"
+              ? `${who} tried to call ${withName} — the call failed`
+              : `${who} called ${withName} — no answer`;
+    }
     case "detection.dismissed":
       return `${who} marked it as not a request`;
     case "report.split_out":
