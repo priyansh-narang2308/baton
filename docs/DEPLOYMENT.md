@@ -22,7 +22,10 @@
     - **Message → `message:send`**: crew chat lines become requests automatically.
     - **User → `user:connection_status`**: the live online dot for each crew member on the board, the crew list and the assign/pass pickers.
   - Nothing else: Baton has no use for the remaining events yet. The `pre_messaging` ones are greyed out on our plan.
-- **Checking it:** `/api/health` shows `webhooks.lastType` and `lastAt` once Nexconn has called us. On 12 Nov it was still `null`: no delivery yet, because the Console event selection wasn't saved yet.
+- **Checking it:** `/api/health` shows `webhooks.lastType` and `lastAt` once Nexconn has called us. Verified live on 12 Nov, after both events were saved in the Console:
+  - Riya sent "no water at Registration desk" in crew chat. Within seconds, card #2 (Water & supplies · Registration · "From chat") appeared on the command centre.
+  - Health showed `lastType: message:send`.
+  - `/state` reported Riya `online: true` from `user:connection_status`.
 - The Web SDK connected from the new domain without an allowlist change.
 
 ---
