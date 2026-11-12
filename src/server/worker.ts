@@ -32,6 +32,24 @@ async function runEscalations() {
   }
 }
 
+const ticks = globalThis as unknown as { batonLastEscalation?: number; batonLastReconcile?: number };
+
+/**
+ * Serverless hosts (Vercel) freeze the process between requests, so `setInterval` loops can't be trusted there.
+ * Instead, crew and organizer pages refresh `/state` every 30 s, and that route calls this after responding.
+ * Throttled per instance; `takeDueEscalations` locks rows with SKIP LOCKED, so overlapping instances never double-send.
+ */
+export async function runWorkerTick(now = Date.now()) {
+  if (!ticks.batonLastEscalation || now - ticks.batonLastEscalation >= 10_000) {
+    ticks.batonLastEscalation = now;
+    await runEscalations().catch((err) => console.error("[tick] escalations failed", err));
+  }
+  if (!ticks.batonLastReconcile || now - ticks.batonLastReconcile >= 60_000) {
+    ticks.batonLastReconcile = now;
+    await reconcile(db(), nexconnApi()).catch((err) => console.error("[tick] reconcile failed", err));
+  }
+}
+
 /** Starts background loops once per server process (escalations every 10 s, reconciliation every 60 s). */
 export function startWorker() {
   if (g.batonWorker || process.env.BATON_DISABLE_WORKER === "1") return;

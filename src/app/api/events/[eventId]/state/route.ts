@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { db } from "@/server/db/client";
 import { DomainError, listIncidents } from "@/server/domain/incidents";
 import { crewActor, handle } from "@/server/http";
 import { eventById, eventCrew, eventZones } from "@/server/services";
+import { runWorkerTick } from "@/server/worker";
 
 /** Authoritative read model for crew and board. Clients call this on load, on reconnect and on metadata gaps. */
 export async function GET(req: Request, ctx: RouteContext<"/api/events/[eventId]/state">) {
@@ -13,6 +14,8 @@ export async function GET(req: Request, ctx: RouteContext<"/api/events/[eventId]
     if (!ev) throw new DomainError("not_found", "Event not found");
     const [incidents, crew, zones] = await Promise.all([listIncidents(db(), eventId), eventCrew(eventId), eventZones(eventId)]);
     const me = crew.find((m) => m.id === meId);
+    // On serverless hosts there is no always-on worker; open crew pages drive escalation instead (see runWorkerTick).
+    if (process.env.BATON_DISABLE_WORKER === "1") after(runWorkerTick);
     return NextResponse.json(
       {
         event: { id: ev.id, name: ev.name, slug: ev.slug, status: ev.status, groupId: ev.nexconnGroupId, botUserId: ev.botUserId, isDemo: ev.isDemo },
