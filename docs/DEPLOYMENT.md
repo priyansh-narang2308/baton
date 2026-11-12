@@ -27,6 +27,11 @@
   - Health showed `lastType: message:send`.
   - `/state` reported Riya `online: true` from `user:connection_status`.
 - The Web SDK connected from the new domain without an allowlist change.
+- **Calling (Nexconn Call):** subscribed by the owner on 12 Nov at $0 (10,000 free audio/video minutes a month, shared across apps). Baton uses audio-only 1-to-1 huddles capped at 10 minutes.
+  - Checked on production: the call engine loads with no console errors, and the Call button is ready.
+  - Checked locally: `startCall` reaches the microphone step; the browser pane refuses microphone access (code 53012), which shows as a clear message.
+  - Timeline logging checked through the API.
+  - **Not yet checked:** a connected call between two real devices.
 
 ---
 
