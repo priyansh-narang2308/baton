@@ -15,14 +15,29 @@ export function useEventState(eventId: string, connection: ConnectionState, as?:
   const [flash, setFlash] = useState<Record<string, number>>({}); // incidentId → timestamp of last live change
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const hasState = useRef(false);
+  const retry = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const refresh = useCallback(() => {
-    return api<EventState>(`/api/events/${eventId}/state${as ? `?as=${as}` : ""}`).then(
-      (s) => {
-        setState(s);
-        setError(null);
-      },
-      (e: Error & { code?: string }) => setError({ message: e.message, code: e.code }),
-    );
+    if (retry.current) clearTimeout(retry.current);
+    const attempt = (n: number): Promise<void> =>
+      api<EventState>(`/api/events/${eventId}/state${as ? `?as=${as}` : ""}`).then(
+        (s) => {
+          hasState.current = true;
+          setState(s);
+          setError(null);
+        },
+        (e: Error & { code?: string }) => {
+          // A background re-read that fails on a flaky network shouldn't put an error over
+          // live data the page already has: retry quietly, and only report it if it keeps failing.
+          if (hasState.current && e.code !== "forbidden" && n < 3) {
+            retry.current = setTimeout(() => void attempt(n + 1), 1500 * 2 ** n);
+            return;
+          }
+          setError({ message: e.message, code: e.code });
+        },
+      );
+    return attempt(0);
   }, [eventId, as]);
 
   const scheduleRefresh = useCallback(() => {
@@ -36,6 +51,7 @@ export function useEventState(eventId: string, connection: ConnectionState, as?:
     return () => {
       clearTimeout(first);
       clearInterval(fallback);
+      if (retry.current) clearTimeout(retry.current);
     };
   }, [refresh]);
 
