@@ -42,11 +42,38 @@ export function AttendeeHelp({ slug, eventId, eventName, zone, ended, isDemo }: 
   }, [load]);
 
   useEffect(() => {
-    // Status DMs from the crew bot trigger a re-read of the authoritative status.
-    return onMessage((m) => {
-      if (m.messageType === "BTN:Status") load();
+    // A status DM from the crew bot carries the new state and owner: show it at once, then re-read the
+    // authoritative status, retrying a few times so one dropped request can't leave the page stale.
+    let timers: ReturnType<typeof setTimeout>[] = [];
+    const off = onMessage((m) => {
+      if (m.messageType !== "BTN:Status") return;
+      const c = m.content as { incidentId?: string; state?: string; ownerName?: string; reportCount?: number };
+      const status = c.state === "received" ? "open" : c.state;
+      if (c.incidentId && (status === "open" || status === "claimed" || status === "resolved")) {
+        setReports((prev) =>
+          prev?.map((r) =>
+            r.incidentId === c.incidentId
+              ? { ...r, status, ownerName: c.ownerName || r.ownerName, reportCount: c.reportCount ?? r.reportCount }
+              : r,
+          ) ?? prev,
+        );
+      }
+      timers.forEach(clearTimeout);
+      const attempt = (n: number) =>
+        api<{ reports: MyReport[] }>(`/api/e/${slug}/reports`).then(
+          (r) => setReports(r.reports),
+          () => {
+            if (n < 3) timers.push(setTimeout(() => attempt(n + 1), 1500 * 2 ** n));
+          },
+        );
+      timers = [];
+      void attempt(0);
     });
-  }, [load]);
+    return () => {
+      off();
+      timers.forEach(clearTimeout);
+    };
+  }, [slug]);
 
   useEffect(() => {
     if (conn.state !== "connected") return;
