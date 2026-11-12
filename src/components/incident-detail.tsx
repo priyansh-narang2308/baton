@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ChevronRight, MessageCircle, UserPlus } from "lucide-react";
+import { ArrowLeft, ArrowRightLeft, ChevronRight, MessageCircle, UserPlus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { api, CATEGORY_LABEL, type CrewMemberView, type EventState, type IncidentView } from "@/lib/types";
 import { DirectThread } from "./direct-thread";
@@ -51,6 +51,7 @@ export function IncidentDetail({ eventId, incident: i, crew, me, isLead, as, now
 
   const owner = crew.find((c) => c.id === i.ownerMemberId) ?? null;
   const canMessageOwner = owner && owner.id !== me?.id && !owner.isSimulated;
+  const canPass = i.status === "claimed" && !!me && i.ownerMemberId === me.id && !i.passToMemberId;
   const noop = useCallback(() => {}, []);
 
   if (thread) {
@@ -87,8 +88,9 @@ export function IncidentDetail({ eventId, incident: i, crew, me, isLead, as, now
           <Fact label="Time to fix" value={dur(detail?.incident.timeToFixSec ?? null) ?? "—"} />
         </dl>
 
-        {(isLead || canMessageOwner) && i.status !== "withdrawn" && (
+        {(isLead || canMessageOwner || canPass) && i.status !== "withdrawn" && (
           <section className="space-y-2" aria-label="Coordinate">
+            {canPass && <PassBaton eventId={eventId} incident={i} crew={crew} meId={me!.id} q={q} onPatch={onPatch} onRefresh={onRefresh} />}
             {isLead && i.status !== "resolved" && <Assign eventId={eventId} incident={i} crew={crew} q={q} onPatch={onPatch} onRefresh={onRefresh} />}
             {canMessageOwner && (
               <button onClick={() => setThread(owner)} className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2.5 text-left text-sm hover:bg-surface-2">
@@ -144,6 +146,80 @@ export function IncidentDetail({ eventId, incident: i, crew, me, isLead, as, now
         </section>
       </div>
     </Sheet>
+  );
+}
+
+/**
+ * Baton Pass: the owner hands the incident to a teammate who must accept it. Until they do, the owner keeps it, so
+ * a shift change or a volunteer stepping away never leaves an incident with nobody on it.
+ */
+function PassBaton({ eventId, incident: i, crew, meId, q, onPatch, onRefresh }: { eventId: string; incident: IncidentView; crew: CrewMemberView[]; meId: string; q: string; onPatch: Props["onPatch"]; onRefresh: () => void }) {
+  const [memberId, setMemberId] = useState("");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  // Simulated crew can't answer, and a pass nobody can accept would only sit there.
+  const options = crew.filter((c) => c.id !== meId && !c.isSimulated);
+
+  async function pass() {
+    const m = options.find((c) => c.id === memberId);
+    if (!m) return;
+    setBusy(true);
+    setError(null);
+    onPatch(i.id, { passToMemberId: m.id, passToName: m.name, passNote: note.trim() || null });
+    try {
+      await api(`/api/events/${eventId}/incidents/${i.id}/pass${q}`, { method: "POST", body: JSON.stringify({ memberId: m.id, note }) });
+      setMemberId("");
+      setNote("");
+    } catch (e) {
+      onPatch(i.id, { passToMemberId: null, passToName: null, passNote: null, passOfferedAt: null });
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+      onRefresh();
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-surface p-3">
+      <label htmlFor={`pass-${i.id}`} className="flex items-center gap-2 text-[13px] font-medium text-text-2">
+        <ArrowRightLeft className="size-4" aria-hidden /> Pass the baton
+      </label>
+      {options.length === 0 ? (
+        <p className="mt-1.5 text-[13px] text-text-3">No teammate who can take it yet. Share the crew QR code so someone can join.</p>
+      ) : (
+        <>
+          <p className="mt-1 text-xs text-text-3">It stays yours until they accept. They get a private alert in the crew chat.</p>
+          <div className="mt-2 flex gap-2">
+            <select id={`pass-${i.id}`} value={memberId} onChange={(e) => setMemberId(e.target.value)} className={cx(inputClass, "h-10 flex-1 text-sm")}>
+              <option value="">Choose a teammate</option>
+              {options.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                  {c.role === "lead" ? " (lead)" : ""}
+                </option>
+              ))}
+            </select>
+            <Button variant="primary" busy={busy} disabled={!memberId} onClick={pass}>
+              Pass
+            </Button>
+          </div>
+          <input
+            value={note}
+            maxLength={280}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Handover note: what's done, what's left (optional)"
+            aria-label="Handover note"
+            className={cx(inputClass, "mt-2 h-10 w-full text-sm")}
+          />
+        </>
+      )}
+      {error && (
+        <p role="alert" className="mt-2 text-[13px] text-danger">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -210,6 +286,8 @@ const DOT: Record<string, string> = {
   "incident.assigned": "bg-claimed",
   "incident.resolved": "bg-done",
   "incident.escalated": "bg-urgent",
+  "pass.offered": "bg-claimed",
+  "pass.accepted": "bg-claimed",
 };
 
 function describe(e: ActivityEntry): string {
@@ -238,6 +316,14 @@ function describe(e: ActivityEntry): string {
       return `${who} marked it fixed`;
     case "incident.escalated":
       return d.level === 1 ? "Still unowned — Baton alerted the zone lead" : "Still unowned — Baton alerted the event leads";
+    case "pass.offered":
+      return `${who} offered the baton to ${d.toName ?? "a teammate"}${d.note ? ` — “${d.note}”` : ""}`;
+    case "pass.accepted":
+      return `${who} took the baton from ${d.fromName ?? "the previous owner"}`;
+    case "pass.declined":
+      return `${who} couldn't take it — it stayed with the owner`;
+    case "pass.cancelled":
+      return `${who} withdrew the pass to ${d.toName ?? "a teammate"}`;
     case "detection.dismissed":
       return `${who} marked it as not a request`;
     case "report.split_out":

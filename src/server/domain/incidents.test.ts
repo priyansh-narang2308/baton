@@ -4,7 +4,10 @@ import { createDb } from "../db/client";
 import { events, incidentEvents, incidents, members, reports, zones } from "../db/schema";
 import {
   DomainError,
+  acceptPass,
   assignIncident,
+  endPass,
+  offerPass,
   claimIncident,
   incidentDetail,
   listIncidents,
@@ -230,5 +233,88 @@ describe("incident detail", () => {
   it("does not leak incidents across events", async () => {
     const { incidentId } = await report();
     await expect(incidentDetail(db, "evother", incidentId)).rejects.toMatchObject({ code: "not_found" });
+  });
+});
+
+describe("Baton Pass (owner hands over, teammate must accept)", () => {
+  const owned = async () => {
+    const { incidentId } = await report();
+    await claimIncident(db, EVENT, incidentId, "mbriya");
+    return incidentId;
+  };
+  const row = async (id: string) => (await db.select().from(incidents).where(sql`id = ${id}`))[0];
+
+  it("keeps the owner until the teammate accepts, then moves ownership in one step", async () => {
+    const id = await owned();
+    const offer = await offerPass(db, EVENT, id, "mbriya", "mbsam", "  water ordered, needs collecting  ");
+    expect(offer.effects).toContainEqual({ type: "pass", incidentId: id, memberId: "mbsam", kind: "offered", byName: "riya", note: "water ordered, needs collecting" });
+    expect(await row(id)).toMatchObject({ status: "claimed", ownerMemberId: "mbriya", passToMemberId: "mbsam" }); // never ownerless
+
+    const accepted = await acceptPass(db, EVENT, id, "mbsam");
+    expect(accepted.incident).toMatchObject({ status: "claimed", ownerMemberId: "mbsam", passToMemberId: null, passNote: null });
+    expect(accepted.effects).toContainEqual({ type: "pass", incidentId: id, memberId: "mbriya", kind: "accepted", byName: "sam" });
+    const detail = await incidentDetail(db, EVENT, id);
+    expect(detail.activity.map((a) => a.type)).toEqual(expect.arrayContaining(["pass.offered", "pass.accepted"]));
+    expect(detail.activity.find((a) => a.type === "pass.accepted")?.detail).toMatchObject({ fromName: "riya" });
+    expect(detail.activity.find((a) => a.type === "pass.offered")?.detail).toMatchObject({ toName: "sam" });
+  });
+
+  it("only the owner can offer, only the named teammate can accept, and not to yourself", async () => {
+    const id = await owned();
+    await expect(offerPass(db, EVENT, id, "mbsam", "mbkim", "")).rejects.toMatchObject({ code: "forbidden" });
+    await expect(offerPass(db, EVENT, id, "mbriya", "mbriya", "")).rejects.toMatchObject({ code: "invalid" });
+    await expect(offerPass(db, EVENT, id, "mbriya", "mbnobody", "")).rejects.toMatchObject({ code: "invalid" });
+    await offerPass(db, EVENT, id, "mbriya", "mbsam", "");
+    await expect(acceptPass(db, EVENT, id, "mbkim")).rejects.toMatchObject({ code: "conflict" });
+    expect(await row(id)).toMatchObject({ ownerMemberId: "mbriya" });
+  });
+
+  it("cannot pass an incident nobody owns yet", async () => {
+    const { incidentId } = await report();
+    await expect(offerPass(db, EVENT, incidentId, "mbriya", "mbsam", "")).rejects.toMatchObject({ code: "conflict" });
+  });
+
+  it("a decline leaves it with the owner and tells them; a cancel withdraws it", async () => {
+    const id = await owned();
+    await offerPass(db, EVENT, id, "mbriya", "mbsam", "");
+    await expect(endPass(db, EVENT, id, "mbkim", "declined")).rejects.toMatchObject({ code: "forbidden" });
+    const declined = await endPass(db, EVENT, id, "mbsam", "declined");
+    expect(declined.incident).toMatchObject({ ownerMemberId: "mbriya", passToMemberId: null });
+    expect(declined.effects).toContainEqual({ type: "pass", incidentId: id, memberId: "mbriya", kind: "declined", byName: "sam" });
+
+    await offerPass(db, EVENT, id, "mbriya", "mbkim", "");
+    await expect(endPass(db, EVENT, id, "mbsam", "cancelled")).rejects.toMatchObject({ code: "forbidden" });
+    expect((await endPass(db, EVENT, id, "mbriya", "cancelled")).incident.passToMemberId).toBeNull();
+    await expect(acceptPass(db, EVENT, id, "mbkim")).rejects.toMatchObject({ code: "conflict" });
+  });
+
+  it("a release, fix or reassignment that lands first voids the pending pass", async () => {
+    for (const first of [
+      (id: string) => releaseIncident(db, EVENT, id, "mbriya"),
+      (id: string) => resolveIncident(db, EVENT, id, "mbriya"),
+      (id: string) => assignIncident(db, EVENT, id, "mbarjun", "mblee"),
+    ]) {
+      await seed();
+      const id = await owned();
+      await offerPass(db, EVENT, id, "mbriya", "mbsam", "");
+      await first(id);
+      expect((await row(id)).passToMemberId).toBeNull();
+      await expect(acceptPass(db, EVENT, id, "mbsam")).rejects.toMatchObject({ code: "conflict" });
+      expect((await row(id)).ownerMemberId).not.toBe("mbsam");
+    }
+  });
+
+  it("an accept racing a release never leaves the incident with a stale owner", async () => {
+    for (let n = 0; n < 5; n++) {
+      await seed();
+      const id = await owned();
+      await offerPass(db, EVENT, id, "mbriya", "mbsam", "");
+      const [acc, rel] = await Promise.allSettled([acceptPass(db, EVENT, id, "mbsam"), releaseIncident(db, EVENT, id, "mbriya")]);
+      const r = await row(id);
+      expect(r.passToMemberId).toBeNull();
+      if (acc.status === "fulfilled" && rel.status === "rejected") expect(r).toMatchObject({ status: "claimed", ownerMemberId: "mbsam" });
+      else if (rel.status === "fulfilled" && acc.status === "rejected") expect(r).toMatchObject({ status: "open", ownerMemberId: null });
+      else throw new Error(`exactly one should win: accept=${acc.status} release=${rel.status}`);
+    }
   });
 });

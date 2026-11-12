@@ -12,6 +12,11 @@ export type IncidentView = {
   zoneName: string | null;
   ownerMemberId: string | null;
   ownerName: string | null;
+  /** Baton Pass offered by the owner and not yet answered. */
+  passToMemberId: string | null;
+  passToName: string | null;
+  passNote: string | null;
+  passOfferedAt: number | null;
   reportCount: number;
   version: number;
   cardMessageId: string | null;

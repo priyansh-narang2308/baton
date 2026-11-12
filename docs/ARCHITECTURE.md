@@ -1,6 +1,40 @@
 # Baton — Architecture
 
-_Last verified against the code on 11 Nov 2026. Everything below exists in the repository unless it is marked **Not built**._
+_Last verified against the code on 12 Nov 2026. Everything below exists in the repository unless it is marked **Not built**._
+
+## 0. Baton ↔ Nexconn at a glance
+
+```mermaid
+flowchart LR
+  subgraph Phones["Browsers (no app, no account)"]
+    A["Attendee page<br/>/e/:slug"]
+    C["Crew app<br/>/c/:eventId"]
+    O["Command centre<br/>/o/:eventId"]
+  end
+  subgraph Baton["Baton server (Next.js, long-lived Node)"]
+    API["Route handlers<br/>zod + signed cookies"]
+    DOM["Domain: one conditional UPDATE per transition<br/>claim · assign · pass · resolve · merge"]
+    PROJ["Projection (after the response)<br/>serialised per incident"]
+    W["Worker: escalation 10 s · repair 60 s"]
+    PG[("PostgreSQL<br/>source of truth")]
+  end
+  subgraph NX["Nexconn"]
+    SAPI["Chat Server API<br/>signed: sha1(secret+nonce+ts)"]
+    GRP["Group channel per event<br/>cards + live metadata"]
+    DM["Direct channels<br/>status to reporters · org ↔ crew"]
+    WH["Webhook message:send"]
+  end
+  A & C & O -->|HTTPS| API --> DOM --> PG
+  DOM -->|effects| PROJ --> SAPI --> GRP & DM
+  W --> PG
+  W --> SAPI
+  C & O <-->|"Chat SDK (token from /api/session/token)"| GRP
+  C & O <-->|Chat SDK| DM
+  A <-->|Chat SDK| DM
+  GRP -.->|crew chat text| WH -.->|verified, deduped| API
+```
+
+The App Secret exists only in the server box. Browsers hold the public App Key and their own user token.
 
 ## 1. Sources of truth
 
@@ -41,7 +75,7 @@ The rule: a state change is settled in Postgres first, inside one conditional `U
 
 ## 5. Data model (Postgres)
 
-`events` · `zones` · `members` (role lead|volunteer, `is_simulated`) · `attendees` · `incidents` (status open|claimed|resolved|withdrawn, owner, `version`, `report_count`, escalation level and next time, card message id, projection flag) · `reports` (source attendee|crew|chat, `source_message_id` unique) · `merge_suggestions` · `incident_events` (append-only audit) · `notifications` (primary key `incident, recipient, state`: one status message per person per state) · `webhook_events` · `nexconn_tokens`.
+`events` · `zones` · `members` (role lead|volunteer, `is_simulated`) · `attendees` · `incidents` (status open|claimed|resolved|withdrawn, owner, pending pass, `version`, `report_count`, escalation level and next time, card message id, projection flag) · `reports` (source attendee|crew|chat, `source_message_id` unique) · `merge_suggestions` · `incident_events` (append-only audit) · `notifications` (primary key `incident, recipient, state`: one status message per person per state) · `webhook_events` · `nexconn_tokens`.
 
 ## 6. Core flows
 
@@ -59,15 +93,20 @@ The rule: a state change is settled in Postgres first, inside one conditional `U
    - The assignee must be an active member, and the incident must not be resolved or withdrawn.
    - Assigning to the current owner is a no-op.
    - The assignee gets a targeted group message (`BTN:Nudge`, `kind: "assigned"`) that only they receive. It is skipped if the incident has moved on by send time.
-5. **Effects and projection** (`projection.applyEffects`):
+5. **Baton Pass** (`offerPass`, `acceptPass`, `endPass`):
+   - Only the owner can offer, to one active crew member. The offer is stored on the incident (`pass_to_member_id`, `pass_note`, `pass_offered_at`); **the owner stays the owner** while it is pending.
+   - Accepting is one conditional `UPDATE … WHERE status='claimed' AND owner=<offerer> AND pass_to=<me>`, so a release, reassignment or fix that lands first makes the accept fail instead of overwriting it. There is no moment with no owner (race-tested in `incidents.test.ts`).
+   - Decline keeps the owner and tells them; the owner (or a lead) can cancel. Release, resolve and assign void a pending pass.
+   - Projection: card metadata `pass` / `passN` shows "passing to …" on every phone, and a targeted `BTN:Nudge` (`kind: pass_offered | pass_accepted | pass_declined`) reaches only the person concerned.
+6. **Effects and projection** (`projection.applyEffects`):
    - Effects are serialised per incident and deduplicated by key.
-   - Card metadata keys: `st` (status), `v` (version), `n` (report count), `own` / `ownN` (owner), `sug` (suggestion), `inc` / `num` (chat-message incidents).
+   - Card metadata keys: `st` (status), `v` (version), `n` (report count), `own` / `ownN` (owner), `pass` / `passN` (pending Baton Pass), `sug` (suggestion), `inc` / `num` (chat-message incidents).
    - Clients ignore metadata whose `v` is older than what they hold.
-6. **Attendee notifications:** each reporter gets "on it", then "fixed", once per state. The guarantee is `INSERT … ON CONFLICT DO NOTHING` on `notifications`, so a retry never double-sends.
-7. **Escalation:** the worker takes due incidents with `FOR UPDATE SKIP LOCKED`, picks the zone lead and then event leads, and sends a targeted `BTN:Nudge`. Urgent categories escalate sooner.
-8. **Reconciliation:** every 60 s, re-projects incidents whose last projection failed.
-9. **Incident detail:** `GET /api/events/:id/incidents/:incidentId` returns the incident, every report (simulated ones labelled) and the activity timeline from `incident_events`.
-10. **Direct messages:** organizer ↔ volunteer, entirely client-side over Nexconn direct channels (`sendDirectText`, `loadHistory("direct", peer)`).
+7. **Attendee notifications:** each reporter gets "on it", then "fixed", once per state. The guarantee is `INSERT … ON CONFLICT DO NOTHING` on `notifications`, so a retry never double-sends.
+8. **Escalation:** the worker takes due incidents with `FOR UPDATE SKIP LOCKED`, picks the zone lead and then event leads, and sends a targeted `BTN:Nudge`. Urgent categories escalate sooner.
+9. **Reconciliation:** every 60 s, re-projects incidents whose last projection failed.
+10. **Incident detail:** `GET /api/events/:id/incidents/:incidentId` returns the incident, every report (simulated ones labelled) and the activity timeline from `incident_events`.
+11. **Direct messages:** organizer ↔ volunteer, entirely client-side over Nexconn direct channels (`sendDirectText`, `loadHistory("direct", peer)`).
     - The inbox should come from the SDK channel list, but `createChannelsQuery` returns **35011 METHOD_NOT_AVAILABLE** for our App Key.
     - The client therefore falls back to per-peer history (at most 40 peers) and a local read marker for unread counts. See NEXCONN_DOCS_AUDIT §10.
 

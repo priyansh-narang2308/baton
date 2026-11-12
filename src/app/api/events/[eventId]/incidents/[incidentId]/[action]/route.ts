@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/server/db/client";
 import {
+  acceptPass,
   assignIncident,
   claimIncident,
   dismissDetection,
   dismissSuggestion,
   DomainError,
+  endPass,
   mergeIncidents,
+  offerPass,
   releaseIncident,
   resolveIncident,
   type Effect,
@@ -16,6 +19,7 @@ import { body, crewActor, handle, projectLater } from "@/server/http";
 
 const Merge = z.object({ targetIncidentId: z.string().min(1).max(40) });
 const Assign = z.object({ memberId: z.string().min(1).max(40) });
+const Pass = z.object({ memberId: z.string().min(1).max(40), note: z.string().max(280).default("") });
 
 export async function POST(
   req: Request,
@@ -65,6 +69,26 @@ export async function POST(
           ownerMemberId: r.incident.ownerMemberId,
           unchanged: r.unchanged,
         };
+        break;
+      }
+      case "pass": {
+        const { memberId: toId, note } = await body(req, Pass);
+        const r = await offerPass(db(), eventId, incidentId, memberId, toId, note);
+        effects = r.effects;
+        payload = { status: r.incident.status, version: r.incident.version, passToMemberId: r.incident.passToMemberId };
+        break;
+      }
+      case "accept-pass": {
+        const r = await acceptPass(db(), eventId, incidentId, memberId);
+        effects = r.effects;
+        payload = { status: r.incident.status, version: r.incident.version, ownerMemberId: r.incident.ownerMemberId, alreadyYours: r.alreadyYours };
+        break;
+      }
+      case "decline-pass":
+      case "cancel-pass": {
+        const r = await endPass(db(), eventId, incidentId, memberId, action === "decline-pass" ? "declined" : "cancelled");
+        effects = r.effects;
+        payload = { status: r.incident.status, version: r.incident.version };
         break;
       }
       case "merge": {

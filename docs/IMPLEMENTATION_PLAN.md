@@ -11,6 +11,7 @@ Owner key: **You** means it needs your account, money, people or judgement. **Cl
 | Core loop: report → merge → claim → fix → reporter told | Works with live Nexconn | Browser runs this session; `incidents.test.ts`, `projection.test.ts` |
 | Chat message becomes a claimable request | Works through the manual button. The webhook path is unit-tested only. | `chat-intake.test.ts`; webhook needs a public URL |
 | Incident detail, activity timeline, assignment | Works | Browser and tests |
+| Baton Pass (handover that is never ownerless) | Works live (12 Nov) | Two-session browser test; 6 tests in `incidents.test.ts` |
 | Organizer ↔ volunteer direct messages and inbox | Works live, with a fallback for the 35011 channel list | Two-session browser test |
 | Command centre (KPIs, filters, crew load, inbox) | Works | Browser |
 | Landing page (13 sections), attendee form fix | Done | Checked at 375 px and desktop |
@@ -28,7 +29,7 @@ Owner key: **You** means it needs your account, money, people or judgement. **Cl
 | P0-3 | Console: webhook URL with `message:send`, domain allowlist | You | 14 Nov | Then Claude proves the webhook path live (the chat → card demo moment) |
 | P0-4 | Enrol in Chat Growth Credit and screenshot the MAU/PCC entitlement | You | 13 Nov | Qualification evidence |
 | P0-5 | At least one real event or rehearsal with real people on the deployed URL | You, with Claude on call | 18 Nov | See TRACTION_PLAN. A rehearsal with your club counts if it is described honestly as a rehearsal. |
-| P0-6 | Demo video, 2:30–3:00 | You record, Claude scripts | 20 Nov | DEMO_SCRIPT.md |
+| P0-6 | Demo video, 2:30–3:00 | You record, Claude scripts | 20 Nov | JUDGE_DEMO_SCRIPT.md |
 | P0-7 | Write-up and README with screenshots, architecture and an honest Nexconn feature table | Claude | 20 Nov | — |
 | P0-8 | Make the repository public and submit | You | 21 Nov | Rule: Claude never pushes or adds a remote |
 
@@ -47,7 +48,7 @@ Owner key: **You** means it needs your account, money, people or judgement. **Cl
 
 - Crew Web Push alerts (PWA, service worker, VAPID).
 - An attendee "known issues near you" view, to dedupe before a report is sent.
-- A 1:1 audio "Call owner" button. **Blocked:** it needs the Console audio/video switch and a card. No simulated call.
+- Escalation voice huddle (group audio call on urgent incidents, logged through Call webhooks). **Blocked:** it needs the Console audio/video switch and a card. Design and unlock steps in NEXCONN_COMPLETE_DOCUMENTATION_RESEARCH §C. No simulated call.
 
 ## Freeze and buffer
 

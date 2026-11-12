@@ -1,8 +1,8 @@
-# Baton — submission checklist
+# Baton — submission readiness
 
 Deadline: **22 Nov 2026, 23:59 AoE**. Target: submit **21 Nov**. Requirements are from the challenge page as recorded in `NEXCONN_RESEARCH.md` §2.4: write-up PDF with the App Key and the Nexconn features used, a public demo video, a public GitHub repository, and the App Key in the form.
 
-Status on 11 Nov 2026: `[x]` done and verified · `[ ]` to do · `[!]` blocked on you.
+Status on 12 Nov 2026: `[x]` done and verified · `[ ]` to do · `[!]` blocked on you.
 
 ## Qualification (missing any of these risks disqualification)
 
@@ -11,8 +11,16 @@ Status on 11 Nov 2026: `[x]` done and verified · `[ ]` to do · `[!]` blocked o
 - [ ] [!] Chat Growth Credit enrolled; dated screenshot of MAU/PCC. **You**
 - [ ] The App Key in the form matches the key in the deployed bundle (check the built JS after deploying).
 - [ ] [!] Public GitHub repository. **You** make it public and push; Claude does not push or add remotes.
-- [ ] [!] Video public to anyone with the link, tested logged out. **You** record (DEMO_SCRIPT.md).
+- [ ] [!] Video public to anyone with the link, tested logged out. **You** record (JUDGE_DEMO_SCRIPT.md).
 - [ ] Write-up PDF including the **App Key** and the Nexconn features table. Claude drafts; you review.
+
+## Traction bonus (genuine use only)
+
+- [ ] [!] At least one real event or a clearly labelled rehearsal on the deployed URL (TRACTION_PLAN §1, §4). **You** run it.
+- [ ] Impact report screenshot from that event (real activity only; simulated is excluded by the code).
+- [ ] Console MAU screenshot for November, dated, from the same App Key as the write-up.
+- [ ] Organizer feedback in their own words, with permission to quote (TRACTION_PLAN §5). No paraphrased or invented quotes.
+- [ ] Every number in the write-up and video traces to one of the three items above.
 
 ## Live app
 
@@ -26,9 +34,9 @@ Status on 11 Nov 2026: `[x]` done and verified · `[ ]` to do · `[!]` blocked o
 
 ## Repository
 
-- [x] Tests, typecheck and lint pass (`npm test`, `npm run typecheck`, `npm run lint`); re-run before submitting.
+- [x] Tests (95), typecheck, lint and build pass on 12 Nov (`npm test`, `npm run typecheck`, `npm run lint`, `npm run build`); re-run before submitting.
 - [ ] `npm run build` passes on a clean checkout.
-- [ ] README: problem, screenshots or GIF, live URL, judge walkthrough (DEMO_SCRIPT §B), architecture, Nexconn features, setup, environment variable names, tests.
+- [ ] README: problem, screenshots or GIF, live URL, judge walkthrough (JUDGE_DEMO_SCRIPT §B), architecture, Nexconn features, setup, environment variable names, tests.
 - [ ] Licence file (MIT unless you prefer otherwise). **You** decide.
 - [ ] `.env.local` is git-ignored, and no secret appears in history (`git log -p | grep` for the key prefixes).
 - [ ] Favicon: currently deleted in the working tree, not by Claude. Restore or replace it.
@@ -62,3 +70,7 @@ Status on 11 Nov 2026: `[x]` done and verified · `[ ]` to do · `[!]` blocked o
 - [ ] Submitted by 21 Nov.
 - [ ] 22 Nov: every link re-checked in a logged-out browser on a phone.
 - [ ] 23–27 Nov: no deploys unless something is broken.
+
+## Not part of this submission's requirements
+
+The brief that asked for this file also mentioned "five case studies and a template". None exist for this hackathon in the workspace: the only such set is `../tata-elxsi/Case Studies And Template/` (Tata Elxsi, unrelated). The Nexconn write-up has no published template that we know of (NEXCONN_RESEARCH §2.4). If the organisers publish one, follow it.

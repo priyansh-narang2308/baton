@@ -1,5 +1,11 @@
 # Progress — Baton 2.0
 
+## 12 Nov 2026 — Baton Pass, documentation research, landing motion (session 4)
+- **Baton Pass:** the owner offers an incident to a teammate with a handover note; ownership moves only when they accept (one conditional `UPDATE`), so it is never ownerless. Decline, cancel, and void on release, fix or assign. Migration `0003_baton_pass`; card metadata `pass` / `passN`; targeted `BTN:Nudge` alerts. 6 new tests, including an accept-vs-release race; verified live organizer → volunteer in two sessions.
+- **Docs:** `COMPLETE_PROJECT_AUDIT.md` (status table, track, judge score), `NEXCONN_COMPLETE_DOCUMENTATION_RESEARCH.md` plus a generated 869-row `NEXCONN_PAGE_INVENTORY.md`. Chat UI and Call SDK decisions re-checked against the current pages. `DEMO_SCRIPT` → `JUDGE_DEMO_SCRIPT` (Baton Pass beat); `SUBMISSION_CHECKLIST` → `SUBMISSION_READINESS` (traction bonus).
+- **Landing:** Framer Motion entrance, scroll reveals, floating section nav, smooth anchor scrolling (dff5f96).
+- **Still the owner's:** deploy authorisation and host, Console calling service and card (for huddles), Growth Credit, pilots, video, public repository.
+
 ## 10–11 Nov 2026 — audit, command centre, landing (session 3)
 - **Audits:** `docs/PRODUCT_AUDIT.md` (claims re-verified, defects D1–D9, judge panel, track and positioning) and `docs/NEXCONN_DOCS_AUDIT.md` (869 doc pages; Call SDK blocked on Console and card; live SDK findings in §10).
 - **Fixed:** every QR code returned 500 when `PUBLIC_BASE_URL` was blank (D1).

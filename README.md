@@ -5,10 +5,11 @@
 - Volunteers join by QR (no app, no account). Attendees report issues from location posters.
 - Reports become **live incident cards** in the crew chat; **duplicate reports merge** into one card ("3 reports").
 - One tap — **I'll take it** — flips the card on every device; **everyone who reported it** is told who's on it and when it's fixed.
+- **Baton Pass:** the owner hands an incident to a teammate with a handover note; it stays theirs until the teammate accepts, so nothing is ever left without an owner.
 - Unclaimed incidents notify a **named** lead, not the whole group.
 - Organizers run a **command centre**: what needs an owner, longest wait, crew load, incident history, assignment and direct messages with volunteers.
 
-Docs: [implementation plan](docs/IMPLEMENTATION_PLAN.md) · [architecture](docs/ARCHITECTURE.md) · [product audit](docs/PRODUCT_AUDIT.md) · [Nexconn docs audit](docs/NEXCONN_DOCS_AUDIT.md) · [traction kit](docs/TRACTION_PLAN.md) · [demo script](docs/DEMO_SCRIPT.md) · [submission checklist](docs/SUBMISSION_CHECKLIST.md) · [validation](docs/VALIDATION_RESULTS.md) · [product spec](docs/PRODUCT_SPEC.md) · [research](docs/NEXCONN_RESEARCH.md) · [28 Oct plan](docs/PLAN.md)
+Docs: [implementation plan](docs/IMPLEMENTATION_PLAN.md) · [architecture](docs/ARCHITECTURE.md) · [project audit](docs/COMPLETE_PROJECT_AUDIT.md) · [Nexconn research](docs/NEXCONN_COMPLETE_DOCUMENTATION_RESEARCH.md) · [product audit](docs/PRODUCT_AUDIT.md) · [Nexconn docs audit](docs/NEXCONN_DOCS_AUDIT.md) · [traction kit](docs/TRACTION_PLAN.md) · [judge demo script](docs/JUDGE_DEMO_SCRIPT.md) · [submission readiness](docs/SUBMISSION_READINESS.md) · [validation](docs/VALIDATION_RESULTS.md) · [product spec](docs/PRODUCT_SPEC.md) · [research](docs/NEXCONN_RESEARCH.md) · [28 Oct plan](docs/PLAN.md)
 
 ## Run locally
 Requires Node 22+ and a Postgres binary (Homebrew `postgresql@16` works).
@@ -35,7 +36,9 @@ npm run dev
 |---|---|
 | Chat SDK for Web (`@nexconn/chat` 26.2.1): init, connect, reconnect states, custom messages, group send, history, `onMessageReceived`, `onMessageMetadataUpdated` | `src/lib/nexconn-client.ts` |
 | Server API: token issue, group create/join, group send with `hasMetadata`, metadata set, targeted group messages, direct messages | `src/server/nexconn/api.ts` |
-| Message metadata as the live incident state on each card | `src/server/domain/projection.ts` |
+| Message metadata as the live incident state on each card (status, owner, report count, pending Baton Pass) | `src/server/domain/projection.ts` |
+| Targeted group messages (`toUserIds`) for private alerts: assignment, escalation, Baton Pass offer/answer | `src/server/domain/projection.ts` |
+| Direct channels: status updates to every reporter; organizer ↔ volunteer conversations | `projection.ts`, `src/components/direct-thread.tsx` |
 | Webhooks with signature + freshness check and idempotent recording | `src/app/api/nexconn/webhook/route.ts` |
 
 ## Scripts

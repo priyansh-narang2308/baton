@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Check, ChevronRight, GitMerge, MapPin, Sparkles, Users } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, Check, ChevronRight, GitMerge, MapPin, Sparkles, Users } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api, CATEGORY_LABEL, type IncidentView } from "@/lib/types";
 import { Button, cx, timeAgo } from "./ui";
@@ -80,6 +80,8 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
   const s = STATUS_STYLE[i.status];
   const mine = i.ownerMemberId && i.ownerMemberId === meId;
   const urgent = i.priority === "urgent" && i.status === "open";
+  const passing = i.status === "claimed" && i.passToMemberId ? i : null;
+  const passToMe = !!passing && passing.passToMemberId === meId;
 
   return (
     <article
@@ -164,7 +166,52 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
         </div>
       )}
 
-      {i.status !== "withdrawn" && i.status !== "resolved" && (
+      {passing && (
+        <div className={cx("mt-3 rounded-lg px-3 py-2 text-[13px]", passToMe ? "border border-claimed/40 bg-claimed-soft" : "bg-surface-2")} role={passToMe ? "alert" : undefined}>
+          <p className="flex items-center gap-1.5 text-text">
+            <ArrowRightLeft className="size-3.5 shrink-0 text-claimed" aria-hidden />
+            {passToMe ? (
+              <span>
+                <strong className="font-medium">{i.ownerName ?? "The owner"}</strong> wants to pass this to you
+              </span>
+            ) : (
+              <span>
+                {mine ? "You're passing this to" : `${i.ownerName ?? "The owner"} is passing this to`} <strong className="font-medium">{passing.passToName ?? "a teammate"}</strong>
+                <span className="text-text-3"> · waiting for them</span>
+              </span>
+            )}
+          </p>
+          {passing.passNote && <p className="mt-1 text-text-2">“{passing.passNote}”</p>}
+          {passToMe && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button
+                variant="claim"
+                size="sm"
+                className="min-w-28 flex-1"
+                busy={busy === "accept-pass"}
+                onClick={() => act("accept-pass", { ownerMemberId: meId, ownerName: passing.passToName, passToMemberId: null, passToName: null, passNote: null, passOfferedAt: null })}
+              >
+                Take the baton
+              </Button>
+              <Button variant="ghost" size="sm" busy={busy === "decline-pass"} onClick={() => act("decline-pass", { passToMemberId: null, passToName: null, passNote: null, passOfferedAt: null })}>
+                Can&apos;t right now
+              </Button>
+            </div>
+          )}
+          {mine && !passToMe && (
+            <button
+              type="button"
+              disabled={busy === "cancel-pass"}
+              onClick={() => act("cancel-pass", { passToMemberId: null, passToName: null, passNote: null, passOfferedAt: null })}
+              className="mt-1.5 text-xs font-medium text-text-2 underline underline-offset-2 hover:text-text"
+            >
+              Cancel pass
+            </button>
+          )}
+        </div>
+      )}
+
+      {i.status !== "withdrawn" && i.status !== "resolved" && !passToMe && (
         <div className="mt-3 flex flex-wrap gap-2">
           {i.status === "open" && (
             <Button variant="claim" size={compact || attached ? "sm" : "md"} className="min-w-28 flex-1" busy={busy === "claim"} onClick={() => act("claim")}>
@@ -181,6 +228,11 @@ export function IncidentCard({ eventId, incident: i, meId, isLead, now, flashAt,
               <Button variant="done" size={compact ? "sm" : "md"} className="min-w-28 flex-1" busy={busy === "resolve"} onClick={() => act("resolve", { status: "resolved" })}>
                 <Check className="size-4" aria-hidden /> Mark fixed
               </Button>
+              {mine && !passing && onOpen && (
+                <Button variant="secondary" size={compact ? "sm" : "md"} onClick={onOpen} aria-label={`Pass incident ${i.number} to a teammate`}>
+                  <ArrowRightLeft className="size-4" aria-hidden /> Pass
+                </Button>
+              )}
               <Button variant="ghost" size={compact ? "sm" : "md"} busy={busy === "release"} onClick={() => act("release", { status: "open", ownerMemberId: null, ownerName: null })}>
                 Release
               </Button>

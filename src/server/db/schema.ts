@@ -74,6 +74,10 @@ export const incidents = pgTable(
     sourceMessageId: text("source_message_id"),
     status: text("status", { enum: ["open", "claimed", "resolved", "withdrawn"] }).notNull().default("open"),
     ownerMemberId: text("owner_member_id"),
+    // Baton Pass: an offer from the owner to one teammate. Ownership moves only when that teammate accepts.
+    passToMemberId: text("pass_to_member_id"),
+    passNote: text("pass_note"),
+    passOfferedAt: timestamp("pass_offered_at", { withTimezone: true }),
     reportCount: integer("report_count").notNull().default(1),
     cardMessageId: text("card_message_id"),
     projectedVersion: integer("projected_version").notNull().default(0),

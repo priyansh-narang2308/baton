@@ -19,7 +19,7 @@ export type IncidentCardContent = {
 };
 
 /** Live state carried in Nexconn message metadata (all values must be strings; keys ≤ 32 chars). */
-export type IncidentCardMetadata = { st: string; v: string; n: string; own: string; ownN: string; sug: string; inc: string; num: string };
+export type IncidentCardMetadata = { st: string; v: string; n: string; own: string; ownN: string; sug: string; inc: string; num: string; pass: string; passN: string };
 
 export type StatusState = "received" | "claimed" | "resolved";
 const STATE_ORDER: StatusState[] = ["received", "claimed", "resolved"];
@@ -40,7 +40,8 @@ async function snapshot(db: Db, incidentId: string) {
     .from(mergeSuggestions)
     .innerJoin(incidents, eq(incidents.id, mergeSuggestions.candidateIncidentId))
     .where(and(eq(mergeSuggestions.incidentId, incidentId), eq(mergeSuggestions.status, "pending")));
-  return { ...row, suggestionNumber: sugg?.number ?? null };
+  const [passTo] = row.inc.passToMemberId ? await db.select({ name: members.name }).from(members).where(eq(members.id, row.inc.passToMemberId)) : [];
+  return { ...row, suggestionNumber: sugg?.number ?? null, passToName: passTo?.name ?? null };
 }
 
 export function cardMetadata(s: NonNullable<Awaited<ReturnType<typeof snapshot>>>): IncidentCardMetadata {
@@ -54,6 +55,9 @@ export function cardMetadata(s: NonNullable<Awaited<ReturnType<typeof snapshot>>
     // Lets clients link any message (bot card or crew chat) to its incident before the next state read.
     inc: s.inc.id,
     num: String(s.inc.number),
+    // A pending Baton Pass, so every phone shows "passing to …" until it is accepted or withdrawn.
+    pass: s.inc.passToMemberId ?? "",
+    passN: s.passToName ?? "",
   };
 }
 
@@ -152,6 +156,26 @@ async function notifyAssignee(db: Db, api: NexconnApi, incidentId: string, membe
   });
 }
 
+/** Baton Pass: a private message inside the crew group to the one person the pass concerns. */
+async function notifyPass(db: Db, api: NexconnApi, e: Extract<Effect, { type: "pass" }>) {
+  const s = await snapshot(db, e.incidentId);
+  if (!s) return;
+  // An offer that was withdrawn, answered or overtaken before we got here is not worth an alert.
+  if (e.kind === "offered" && s.inc.passToMemberId !== e.memberId) return;
+  const [m] = await db.select({ nexconnUserId: members.nexconnUserId }).from(members).where(eq(members.id, e.memberId));
+  if (!m) return;
+  const label = `#${s.inc.number} — ${s.inc.title}`;
+  await api.sendGroupMessage({
+    fromUserId: s.ev.botUserId,
+    groupId: s.ev.nexconnGroupId,
+    toUserIds: [m.nexconnUserId],
+    messageType: MSG_NUDGE,
+    content: { kind: `pass_${e.kind}`, incidentId: e.incidentId, number: s.inc.number, title: s.inc.title, byName: e.byName, note: e.note ?? "" },
+    pushContent:
+      e.kind === "offered" ? `${e.byName} wants to pass you ${label}` : e.kind === "accepted" ? `${e.byName} took over ${label}` : `${e.byName} can't take ${label} — it's still yours`,
+  });
+}
+
 // Projection for one incident runs strictly in order (one Node server process): without this, a report and a
 // duplicate arriving together could both see "no card yet" and post two cards.
 const chains = new Map<string, Promise<unknown>>();
@@ -175,12 +199,13 @@ export async function applyEffects(db: Db, api: NexconnApi | null, effects: Effe
   let ok = true;
   for (const e of effects) {
     const key =
-      e.type === "card.create" || e.type === "card.update" ? `card:${e.incidentId}` : e.type === "assigned" ? `assigned:${e.incidentId}:${e.memberId}` : `${e.type}:${e.incidentId}`;
+      e.type === "card.create" || e.type === "card.update" ? `card:${e.incidentId}` : e.type === "assigned" ? `assigned:${e.incidentId}:${e.memberId}` : e.type === "pass" ? `pass:${e.incidentId}:${e.memberId}:${e.kind}` : `${e.type}:${e.incidentId}`;
     if (seen.has(key)) continue;
     seen.add(key);
     try {
       if (e.type === "notify") await serialized(e.incidentId, () => notifyReporters(db, api, e.incidentId));
       else if (e.type === "assigned") await serialized(e.incidentId, () => notifyAssignee(db, api, e.incidentId, e.memberId, e.byName));
+      else if (e.type === "pass") await serialized(e.incidentId, () => notifyPass(db, api, e));
       else await serialized(e.incidentId, () => projectCard(db, api, e.incidentId));
     } catch (err) {
       ok = false;

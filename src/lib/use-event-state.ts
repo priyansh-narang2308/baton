@@ -59,6 +59,8 @@ export function useEventState(eventId: string, connection: ConnectionState, as?:
           reportCount: metadata.n ? Number(metadata.n) : cur.reportCount,
           ownerMemberId: metadata.own !== undefined ? metadata.own || null : cur.ownerMemberId,
           ownerName: metadata.ownN !== undefined ? metadata.ownN || null : cur.ownerName,
+          passToMemberId: metadata.pass !== undefined ? metadata.pass || null : cur.passToMemberId,
+          passToName: metadata.passN !== undefined ? metadata.passN || null : cur.passToName,
         };
         setFlash((f) => ({ ...f, [cur.id]: Date.now() }));
         const incidents = [...s.incidents];

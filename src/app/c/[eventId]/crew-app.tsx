@@ -14,7 +14,9 @@ import { api, CATEGORY_LABEL, type CrewMemberView } from "@/lib/types";
 import { useEventState } from "@/lib/use-event-state";
 
 type Tab = "stream" | "mine" | "inbox" | "crew";
-type Nudge = { kind: "escalation" | "assigned"; incidentId: string; number: number; title: string; byName?: string };
+type NudgeKind = "escalation" | "assigned" | "pass_offered" | "pass_accepted" | "pass_declined";
+type Nudge = { kind: NudgeKind; incidentId: string; number: number; title: string; byName?: string };
+const NUDGE_KINDS: NudgeKind[] = ["assigned", "pass_offered", "pass_accepted", "pass_declined"];
 
 export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: "member" | "organizer" }) {
   const conn = useNexconn(eventId, role);
@@ -53,7 +55,7 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
       if (m.channelId !== groupId) return;
       if (m.messageType === "BTN:Nudge") {
         const c = m.content as { kind?: string; incidentId: string; number: number; title: string; byName?: string };
-        setNudge({ kind: c.kind === "assigned" ? "assigned" : "escalation", incidentId: c.incidentId, number: c.number, title: c.title, byName: c.byName });
+        setNudge({ kind: NUDGE_KINDS.includes(c.kind as NudgeKind) ? (c.kind as NudgeKind) : "escalation", incidentId: c.incidentId, number: c.number, title: c.title, byName: c.byName });
         if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(200);
       }
       setMessages((cur) => mergeMessages(cur, [m]));
@@ -84,7 +86,8 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
     );
   }
 
-  const mine = state?.incidents.filter((i) => i.ownerMemberId === state.me?.id && i.status === "claimed") ?? [];
+  // My tasks: what I own, plus anything a teammate is passing to me (it needs my answer).
+  const mine = state?.incidents.filter((i) => i.status === "claimed" && (i.ownerMemberId === state.me?.id || i.passToMemberId === state.me?.id)) ?? [];
   const openCount = state?.incidents.filter((i) => i.status === "open").length ?? 0;
 
   return (
@@ -106,6 +109,18 @@ export function CrewApp({ eventId, role = "member" }: { eventId: string; role?: 
             {nudge.kind === "assigned" ? (
               <>
                 {nudge.byName ?? "A lead"} assigned you <strong>#{nudge.number}</strong> — {nudge.title}
+              </>
+            ) : nudge.kind === "pass_offered" ? (
+              <>
+                {nudge.byName ?? "A teammate"} wants to pass you <strong>#{nudge.number}</strong> — {nudge.title}
+              </>
+            ) : nudge.kind === "pass_accepted" ? (
+              <>
+                {nudge.byName ?? "Your teammate"} took over <strong>#{nudge.number}</strong>. You&apos;re free.
+              </>
+            ) : nudge.kind === "pass_declined" ? (
+              <>
+                {nudge.byName ?? "Your teammate"} can&apos;t take <strong>#{nudge.number}</strong>. It&apos;s still yours.
               </>
             ) : (
               <>

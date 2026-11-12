@@ -10,7 +10,12 @@ export type Effect =
   | { type: "card.update"; incidentId: string }
   | { type: "notify"; incidentId: string }
   /** Tell one crew member, privately inside the crew group, that a lead assigned them an incident. */
-  | { type: "assigned"; incidentId: string; memberId: string; byName: string };
+  | { type: "assigned"; incidentId: string; memberId: string; byName: string }
+  /** Baton Pass: tell one crew member privately that a pass was offered to them, or answered. */
+  | { type: "pass"; incidentId: string; memberId: string; kind: "offered" | "accepted" | "declined"; byName: string; note?: string };
+
+/** Any change of owner or status ends a pending Baton Pass. */
+const NO_PASS = { passToMemberId: null, passNote: null, passOfferedAt: null } as const;
 
 export class DomainError extends Error {
   constructor(
@@ -212,7 +217,7 @@ export async function releaseIncident(db: Db, eventId: string, incidentId: strin
     if (inc.ownerMemberId !== memberId && actor.role !== "lead") throw new DomainError("forbidden", "Only the owner or a lead can release this");
     const [updated] = await tx
       .update(incidents)
-      .set({ status: "open", ownerMemberId: null, claimedAt: null, nextEscalationAt: escalationTime(inc.priority, ev, now), version: sql`${incidents.version} + 1` })
+      .set({ ...NO_PASS, status: "open", ownerMemberId: null, claimedAt: null, nextEscalationAt: escalationTime(inc.priority, ev, now), version: sql`${incidents.version} + 1` })
       .where(and(eq(incidents.id, incidentId), eq(incidents.version, inc.version)))
       .returning();
     if (!updated) throw new DomainError("conflict", "The incident changed — refresh and try again");
@@ -232,7 +237,7 @@ export async function resolveIncident(db: Db, eventId: string, incidentId: strin
     }
     const [updated] = await tx
       .update(incidents)
-      .set({ status: "resolved", resolvedAt: now, nextEscalationAt: null, ownerMemberId: inc.ownerMemberId ?? memberId, version: sql`${incidents.version} + 1` })
+      .set({ ...NO_PASS, status: "resolved", resolvedAt: now, nextEscalationAt: null, ownerMemberId: inc.ownerMemberId ?? memberId, version: sql`${incidents.version} + 1` })
       .where(and(eq(incidents.id, incidentId), eq(incidents.version, inc.version)))
       .returning();
     if (!updated) throw new DomainError("conflict", "The incident changed — refresh and try again");
@@ -257,7 +262,7 @@ export async function assignIncident(db: Db, eventId: string, incidentId: string
     if (inc.status === "claimed" && inc.ownerMemberId === assigneeMemberId) return { incident: inc, effects: [] as Effect[], unchanged: true };
     const [updated] = await tx
       .update(incidents)
-      .set({ status: "claimed", ownerMemberId: assigneeMemberId, claimedAt: inc.claimedAt ?? now, nextEscalationAt: null, version: sql`${incidents.version} + 1` })
+      .set({ ...NO_PASS, status: "claimed", ownerMemberId: assigneeMemberId, claimedAt: inc.claimedAt ?? now, nextEscalationAt: null, version: sql`${incidents.version} + 1` })
       .where(and(eq(incidents.id, incidentId), eq(incidents.version, inc.version)))
       .returning();
     if (!updated) throw new DomainError("conflict", "The incident changed — refresh and try again");
@@ -265,6 +270,84 @@ export async function assignIncident(db: Db, eventId: string, incidentId: string
     const effects: Effect[] = [{ type: "card.update", incidentId }, { type: "notify", incidentId }];
     if (assigneeMemberId !== actorMemberId) effects.push({ type: "assigned", incidentId, memberId: assigneeMemberId, byName: actor.name });
     return { incident: updated, effects, unchanged: false };
+  });
+}
+
+/**
+ * Baton Pass, step 1: the owner offers their incident to one teammate. The owner stays the owner until the teammate
+ * accepts, so the incident is never left without someone responsible. A new offer replaces a pending one.
+ */
+export async function offerPass(db: Db, eventId: string, incidentId: string, ownerId: string, toMemberId: string, note: string, now = new Date()) {
+  return db.transaction(async (tx) => {
+    const owner = await activeMember(tx, ownerId, eventId);
+    if (toMemberId === ownerId) throw new DomainError("invalid", "Pick someone else to pass this to");
+    const [to] = await tx.select().from(members).where(and(eq(members.id, toMemberId), eq(members.eventId, eventId), isNull(members.removedAt)));
+    if (!to) throw new DomainError("invalid", "That person is not on this event's crew");
+    const inc = await loadIncident(tx, incidentId, eventId);
+    if (inc.status !== "claimed") throw new DomainError("conflict", `This incident is ${inc.status === "open" ? "not claimed yet" : inc.status}`, { status: inc.status });
+    if (inc.ownerMemberId !== ownerId) throw new DomainError("forbidden", "Only the current owner can pass this on");
+    const trimmed = note.trim().slice(0, 280) || null;
+    const [updated] = await tx
+      .update(incidents)
+      .set({ passToMemberId: toMemberId, passNote: trimmed, passOfferedAt: now, version: sql`${incidents.version} + 1` })
+      .where(and(eq(incidents.id, incidentId), eq(incidents.version, inc.version)))
+      .returning();
+    if (!updated) throw new DomainError("conflict", "The incident changed — refresh and try again");
+    await audit(tx, incidentId, ownerId, "pass.offered", { toId: toMemberId, note: trimmed, replacedId: inc.passToMemberId });
+    return {
+      incident: updated,
+      effects: [{ type: "card.update", incidentId }, { type: "pass", incidentId, memberId: toMemberId, kind: "offered", byName: owner.name, note: trimmed ?? undefined }] as Effect[],
+    };
+  });
+}
+
+/**
+ * Baton Pass, step 2: the named teammate takes it. One conditional UPDATE moves ownership only if the pass is still
+ * addressed to them and the incident is still claimed by the person who offered it, so a release, reassignment or
+ * fix that lands first makes this fail cleanly instead of overwriting it.
+ */
+export async function acceptPass(db: Db, eventId: string, incidentId: string, memberId: string, now = new Date()) {
+  return db.transaction(async (tx) => {
+    const me = await activeMember(tx, memberId, eventId);
+    const inc = await loadIncident(tx, incidentId, eventId);
+    if (inc.status === "claimed" && inc.ownerMemberId === memberId && !inc.passToMemberId) return { incident: inc, effects: [] as Effect[], alreadyYours: true };
+    if (inc.passToMemberId !== memberId || inc.status !== "claimed" || !inc.ownerMemberId) {
+      throw new DomainError("conflict", "This pass is no longer open", { status: inc.status, ownerName: await ownerName(tx, inc.ownerMemberId) });
+    }
+    const fromId = inc.ownerMemberId;
+    const [updated] = await tx
+      .update(incidents)
+      .set({ ...NO_PASS, ownerMemberId: memberId, version: sql`${incidents.version} + 1` })
+      .where(and(eq(incidents.id, incidentId), eq(incidents.status, "claimed"), eq(incidents.ownerMemberId, fromId), eq(incidents.passToMemberId, memberId)))
+      .returning();
+    if (!updated) throw new DomainError("conflict", "This pass is no longer open");
+    await audit(tx, incidentId, memberId, "pass.accepted", { fromId, waitedSec: inc.passOfferedAt ? Math.round((now.getTime() - inc.passOfferedAt.getTime()) / 1000) : null });
+    return {
+      incident: updated,
+      effects: [{ type: "card.update", incidentId }, { type: "pass", incidentId, memberId: fromId, kind: "accepted", byName: me.name }] as Effect[],
+      alreadyYours: false,
+    };
+  });
+}
+
+/** Baton Pass: the teammate says no (the owner keeps it and is told), or the owner withdraws the offer. */
+export async function endPass(db: Db, eventId: string, incidentId: string, memberId: string, how: "declined" | "cancelled") {
+  return db.transaction(async (tx) => {
+    const me = await activeMember(tx, memberId, eventId);
+    const inc = await loadIncident(tx, incidentId, eventId);
+    if (!inc.passToMemberId) return { incident: inc, effects: [] as Effect[] };
+    const allowed = how === "declined" ? inc.passToMemberId === memberId : inc.ownerMemberId === memberId || me.role === "lead";
+    if (!allowed) throw new DomainError("forbidden", how === "declined" ? "This pass isn't addressed to you" : "Only the owner can cancel this pass");
+    const [updated] = await tx
+      .update(incidents)
+      .set({ ...NO_PASS, version: sql`${incidents.version} + 1` })
+      .where(and(eq(incidents.id, incidentId), eq(incidents.version, inc.version)))
+      .returning();
+    if (!updated) throw new DomainError("conflict", "The incident changed — refresh and try again");
+    await audit(tx, incidentId, memberId, `pass.${how}`, { toId: inc.passToMemberId });
+    const effects: Effect[] = [{ type: "card.update", incidentId }];
+    if (how === "declined" && inc.ownerMemberId) effects.push({ type: "pass", incidentId, memberId: inc.ownerMemberId, kind: "declined", byName: me.name });
+    return { incident: updated, effects };
   });
 }
 
@@ -312,7 +395,7 @@ export async function incidentDetail(db: Db, eventId: string, incidentId: string
     for (const k of ["targetId", "sourceId", "candidateIncidentId", "newIncidentId", "fromIncidentId"]) {
       if (typeof p[k] === "string" && numberById.has(p[k] as string)) p[`${k.replace(/Id$/, "")}Number`] = numberById.get(p[k] as string);
     }
-    for (const k of ["assigneeId", "previousOwnerId"]) {
+    for (const k of ["assigneeId", "previousOwnerId", "toId", "fromId", "replacedId"]) {
       if (typeof p[k] === "string") p[`${k.replace(/Id$/, "")}Name`] = crewById.get(p[k] as string)?.name ?? null;
     }
     return { id: e.id, type: e.type, at: e.at.getTime(), ...actorOf(e.actor), detail: p };
@@ -468,6 +551,7 @@ export async function listIncidents(db: Db, eventId: string) {
     return {
       ...r,
       ownerName: crew.find((c) => c.id === r.ownerMemberId)?.name ?? null,
+      passToName: crew.find((c) => c.id === r.passToMemberId)?.name ?? null,
       zoneName: zs.find((z) => z.id === r.zoneId)?.name ?? null,
       suggestion: s ? { candidateIncidentId: s.candidateIncidentId, candidateNumber: numberById.get(s.candidateIncidentId) ?? null, score: s.score } : null,
     };

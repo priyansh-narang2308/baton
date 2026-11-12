@@ -22,6 +22,13 @@
       "when": 1793188883726,
       "tag": "0002_chat_origin",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794462394451,
+      "tag": "0003_baton_pass",
+      "breakpoints": true
     }
   ]
 }
