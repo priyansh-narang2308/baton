@@ -180,3 +180,58 @@ export const nexconnTokens = pgTable("nexconn_tokens", {
   token: text("token").notNull(),
   issuedAt: createdAt(),
 });
+
+/*
+ * ── Public traction page (/traction) ─────────────────────────────────────────────────────────────────────────────
+ * Everything below is recorded by an admin, never inferred. No event counts as external traction until an admin
+ * verifies it here; demo events can never be verified. Incident tables above are not touched by this feature.
+ */
+
+/** An event the team has verified as a real pilot (or a clearly labelled rehearsal) run with external people. */
+export const tractionPilots = pgTable("traction_pilots", {
+  eventId: text("event_id").primaryKey().references(() => events.id, { onDelete: "cascade" }),
+  kind: text("kind", { enum: ["pilot", "rehearsal"] }).notNull(),
+  /** Shown publicly. Only what the organizer agreed to, e.g. "College tech fest, Delhi". */
+  publicName: text("public_name").notNull(),
+  publicContext: text("public_context").notNull().default(""),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  /** Private: how the pilot was verified (who confirmed, how). Never rendered on the public page. */
+  verificationNote: text("verification_note").notNull(),
+  verifiedAt: createdAt(),
+});
+
+/** Nexconn identities inside a pilot that are not external users (the team's own phones, test devices). */
+export const tractionExclusions = pgTable("traction_exclusions", {
+  nexconnUserId: text("nexconn_user_id").primaryKey(),
+  reason: text("reason").notNull(),
+  createdAt: createdAt(),
+});
+
+/** Dated figures copied by hand from the Nexconn Console. The Server API exposes no analytics, so this is the only source. */
+export const tractionConsoleSnapshots = pgTable("traction_console_snapshots", {
+  id: text("id").primaryKey(),
+  metric: text("metric", { enum: ["mau", "dau", "messages"] }).notNull(),
+  value: integer("value").notNull(),
+  periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+  periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+  /** Where in the Console the number was read, e.g. "Console → Data statistics → Chat → Monthly active users". */
+  consolePath: text("console_path").notNull(),
+  capturedAt: timestamp("captured_at", { withTimezone: true }).notNull(),
+  recordedAt: createdAt(),
+});
+
+/** Participant feedback. Shown publicly only when `published` and only with the attribution the person agreed to. */
+export const tractionFeedback = pgTable("traction_feedback", {
+  id: text("id").primaryKey(),
+  eventId: text("event_id").references(() => tractionPilots.eventId, { onDelete: "cascade" }),
+  role: text("role", { enum: ["organizer", "lead", "volunteer", "attendee"] }).notNull(),
+  quote: text("quote").notNull(),
+  rating: integer("rating"),
+  attribution: text("attribution", { enum: ["anonymous", "role", "name"] }).notNull().default("anonymous"),
+  attributionName: text("attribution_name"),
+  permissionNote: text("permission_note").notNull(),
+  published: boolean("published").notNull().default(false),
+  collectedAt: timestamp("collected_at", { withTimezone: true }).notNull(),
+  createdAt: createdAt(),
+});

@@ -124,3 +124,17 @@ body {
 @media (prefers-reduced-motion: reduce) {
   [data-radix-menu-content] { animation: none !important; }
 }
+
+/* Public traction report (/traction): print as a compact A4 report so judges can save it as PDF. */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  html, body { background: #fff !important; }
+  .traction { min-height: 0 !important; background: #fff; zoom: 0.72; }
+  .traction .no-print, .traction details.tv { display: none !important; }
+  .traction .print-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .traction .print-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .traction .metric, .traction .chart, .traction .pilot, .traction .quote, .traction .impact-row, .traction table { break-inside: avoid; }
+  .traction .section-head { break-after: avoid; }
+  .traction .print-break { break-before: page; }
+  .traction header { padding-top: 0 !important; }
+}
