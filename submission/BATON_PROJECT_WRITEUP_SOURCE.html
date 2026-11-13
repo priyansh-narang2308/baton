@@ -102,7 +102,7 @@ td:last-child { white-space: nowrap; }
     <svg width="92" height="46" viewBox="0 0 30 15" style="flex:none; margin-bottom:2mm;"><defs><clipPath id="b0"><rect x="0" y="0" width="30" height="7.2"/><rect x="0" y="9" width="30" height="2.4"/><rect x="0" y="13" width="30" height="2"/></clipPath></defs><path d="M0 15 A15 15 0 0 1 30 15 Z" fill="#E26C34" clip-path="url(#b0)"/></svg>
   </div>
 
-  <p class="lead" style="margin-bottom:4mm;"><b style="color:var(--ink)">Baton is a real-time operations coordination platform for event teams.</b> Attendees report problems by scanning a QR poster. Each report becomes an incident with exactly one owner, visible live on the organizer's board and on every volunteer's phone. Volunteers coordinate in a crew chat, hand work over with an explicit <b>Baton Pass</b>, and can start a voice call from the incident. The person who reported the problem sees who is on it and when it is fixed. Chat, live updates, private alerts and calls all run on Nexconn.</p>
+  <p class="lead" style="margin-bottom:4mm;"><b style="color:var(--ink)">Baton is a real-time operations coordination platform for event teams.</b> Attendees report problems by scanning a QR poster. Each report becomes an incident with exactly one owner, visible live on the organizer's board and on every volunteer's phone. Volunteers coordinate in a crew chat, hand work over with an explicit <b>Baton Pass</b>, and can call from the incident by voice or video. The person who reported the problem sees who is on it and when it is fixed. Chat, live updates, private alerts and calls all run on Nexconn.</p>
 
   <div class="meta" style="margin-bottom:4.5mm;">
     <div><div class="k">Live app</div><div class="v"><a href="https://baton.priyanshnarang.in">baton.priyanshnarang.in</a></div></div>
@@ -125,7 +125,7 @@ td:last-child { white-space: nowrap; }
     </div>
     <div class="card terra">
       <h3>Built on Nexconn</h3>
-      <p style="margin:0">Group and direct channels, custom message types, message metadata, targeted messages, message and presence webhooks, and 1:1 voice calls with the Call SDK.</p>
+      <p style="margin:0">Group and direct channels, custom message types, message metadata, targeted messages, message and presence webhooks, Chat UI, and 1:1 voice and video calls.</p>
     </div>
   </div>
 
@@ -198,14 +198,14 @@ td:last-child { white-space: nowrap; }
     <div class="step"><div class="n">5</div><div><h3>Duplicates merge</h3><p>A second report about the same thing attaches to the existing incident. Matching uses deterministic rules: same location, same category, overlapping words, close in time. No AI.</p></div></div>
     <div class="step"><div class="n">6</div><div><h3>Someone takes it</h3><p>One tap claims the incident. If several volunteers tap at once, exactly one wins; the others are told it is taken.</p></div></div>
     <div class="step"><div class="n">7</div><div><h3>Baton Pass</h3><p>The owner offers the incident to a teammate with a note. They stay the owner until it is accepted, so the job is never ownerless.</p></div></div>
-    <div class="step"><div class="n">8</div><div><h3>Call, fix, close the loop</h3><p>A volunteer can start a voice call from the incident. When it is marked fixed, the reporter sees "Fixed" and the timeline keeps the whole story.</p></div></div>
+    <div class="step"><div class="n">8</div><div><h3>Call, fix, close the loop</h3><p>A volunteer can start a voice or video call from the incident. When it is marked fixed, the reporter sees "Fixed" and the timeline keeps the whole story.</p></div></div>
   </div>
 
   <div class="grid3" style="gap:5mm; align-items:start;">
     <div><div class="shot"><img src="img/volunteer-claimed.jpg" alt="Volunteer phone"></div><div class="cap"><b>Volunteer.</b> A chat message became a tracked request ("From chat"), now owned by this volunteer.</div></div>
     <div><div class="shot"><img src="img/pass-offer.jpg" alt="Baton Pass offer"></div><div class="cap"><b>Baton Pass.</b> Only the recipient gets this private offer. Riya stays owner until "Take the baton" is tapped.</div></div>
     <div><div class="shot"><img src="img/attendee-status.jpg" alt="Attendee status"></div><div class="cap" style="margin-bottom:3mm"><b>Attendee.</b> The reporter sees who has it, then that it is fixed, through a Nexconn direct message.</div>
-      <div class="card" style="padding:3mm 3.4mm;"><h3 style="font-size:8.6pt">Interfaces</h3><p style="margin:0; font-size:7.8pt">Organizer board (desktop), volunteer view (phone), attendee report page (phone), QR and poster pages. All are custom React screens; the Nexconn Chat UI kit is not used.</p></div>
+      <div class="card" style="padding:3mm 3.4mm;"><h3 style="font-size:8.6pt">Interfaces</h3><p style="margin:0; font-size:7.8pt">Organizer board (desktop), volunteer view (phone), attendee report page (phone), QR and poster pages. All are custom React screens, except private crew messages, which use Nexconn Chat UI.</p></div>
     </div>
   </div>
 
@@ -217,7 +217,7 @@ td:last-child { white-space: nowrap; }
   <div class="run"><span class="brand">BATON</span><span>Nexconn SDK integration and architecture</span></div>
   <div class="kicker">03 · Nexconn integration</div>
   <h2 style="margin-bottom:2.5mm">Nexconn is the real-time layer. Baton is the rules.</h2>
-  <p style="margin-bottom:3mm; color:var(--ink2)">Baton uses the <b>Nexconn Chat SDK</b> (<code>@nexconn/chat</code> 26.2.1) with its own React interface, the <b>Nexconn Server API</b> from the backend, <b>webhooks</b> for messages and presence, and the <b>Nexconn Call SDK</b> (<code>@nexconn/call</code>) for voice. The App Secret stays on the server; browsers only receive short-lived access tokens.</p>
+  <p style="margin-bottom:3mm; color:var(--ink2)">Baton uses the <b>Nexconn Chat SDK</b> (<code>@nexconn/chat</code> 26.2.1) with its own React interface, <b>Nexconn Chat UI</b> (<code>@nexconn/chatui</code> 26.2.5) for private crew messages, the <b>Nexconn Server API</b> from the backend, <b>webhooks</b> for messages and presence, and the <b>Nexconn Call SDK</b> (<code>@nexconn/call</code>) for voice and video. The App Secret stays on the server; browsers only receive short-lived access tokens.</p>
 
   <table style="margin-bottom:4mm;">
     <thead><tr><th style="width:20%">Baton feature</th><th style="width:30%">Nexconn capability</th><th>Implementation role</th><th style="width:18%">Evidence</th></tr></thead>
@@ -229,9 +229,10 @@ td:last-child { white-space: nowrap; }
       <tr><td>Chat line → request</td><td>Webhook <code>message:send</code></td><td>Signature and freshness checked, envelope deduplicated, rule-based detection, one incident per message</td><td><span class="tag live">Live</span> check 9</td></tr>
       <tr><td>Private Baton Pass alert</td><td>Group message with <code>toUserIds</code></td><td>Only the recipient receives the offer and its push text</td><td><span class="tag live">Live</span> check 14</td></tr>
       <tr><td>Reporter updates</td><td>Direct channel message (Server API)</td><td>"Sent", "&lt;name&gt; is on it", "Fixed", each sent once per reporter</td><td><span class="tag live">Live</span> checks 13, 17, 26</td></tr>
+      <tr><td>Private crew messages</td><td>Chat UI: <code>NCChatUIApplication</code>, direct channel</td><td>1:1 crew messages with typing indicators</td><td><span class="tag live">Live</span></td></tr>
       <tr><td>Crew online count</td><td>Webhook <code>user:connection_status</code></td><td>Presence per member; client IP is dropped before storage</td><td><span class="tag live">Live</span></td></tr>
       <tr><td>Resilient connection</td><td>Connection status handler, <code>NCEngine.connect</code></td><td>Shows reconnecting state, retries with a fresh token</td><td><span class="tag code">Code</span></td></tr>
-      <tr><td>Voice huddle</td><td>Call SDK: <code>startCall</code>, <code>acceptCall</code>, <code>enableMicrophone</code>, <code>endCall</code></td><td>1:1 audio call started from an incident; duration logged on its timeline</td><td><span class="tag live">Live</span> checks 20–24</td></tr>
+      <tr><td>Voice and video huddle</td><td>Call SDK: <code>startCall</code> (audio or audio + video), <code>acceptCall</code>, <code>enableMicrophone</code>, <code>enableCamera</code>, <code>endCall</code></td><td>1:1 call started from an incident; voice or video and duration logged on its timeline</td><td><span class="tag live">Live</span> checks 20–24</td></tr>
     </tbody>
   </table>
 
@@ -265,10 +266,10 @@ td:last-child { white-space: nowrap; }
       <text x="428" y="22" text-anchor="middle" font-weight="700" fill="#B9501F">Nexconn cloud</text>
       <rect x="352" y="32" width="152" height="50" rx="6" fill="#fff" stroke="#F2CDB6"/>
       <text x="428" y="47" text-anchor="middle" font-weight="600">Chat</text>
-      <text x="428" y="61" text-anchor="middle" fill="#4A413B">group + direct channels</text>
+      <text x="428" y="61" text-anchor="middle" fill="#4A413B">group + direct, Chat UI</text>
       <text x="428" y="74" text-anchor="middle" fill="#4A413B">custom msgs, metadata</text>
       <rect x="352" y="92" width="152" height="30" rx="6" fill="#fff" stroke="#F2CDB6"/>
-      <text x="428" y="111" text-anchor="middle" font-weight="600">Call (WebRTC audio)</text>
+      <text x="428" y="111" text-anchor="middle" font-weight="600">Call (audio + video)</text>
       <rect x="352" y="132" width="152" height="30" rx="6" fill="#fff" stroke="#F2CDB6"/>
       <text x="428" y="151" text-anchor="middle" font-weight="600">Server API (signed)</text>
       <rect x="352" y="172" width="152" height="30" rx="6" fill="#fff" stroke="#F2CDB6"/>
@@ -287,7 +288,7 @@ td:last-child { white-space: nowrap; }
       </g>
       <g font-size="7.6" fill="#B9501F">
         <text x="322" y="46" text-anchor="middle">live</text>
-        <text x="322" y="85" text-anchor="middle">voice</text>
+        <text x="322" y="85" text-anchor="middle">voice, video</text>
         <text x="322" y="136" text-anchor="middle">send</text>
         <text x="322" y="186" text-anchor="middle">events</text>
       </g>
@@ -300,7 +301,7 @@ td:last-child { white-space: nowrap; }
     </div>
   </div>
 
-  <div class="foot"><span>Evidence: "Live" = verified on the production site in the 28-check recorded run of 12 Nov 2026. "Code" = implemented and tested.</span><span>4 / 6</span></div>
+  <div class="foot"><span>Evidence: "Live" = verified on the live site in the 28-check run of 12 Nov 2026 (Chat UI and video: 13 Nov). "Code" = implemented and tested.</span><span>4 / 6</span></div>
 </section>
 
 <!-- ======================= PAGE 5: INNOVATION & RELIABILITY ======================= -->
@@ -317,7 +318,7 @@ td:last-child { white-space: nowrap; }
         <li><b>Chat as an intake channel.</b> The crew keeps typing normally. A message webhook spots requests in chat and turns them into incidents, linked back to the message.</li>
         <li><b>Live cards, not refreshing lists.</b> Each incident is a custom Nexconn message whose metadata holds owner and status, so every phone shows the same state.</li>
         <li><b>The reporter is in the loop.</b> Anonymous attendees get their own Nexconn identity and direct-message status updates.</li>
-        <li><b>A call that belongs to the incident.</b> The voice huddle starts from the request, and its duration is logged against it.</li>
+        <li><b>A call that belongs to the incident.</b> The voice or video huddle starts from the request, and its duration is logged against it.</li>
       </ul>
     </div>
     <div>
@@ -347,7 +348,7 @@ td:last-child { white-space: nowrap; }
 
   <div class="card" style="background:#fff;">
     <h3>Known limitations</h3>
-    <p style="margin:0; font-size:8.2pt; color:var(--ink2)">Some actions take several seconds on the live site because each makes several database round trips from the server region to the database region; co-locating them is the next fix. Calls are 1:1 audio only. Duplicate matching is rule-based and can miss reports worded very differently; sensitive categories are only suggested as merges, never merged automatically. No read receipts or typing indicators yet.</p>
+    <p style="margin:0; font-size:8.2pt; color:var(--ink2)">Some actions take several seconds on the live site because each makes several database round trips from the server region to the database region; co-locating them is the next fix. Calls are 1:1 voice or video. Duplicate matching is rule-based and can miss reports worded very differently; sensitive categories are only suggested as merges, never merged automatically.</p>
   </div>
 
   <div class="foot"><span>Baton · Every request has an owner.</span><span>5 / 6</span></div>
@@ -404,7 +405,7 @@ td:last-child { white-space: nowrap; }
       <tr><td>Live app</td><td><a href="https://baton.priyanshnarang.in">https://baton.priyanshnarang.in</a></td></tr>
       <tr><td>Source code</td><td><a href="https://github.com/priyansh-narang2308/baton">https://github.com/priyansh-narang2308/baton</a></td></tr>
       <tr><td>Demo video</td><td>{{VIDEO}}</td></tr>
-      <tr><td>Nexconn products</td><td>Chat SDK (custom UI), Server API, webhooks, Call SDK. <a href="https://docs.nexconn.ai/">docs.nexconn.ai</a></td></tr>
+      <tr><td>Nexconn products</td><td>Chat SDK (custom UI), Chat UI (private crew messages), Server API, webhooks, Call SDK (voice and video). <a href="https://docs.nexconn.ai/">docs.nexconn.ai</a></td></tr>
       <tr><td>Try it</td><td>Open the live app, choose "Set up your event", then open the crew and report QR links on a phone.</td></tr>
     </tbody>
   </table>
