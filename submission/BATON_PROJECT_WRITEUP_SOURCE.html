@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Baton: Project Write-up, Nexconn Build Challenge 2026</title>
+<meta name="author" content="Baton">
+<style>
+@font-face { font-family: "Serif"; src: url(assets/fonts/serif.ttf); }
+@font-face { font-family: "Inter"; src: url(assets/fonts/inter-400.ttf); font-weight: 400; }
+@font-face { font-family: "Inter"; src: url(assets/fonts/inter-500.ttf); font-weight: 500; }
+@font-face { font-family: "Inter"; src: url(assets/fonts/inter-600.ttf); font-weight: 600; }
+@font-face { font-family: "Inter"; src: url(assets/fonts/inter-700.ttf); font-weight: 700; }
+@font-face { font-family: "Mono"; src: url(assets/fonts/mono-500.ttf); }
+
+:root {
+  --terra: #E26C34; --terra-d: #B9501F; --terra-l: #FBE7DB;
+  --ink: #1F1A17; --ink2: #4A413B; --ink3: #7A6F67;
+  --line: #E8DDD3; --surface: #FAF5EF; --surface2: #F3EAE0;
+  --ok: #2F7D4F; --ok-l: #E2F1E7;
+}
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #fff; }
+body { font-family: "Inter", sans-serif; color: var(--ink); font-size: 9.1pt; line-height: 1.45; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+.page { width: 210mm; height: 297mm; padding: 15mm 15mm 13mm; position: relative; overflow: hidden; page-break-after: always; break-after: page; display: flex; flex-direction: column; }
+.page:last-child { page-break-after: auto; break-after: auto; }
+
+.run { display: flex; justify-content: space-between; align-items: center; font-size: 7.4pt; color: var(--ink3); letter-spacing: .04em; text-transform: uppercase; border-bottom: 1px solid var(--line); padding-bottom: 2.4mm; margin-bottom: 6mm; }
+.run .brand { display: flex; align-items: center; gap: 1.6mm; color: var(--ink); font-weight: 600; letter-spacing: .12em; }
+.foot { position: absolute; left: 15mm; right: 15mm; bottom: 7mm; display: flex; justify-content: space-between; font-size: 7.2pt; color: var(--ink3); }
+
+.kicker { font-size: 7.6pt; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--terra-d); margin-bottom: 1.5mm; }
+h1 { font-family: "Serif"; font-weight: 400; font-size: 30pt; line-height: 1.02; letter-spacing: -.01em; }
+h2 { font-family: "Serif"; font-weight: 400; font-size: 22pt; line-height: 1.05; margin-bottom: 3mm; }
+h3 { font-size: 9.6pt; font-weight: 600; margin-bottom: 1.2mm; }
+p { margin-bottom: 2mm; }
+p, li, .cap, td, .statl { text-wrap: pretty; }
+h1, h2, h3 { text-wrap: balance; }
+p.lead { font-size: 10.4pt; line-height: 1.5; color: var(--ink2); }
+em.t { font-style: normal; color: var(--terra-d); }
+b, strong { font-weight: 600; }
+a { color: var(--terra-d); text-decoration: none; border-bottom: .6pt solid rgba(185,80,31,.35); }
+code, .mono { font-family: "Mono", monospace; font-size: 7.8pt; background: var(--surface2); padding: .2mm 1mm; border-radius: 1mm; color: var(--ink); }
+ul.dots { list-style: none; }
+ul.dots li { position: relative; padding-left: 3.6mm; margin-bottom: 1.3mm; }
+ul.dots li::before { content: ""; position: absolute; left: .4mm; top: 1.55mm; width: 1.5mm; height: 1.5mm; border-radius: 50%; background: var(--terra); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4.5mm; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 2.6mm; padding: 3.6mm 4mm; }
+.card.terra { background: var(--terra-l); border-color: #F2CDB6; }
+.tag { display: inline-block; font-size: 6.8pt; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: .5mm 1.8mm; border-radius: 5mm; background: var(--surface2); color: var(--ink2); }
+.tag.live { background: var(--ok-l); color: var(--ok); }
+.tag.code { background: #E7ECF6; color: #34508A; }
+.tag.no { background: #F6E3E3; color: #9A3A3A; }
+.shot { border-radius: 2.4mm; border: 1px solid #DDD0C4; overflow: hidden; background: #fff; }
+.shot img { display: block; width: 100%; }
+.cap { font-size: 7.3pt; color: var(--ink3); margin-top: 1.4mm; line-height: 1.35; }
+
+table { width: 100%; border-collapse: collapse; font-size: 7.7pt; line-height: 1.35; }
+th { text-align: left; font-size: 6.9pt; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); padding: 1.6mm 1.8mm; border-bottom: 1.2px solid var(--ink); }
+td { padding: 1.55mm 1.8mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+td:first-child { font-weight: 600; }
+td code { font-size: 6.9pt; padding: 0 .7mm; }
+
+.meta { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.meta > div { padding: 2.6mm 3mm; border-right: 1px solid var(--line); }
+.meta > div:last-child { border-right: none; }
+.meta .k { font-size: 6.8pt; text-transform: uppercase; letter-spacing: .1em; color: var(--ink3); margin-bottom: .6mm; }
+.meta .v { font-size: 8.6pt; font-weight: 600; word-break: break-word; }
+
+.steps { counter-reset: s; display: grid; grid-template-columns: 1fr 1fr; gap: 2.4mm 6mm; }
+.step { display: grid; grid-template-columns: 6.5mm 1fr; gap: 2mm; }
+.step .n { width: 6.5mm; height: 6.5mm; border-radius: 50%; background: var(--terra); color: #fff; font-weight: 600; font-size: 8pt; display: grid; place-items: center; }
+.step h3 { margin-bottom: .4mm; }
+.step p { margin: 0; color: var(--ink2); font-size: 8.4pt; }
+
+.stat { font-family: "Serif"; font-size: 24pt; line-height: 1; color: var(--terra-d); }
+.statl { font-size: 7.6pt; color: var(--ink2); margin-top: 1mm; }
+
+.keybox { border: 1.4px solid var(--terra); border-radius: 2.6mm; padding: 3.4mm 4mm; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+.keybox .key { font-family: "Mono"; font-size: 15pt; letter-spacing: .04em; }
+</style>
+</head>
+<body>
+
+<!-- ======================= PAGE 1: EXECUTIVE OVERVIEW ======================= -->
+<section class="page">
+  <div class="run">
+    <span class="brand"><svg width="15" height="8" viewBox="0 0 30 15"><defs><clipPath id="b1"><rect x="0" y="0" width="30" height="7.2"/><rect x="0" y="9" width="30" height="2.4"/><rect x="0" y="13" width="30" height="2"/></clipPath></defs><path d="M0 15 A15 15 0 0 1 30 15 Z" fill="#E26C34" clip-path="url(#b1)"/></svg>BATON</span>
+    <span>Nexconn Build Challenge 2026 · Project write-up</span>
+  </div>
+
+  <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:8mm; margin-bottom:5mm;">
+    <div>
+      <div class="kicker">Workplace &amp; Collaboration track</div>
+      <h1 style="font-size:40pt;">Every request<br><em class="t" style="font-family:Serif">has an owner.</em></h1>
+    </div>
+    <svg width="92" height="46" viewBox="0 0 30 15" style="flex:none; margin-bottom:2mm;"><defs><clipPath id="b0"><rect x="0" y="0" width="30" height="7.2"/><rect x="0" y="9" width="30" height="2.4"/><rect x="0" y="13" width="30" height="2"/></clipPath></defs><path d="M0 15 A15 15 0 0 1 30 15 Z" fill="#E26C34" clip-path="url(#b0)"/></svg>
+  </div>
+
+  <p class="lead" style="margin-bottom:4mm;"><b style="color:var(--ink)">Baton is a real-time operations coordination platform for event teams.</b> Attendees report problems by scanning a QR poster. Each report becomes an incident with exactly one owner, visible live on the organizer's board and on every volunteer's phone. Volunteers coordinate in a crew chat, hand work over with an explicit <b>Baton Pass</b>, and can start a voice call from the incident. The person who reported the problem sees who is on it and when it is fixed. Chat, live updates, private alerts and calls all run on Nexconn.</p>
+
+  <div class="meta" style="margin-bottom:4.5mm;">
+    <div><div class="k">Live app</div><div class="v"><a href="https://baton.priyanshnarang.in">baton.priyanshnarang.in</a></div></div>
+    <div><div class="k">Nexconn App Key</div><div class="v mono" style="background:none;padding:0;font-size:8.6pt">e5t4ouvpen0va</div></div>
+    <div><div class="k">Source code</div><div class="v"><a href="https://github.com/priyansh-narang2308/baton">github.com/<br>priyansh-narang2308/baton</a></div></div>
+    <div><div class="k">Demo video</div><div class="v">{{VIDEO}}</div></div>
+  </div>
+
+  <div class="shot" style="margin-bottom:1.5mm;"><img src="img/board.jpg" alt="Organizer board"></div>
+  <div class="cap" style="margin-bottom:4.5mm;">Organizer board on the live site during the recorded demo run (12 Nov 2026): incidents, owners, crew chat and crew presence, all updated through Nexconn without a reload.</div>
+
+  <div class="grid3">
+    <div class="card">
+      <h3>The problem</h3>
+      <p style="margin:0">In an event group chat, everyone sees a request and nobody owns it. Duplicates pile up, handovers are silent, and the person who asked never hears back.</p>
+    </div>
+    <div class="card">
+      <h3>What Baton does</h3>
+      <p style="margin:0">Each request gets one owner, chosen atomically. Duplicate reports merge. Handover only happens when the next person accepts. Every step is timed and logged.</p>
+    </div>
+    <div class="card terra">
+      <h3>Built on Nexconn</h3>
+      <p style="margin:0">Group and direct channels, custom message types, message metadata, targeted messages, message and presence webhooks, and 1:1 voice calls with the Call SDK.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>Baton · Every request has an owner.</span><span>1 / 6</span></div>
+</section>
+
+<!-- ======================= PAGE 2: PROBLEM ======================= -->
+<section class="page">
+  <div class="run"><span class="brand">BATON</span><span>Problem and why we built it</span></div>
+  <div class="kicker">01 · The problem</div>
+  <h2>Event crews run on group chat.<br>Group chat has no owners.</h2>
+
+  <div class="grid2" style="grid-template-columns: 1.15fr 1fr; margin-bottom:5mm;">
+    <div>
+      <p>Campus fests, hackathons and meetups are run by small crews of volunteers. On the day, requests come from everywhere: an attendee at a gate, a speaker backstage, another volunteer. Most of it lands in one busy chat group.</p>
+      <p>That group is good at spreading information. It is bad at getting work done, for four reasons:</p>
+      <ul class="dots">
+        <li><b>No owner.</b> Many people read a request and each assumes someone else has it.</li>
+        <li><b>Duplicates.</b> The same issue arrives five times from five people, and the crew cannot tell if it is one problem or five.</li>
+        <li><b>Silent handovers.</b> A volunteer leaves for a break or another task and the job quietly drops.</li>
+        <li><b>No closure.</b> The person who reported the problem never learns whether anyone came.</li>
+      </ul>
+    </div>
+    <div class="card" style="align-self:start;">
+      <div class="kicker" style="margin-bottom:2mm">Representative scenario</div>
+      <p style="font-size:8.6pt">The water station at Gate 3 runs dry. An attendee tells a volunteer; another posts in the crew group; a third attendee asks at the help desk. Three messages, one problem. Two volunteers each think the other is going. Twenty minutes later the station is still empty and the attendee has walked away.</p>
+      <p style="font-size:7.4pt; color:var(--ink3); margin:0">This is an illustrative scenario built from common event operations, not measured data or user research. It is also the scenario used in the demo.</p>
+    </div>
+  </div>
+
+  <div class="kicker">Why we built it</div>
+  <div class="grid2" style="margin-bottom:5mm;">
+    <div>
+      <p>Ticketing and helpdesk tools solve ownership, but they are built for support teams at desks, not volunteers walking a venue on their phones. Crews will not install an app or create accounts for a one-day event, and attendees certainly will not.</p>
+      <p>We wanted the speed of a chat group with the accountability of a ticket queue: keep the chat, and add one rule on top of it. <b>Every request has exactly one owner, and everyone can see who.</b></p>
+    </div>
+    <div>
+      <h3>Design principles</h3>
+      <ul class="dots">
+        <li><b>No accounts on the day.</b> Volunteers join by QR code; attendees report from a poster with no app.</li>
+        <li><b>One owner, never zero.</b> A request is claimed atomically and stays owned during a handover.</li>
+        <li><b>Chat stays chat.</b> The crew still talks freely; a request typed in chat becomes a tracked incident.</li>
+        <li><b>Close the loop.</b> The reporter sees "Sent", then who is on it, then "Fixed".</li>
+        <li><b>Coordination, not dispatch.</b> Baton is for operational requests (supplies, equipment, logistics). It is not an emergency or safety-critical dispatch system.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="kicker">Who it is for</div>
+  <div class="grid3">
+    <div class="card"><h3>Organizer / ops lead</h3><p style="margin:0">Sets up the event, prints QR codes, watches the board. Needs to see what is unowned and how long it has waited.</p></div>
+    <div class="card"><h3>Volunteers</h3><p style="margin:0">Work from their phones. Claim requests, talk in crew chat, hand over with a Baton Pass, call a lead when stuck.</p></div>
+    <div class="card"><h3>Attendees</h3><p style="margin:0">Scan a poster at a location, describe the problem, and see the status update. No account, no install.</p></div>
+  </div>
+
+  <div class="foot"><span>Baton · Every request has an owner.</span><span>2 / 6</span></div>
+</section>
+
+<!-- ======================= PAGE 3: SOLUTION & WORKFLOW ======================= -->
+<section class="page">
+  <div class="run"><span class="brand">BATON</span><span>Solution and workflow</span></div>
+  <div class="kicker">02 · The solution</div>
+  <h2>From a QR scan to "Fixed", with one owner the whole way.</h2>
+
+  <div class="steps" style="margin-bottom:5mm;">
+    <div class="step"><div class="n">1</div><div><h3>Set up the event</h3><p>The organizer names the event and its locations (Gate 3, Main stage…). Baton creates a Nexconn crew group and prints a crew QR code plus one report poster per location.</p></div></div>
+    <div class="step"><div class="n">2</div><div><h3>Crew joins by QR</h3><p>Volunteers scan, type a name, and are in the crew chat. No password, no app store.</p></div></div>
+    <div class="step"><div class="n">3</div><div><h3>Attendee reports</h3><p>Scanning a location poster opens a short form. The report is sent and the attendee gets a private status thread.</p></div></div>
+    <div class="step"><div class="n">4</div><div><h3>It becomes an incident</h3><p>A numbered, categorised card appears on the board and on every crew phone. A request typed in crew chat ("water's out at gate 3") becomes one too.</p></div></div>
+    <div class="step"><div class="n">5</div><div><h3>Duplicates merge</h3><p>A second report about the same thing attaches to the existing incident. Matching uses deterministic rules: same location, same category, overlapping words, close in time. No AI.</p></div></div>
+    <div class="step"><div class="n">6</div><div><h3>Someone takes it</h3><p>One tap claims the incident. If several volunteers tap at once, exactly one wins; the others are told it is taken.</p></div></div>
+    <div class="step"><div class="n">7</div><div><h3>Baton Pass</h3><p>The owner offers the incident to a teammate with a note. They stay the owner until it is accepted, so the job is never ownerless.</p></div></div>
+    <div class="step"><div class="n">8</div><div><h3>Call, fix, close the loop</h3><p>A volunteer can start a voice call from the incident. When it is marked fixed, the reporter sees "Fixed" and the timeline keeps the whole story.</p></div></div>
+  </div>
+
+  <div class="grid3" style="gap:5mm; align-items:start;">
+    <div><div class="shot"><img src="img/volunteer-claimed.jpg" alt="Volunteer phone"></div><div class="cap"><b>Volunteer.</b> A chat message became a tracked request ("From chat"), now owned by this volunteer.</div></div>
+    <div><div class="shot"><img src="img/pass-offer.jpg" alt="Baton Pass offer"></div><div class="cap"><b>Baton Pass.</b> Only the recipient gets this private offer. Riya stays owner until "Take the baton" is tapped.</div></div>
+    <div><div class="shot"><img src="img/attendee-status.jpg" alt="Attendee status"></div><div class="cap" style="margin-bottom:3mm"><b>Attendee.</b> The reporter sees who has it, then that it is fixed, through a Nexconn direct message.</div>
+      <div class="card" style="padding:3mm 3.4mm;"><h3 style="font-size:8.6pt">Interfaces</h3><p style="margin:0; font-size:7.8pt">Organizer board (desktop), volunteer view (phone), attendee report page (phone), QR and poster pages. All are custom React screens; the Nexconn Chat UI kit is not used.</p></div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Screens are real captures from the live site, 12 Nov 2026.</span><span>3 / 6</span></div>
+</section>
+
+<!-- ======================= PAGE 4: NEXCONN INTEGRATION ======================= -->
+<section class="page">
+  <div class="run"><span class="brand">BATON</span><span>Nexconn SDK integration and architecture</span></div>
+  <div class="kicker">03 · Nexconn integration</div>
+  <h2 style="margin-bottom:2.5mm">Nexconn is the real-time layer. Baton is the rules.</h2>
+  <p style="margin-bottom:3mm; color:var(--ink2)">Baton uses the <b>Nexconn Chat SDK</b> (<code>@nexconn/chat</code> 26.2.1) with its own React interface, the <b>Nexconn Server API</b> from the backend, <b>webhooks</b> for messages and presence, and the <b>Nexconn Call SDK</b> (<code>@nexconn/call</code>) for voice. The App Secret stays on the server; browsers only receive short-lived access tokens.</p>
+
+  <table style="margin-bottom:4mm;">
+    <thead><tr><th style="width:21%">Baton feature</th><th style="width:30%">Nexconn capability</th><th>Implementation role</th><th style="width:15%">Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>Sign-in without accounts</td><td>Server API <code>/v4/auth/access-token/issue</code></td><td>Server issues a token per volunteer and per anonymous attendee; client refetches on expiry</td><td><span class="tag live">Live</span></td></tr>
+      <tr><td>Crew chat</td><td>Group channel (<code>group-channel/create</code>, <code>join</code>), Chat SDK <code>GroupChannel.sendMessage</code>, history query</td><td>One group per event; custom React chat UI; late joiners load history</td><td><span class="tag live">Live</span> run check 8</td></tr>
+      <tr><td>Incident cards in chat</td><td>Custom message types <code>BTN:Incident</code>, <code>BTN:Status</code>, <code>BTN:Nudge</code></td><td>Registered with <code>NCEngine.registerCustomMessages</code>; the event bot posts cards via the Server API</td><td><span class="tag live">Live</span> check 7</td></tr>
+      <tr><td>Live owner and status on every screen</td><td>Message metadata (<code>message/metadata/set</code>, <code>onMessageMetadataUpdated</code>)</td><td>Card state rides on the message; clients apply only newer versions</td><td><span class="tag live">Live</span> checks 12, 16</td></tr>
+      <tr><td>Chat line → request</td><td>Webhook <code>message:send</code></td><td>Signature and freshness checked, envelope deduplicated, rule-based detection, one incident per message</td><td><span class="tag live">Live</span> check 9</td></tr>
+      <tr><td>Private Baton Pass alert</td><td>Group message with <code>toUserIds</code></td><td>Only the recipient receives the offer and its push text</td><td><span class="tag live">Live</span> check 14</td></tr>
+      <tr><td>Reporter updates</td><td>Direct channel message (Server API)</td><td>"Sent", "&lt;name&gt; is on it", "Fixed", each sent once per reporter</td><td><span class="tag live">Live</span> checks 13, 17, 26</td></tr>
+      <tr><td>Crew online count</td><td>Webhook <code>user:connection_status</code></td><td>Presence per member; client IP is dropped before storage</td><td><span class="tag live">Live</span></td></tr>
+      <tr><td>Resilient connection</td><td>Connection status handler, <code>NCEngine.connect</code></td><td>Shows reconnecting state, retries with a fresh token</td><td><span class="tag code">Code</span></td></tr>
+      <tr><td>Voice huddle</td><td>Call SDK: <code>startCall</code>, <code>acceptCall</code>, <code>enableMicrophone</code>, <code>endCall</code></td><td>1:1 audio call started from an incident; duration logged on its timeline</td><td><span class="tag live">Live</span> checks 20–24</td></tr>
+    </tbody>
+  </table>
+
+  <div style="display:grid; grid-template-columns: 1.55fr 1fr; gap:5mm; align-items:start;">
+    <svg viewBox="0 0 520 250" width="100%" style="font-family:Inter; font-size:9px;">
+      <defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L8 4 L0 8 Z" fill="#7A6F67"/></marker></defs>
+      <!-- users -->
+      <g font-weight="600" fill="#1F1A17">
+        <rect x="2" y="18" width="92" height="40" rx="7" fill="#FAF5EF" stroke="#E8DDD3"/><text x="48" y="36" text-anchor="middle">Organizer</text><text x="48" y="49" text-anchor="middle" font-weight="400" fill="#7A6F67">board (desktop)</text>
+        <rect x="2" y="104" width="92" height="40" rx="7" fill="#FAF5EF" stroke="#E8DDD3"/><text x="48" y="122" text-anchor="middle">Volunteers</text><text x="48" y="135" text-anchor="middle" font-weight="400" fill="#7A6F67">phone browser</text>
+        <rect x="2" y="190" width="92" height="40" rx="7" fill="#FAF5EF" stroke="#E8DDD3"/><text x="48" y="208" text-anchor="middle">Attendees</text><text x="48" y="221" text-anchor="middle" font-weight="400" fill="#7A6F67">QR poster, no app</text>
+      </g>
+      <!-- baton app -->
+      <rect x="128" y="6" width="176" height="236" rx="10" fill="#fff" stroke="#1F1A17" stroke-width="1.2"/>
+      <text x="216" y="22" text-anchor="middle" font-weight="700" fill="#1F1A17">Baton web app (Vercel)</text>
+      <rect x="140" y="32" width="152" height="62" rx="6" fill="#FAF5EF" stroke="#E8DDD3"/>
+      <text x="216" y="47" text-anchor="middle" font-weight="600">React UI (Next.js)</text>
+      <text x="216" y="61" text-anchor="middle" fill="#4A413B">Nexconn Chat SDK client</text>
+      <text x="216" y="74" text-anchor="middle" fill="#4A413B">Nexconn Call SDK</text>
+      <text x="216" y="87" text-anchor="middle" fill="#7A6F67" font-size="8">short-lived token only</text>
+      <rect x="140" y="112" width="152" height="70" rx="6" fill="#FAF5EF" stroke="#E8DDD3"/>
+      <text x="216" y="127" text-anchor="middle" font-weight="600">Baton API (route handlers)</text>
+      <text x="216" y="141" text-anchor="middle" fill="#4A413B">claim · pass · merge · resolve</text>
+      <text x="216" y="154" text-anchor="middle" fill="#4A413B">webhook receiver</text>
+      <text x="216" y="167" text-anchor="middle" fill="#4A413B">signed Server API client</text>
+      <rect x="140" y="198" width="152" height="34" rx="6" fill="#F3EAE0" stroke="#E8DDD3"/>
+      <text x="216" y="213" text-anchor="middle" font-weight="600">Postgres</text>
+      <text x="216" y="225" text-anchor="middle" fill="#7A6F67" font-size="8">incidents, reports, audit timeline</text>
+      <!-- nexconn -->
+      <rect x="340" y="6" width="176" height="236" rx="10" fill="#FBE7DB" stroke="#E26C34" stroke-width="1.2"/>
+      <text x="428" y="22" text-anchor="middle" font-weight="700" fill="#B9501F">Nexconn cloud</text>
+      <rect x="352" y="32" width="152" height="50" rx="6" fill="#fff" stroke="#F2CDB6"/>
+      <text x="428" y="47" text-anchor="middle" font-weight="600">Chat</text>
+      <text x="428" y="61" text-anchor="middle" fill="#4A413B">group + direct channels</text>
+      <text x="428" y="74" text-anchor="middle" fill="#4A413B">custom msgs, metadata</text>
+      <rect x="352" y="92" width="152" height="30" rx="6" fill="#fff" stroke="#F2CDB6"/>
+      <text x="428" y="111" text-anchor="middle" font-weight="600">Call (WebRTC audio)</text>
+      <rect x="352" y="132" width="152" height="30" rx="6" fill="#fff" stroke="#F2CDB6"/>
+      <text x="428" y="151" text-anchor="middle" font-weight="600">Server API (signed)</text>
+      <rect x="352" y="172" width="152" height="30" rx="6" fill="#fff" stroke="#F2CDB6"/>
+      <text x="428" y="191" text-anchor="middle" font-weight="600">Webhooks</text>
+      <!-- arrows users->app -->
+      <g stroke="#7A6F67" stroke-width="1" fill="none">
+        <path d="M94 38 L140 52" marker-end="url(#ar)"/>
+        <path d="M94 124 L140 70" marker-end="url(#ar)"/>
+        <path d="M94 210 L140 82" marker-end="url(#ar)"/>
+        <path d="M216 94 L216 112" marker-end="url(#ar)"/>
+        <path d="M216 182 L216 198" marker-end="url(#ar)"/>
+        <path d="M292 50 L352 55" marker-start="url(#ar)" marker-end="url(#ar)" stroke="#E26C34" stroke-width="1.3"/>
+        <path d="M292 76 L352 105" marker-start="url(#ar)" marker-end="url(#ar)" stroke="#E26C34" stroke-width="1.3"/>
+        <path d="M292 140 L352 147" marker-end="url(#ar)" stroke="#E26C34" stroke-width="1.3"/>
+        <path d="M352 187 L292 162" marker-end="url(#ar)" stroke="#E26C34" stroke-width="1.3"/>
+      </g>
+      <g font-size="7.6" fill="#B9501F">
+        <text x="322" y="46" text-anchor="middle">live</text>
+        <text x="322" y="85" text-anchor="middle">voice</text>
+        <text x="322" y="136" text-anchor="middle">send</text>
+        <text x="322" y="186" text-anchor="middle">events</text>
+      </g>
+    </svg>
+    <div>
+      <h3>How the pieces fit</h3>
+      <p style="font-size:8.2pt; color:var(--ink2)">Baton's database is the source of truth for ownership. Nexconn carries every change to every screen: the server updates an incident, then writes the card's metadata and sends targeted messages; clients receive them over their open Chat SDK connection.</p>
+      <h3>Without Nexconn</h3>
+      <p style="font-size:8.2pt; color:var(--ink2); margin:0">Baton would need its own WebSocket fleet, message history, offline delivery, push, presence and a WebRTC stack. Nexconn lets the project spend its time on ownership rules instead.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>Evidence: "Live" = verified on the production site in the 28-check recorded run of 12 Nov 2026. "Code" = implemented and tested.</span><span>4 / 6</span></div>
+</section>
+
+<!-- ======================= PAGE 5: INNOVATION & RELIABILITY ======================= -->
+<section class="page">
+  <div class="run"><span class="brand">BATON</span><span>Innovation, implementation and reliability</span></div>
+  <div class="kicker">04 · What is new, and how it holds up</div>
+  <h2 style="margin-bottom:2.5mm">Accountability built into the message layer.</h2>
+
+  <div class="grid2" style="margin-bottom:4.5mm; gap:5mm;">
+    <div>
+      <h3>What is different</h3>
+      <ul class="dots">
+        <li><b>The Baton Pass.</b> Handover is a two-step offer and accept. The current owner keeps the incident until the recipient accepts, so ownership never drops to zero. Offer and accept are written to the audit timeline.</li>
+        <li><b>Chat as an intake channel.</b> The crew keeps typing normally. A message webhook spots requests in chat and turns them into incidents, linked back to the message.</li>
+        <li><b>Live cards, not refreshing lists.</b> Each incident is a custom Nexconn message whose metadata holds owner and status, so every phone shows the same state.</li>
+        <li><b>The reporter is in the loop.</b> Anonymous attendees get their own Nexconn identity and direct-message status updates.</li>
+        <li><b>A call that belongs to the incident.</b> The voice huddle starts from the request, and its duration is logged against it.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Correctness under real conditions</h3>
+      <ul class="dots">
+        <li><b>Atomic claim.</b> A conditional database update means five simultaneous claims give one owner and four "already taken" answers (unit-tested).</li>
+        <li><b>Transactional pass.</b> Accept checks that the caller is the named recipient and that the incident is still claimed, inside one transaction.</li>
+        <li><b>Ordered updates.</b> Metadata carries a version; clients ignore anything older than what they already show.</li>
+        <li><b>Safe webhooks.</b> SHA-1 signature and timestamp window, deduplication on the envelope ID, and a unique key on the source message, so retries never double-create.</li>
+        <li><b>Escalation.</b> A worker re-alerts unowned incidents, using row locks so two workers never send the same alert.</li>
+        <li><b>Recovery.</b> Dropped requests retry quietly; the client reconnects with a fresh token.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid3" style="gap:5mm; margin-bottom:4.5mm; align-items:start;">
+    <div><div class="shot"><img src="img/call-dock.jpg" alt="Voice call" style="height:54mm; object-fit:cover; object-position:center;"></div><div class="cap">Nexconn Call between two crew members, started from an incident.</div></div>
+    <div><div class="shot"><img src="img/call-timeline.jpg" alt="Incident activity" style="height:54mm; object-fit:cover; object-position:bottom;"></div><div class="cap">Incident activity: the chat detection and the 32-second call are both logged.</div></div>
+    <div><div class="shot"><img src="img/incident-record.jpg" alt="Incident record" style="height:54mm; object-fit:cover; object-position:center 20%;"></div><div class="cap">Fixed incident: two merged reports, time to owner 57 s, time to fix 2 m 48 s.</div></div>
+  </div>
+
+  <div class="grid3" style="gap:4.5mm; margin-bottom:4mm;">
+    <div class="card"><div class="stat">28 / 28</div><div class="statl">checks passed in a recorded end-to-end run on the live site, with five separate browser identities. Each check waited for the real result on another person's screen.</div></div>
+    <div class="card"><div class="stat">102</div><div class="statl">automated tests in 9 files (claim races, pass rules, merging, webhooks, signatures, projection). Typecheck, lint and production build are clean.</div></div>
+    <div class="card"><div class="stat">2-way</div><div class="statl">audio confirmed in the recorded call: each side received the other's speech over Nexconn Call.</div></div>
+  </div>
+
+  <div class="card" style="background:#fff;">
+    <h3>Known limitations</h3>
+    <p style="margin:0; font-size:8.2pt; color:var(--ink2)">Some actions take several seconds on the live site because each makes several database round trips from the server region to the database region; co-locating them is the next fix. Calls are 1:1 audio only. Duplicate matching is rule-based and can miss reports worded very differently; sensitive categories are only suggested as merges, never merged automatically. No read receipts or typing indicators yet.</p>
+  </div>
+
+  <div class="foot"><span>Baton · Every request has an owner.</span><span>5 / 6</span></div>
+</section>
+
+<!-- ======================= PAGE 6: BUSINESS & SUBMISSION ======================= -->
+<section class="page">
+  <div class="run"><span class="brand">BATON</span><span>Business, traction and submission details</span></div>
+  <div class="kicker">05 · Business</div>
+  <h2>Sold to the organizer, used by the crew.</h2>
+
+  <div class="grid2" style="margin-bottom:4.5mm; gap:5mm;">
+    <div>
+      <h3>Who pays, who uses</h3>
+      <p>The <b>buyer</b> is the organizer or operations lead, who is accountable for how the event runs. The daily <b>users</b> are volunteers, and attendees are light, anonymous users. Because nobody but the organizer needs an account, adoption on the day costs the crew one QR scan.</p>
+      <h3>Pricing hypothesis</h3>
+      <ul class="dots">
+        <li><b>Free</b> for small events, to remove the first barrier.</li>
+        <li><b>Per-event plan</b> for larger one-off events (crew size and locations).</li>
+        <li><b>Annual plan</b> for institutions that run many events: colleges, communities, event agencies.</li>
+      </ul>
+      <p style="font-size:7.6pt; color:var(--ink3)">These are hypotheses to be tested in pilots, not validated pricing.</p>
+    </div>
+    <div>
+      <h3>Go-to-market plan</h3>
+      <ul class="dots">
+        <li>Start with student-run events: college fests, hackathons, developer meetups and community conferences with 10–150 volunteers.</li>
+        <li>Offer a free pilot: set up the event together, print the posters, and review the incident log afterwards.</li>
+        <li>Measure what the product claims to change: time to owner, time to fix, unowned requests and duplicate reports.</li>
+        <li>If no live event is available in time, run a rehearsal with a real crew and report it as a rehearsal.</li>
+      </ul>
+      <div class="card terra" style="margin-top:2.5mm;">
+        <h3>Traction: honest status</h3>
+        <p style="margin:0; font-size:8.2pt">Baton has <b>no external users, pilots or customer feedback yet</b>. All Nexconn users so far are our own development and demo identities. We are not reporting any numbers we do not have.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="kicker">06 · Built during the challenge</div>
+  <div class="card" style="margin-bottom:4.5mm; background:#fff;">
+    <p style="margin-bottom:1.5mm; font-size:8.4pt"><b>Everything in Baton was built during the challenge window (23 Oct – 22 Nov 2026).</b> The first commit is a Next.js scaffold on 28 Oct 2026; there are 69 commits up to 12 Nov. There was no earlier version of the product.</p>
+    <p style="margin:0; font-size:8.2pt; color:var(--ink2)">Third-party building blocks: Next.js, React, Postgres with Drizzle ORM, Framer Motion, Radix UI and Lucide icons; the landing page hero layout is adapted from an Originkit block and the footer from Watermelon's footer-29. The demo narration is synthetic (TTS) and the two voices in the recorded call are synthetic test voices sent through a real Nexconn call.</p>
+  </div>
+
+  <div class="kicker">07 · Submission details</div>
+  <div class="keybox" style="margin-bottom:3mm;">
+    <div><div style="font-size:7pt; letter-spacing:.1em; text-transform:uppercase; color:var(--ink3)">Nexconn App Key</div><div class="key">e5t4ouvpen0va</div></div>
+    <div style="text-align:right; font-size:7.6pt; color:var(--ink3); max-width:70mm">The App Key used by the live site. The App Secret and all tokens are server-side only and not included in this document.</div>
+  </div>
+  <table>
+    <tbody>
+      <tr><td style="width:24%">Project</td><td>Baton: the real-time operations coordination platform for event teams</td></tr>
+      <tr><td>Track</td><td>Workplace &amp; Collaboration (team messaging, shift handover)</td></tr>
+      <tr><td>Live app</td><td><a href="https://baton.priyanshnarang.in">https://baton.priyanshnarang.in</a></td></tr>
+      <tr><td>Source code</td><td><a href="https://github.com/priyansh-narang2308/baton">https://github.com/priyansh-narang2308/baton</a></td></tr>
+      <tr><td>Demo video</td><td>{{VIDEO}}</td></tr>
+      <tr><td>Nexconn products</td><td>Chat SDK (custom UI), Server API, webhooks, Call SDK. <a href="https://docs.nexconn.ai/">docs.nexconn.ai</a></td></tr>
+      <tr><td>Try it</td><td>Open the live app, choose "Set up your event", then open the crew and report QR links on a phone.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="foot"><span>Baton · Every request has an owner.</span><span>6 / 6</span></div>
+</section>
+
+</body>
+</html>

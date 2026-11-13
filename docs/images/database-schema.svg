@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1010" viewBox="0 0 1600 1010" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B625B"/></marker><marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#D9622A"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3E5A8C"/></marker></defs><rect width="1600" height="1010" fill="#FFFFFF"/><text x="40" y="56" font-size="28" font-weight="600" fill="#1F1A17">Database schema</text>
+<text x="40" y="86" font-size="16" font-weight="400" fill="#6B625B">Postgres via Drizzle ORM (src/server/db/schema.ts). Ownership, merges and the audit trail live here; Nexconn is a projection.</text>
+<rect x="40" y="130" width="330" height="290" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M40 140 a10 10 0 0 1 10 -10 h310 a10 10 0 0 1 10 10 v30 h-330 z" fill="#FCE9DE"/>
+<line x1="40" y1="170" x2="370" y2="170" stroke="#E8DDD3"/>
+<text x="56" y="157" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">events</text>
+<text x="56" y="196" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">id</text>
+<text x="356" y="196" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="56" y="222" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">slug</text>
+<text x="356" y="222" font-size="11" font-weight="600" fill="#3E5A8C" text-anchor="end">UQ</text>
+<text x="56" y="248" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">name</text>
+<text x="56" y="274" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">organizer_token</text>
+<text x="356" y="274" font-size="11" font-weight="600" fill="#3E5A8C" text-anchor="end">secret</text>
+<text x="56" y="300" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">crew_code</text>
+<text x="356" y="300" font-size="11" font-weight="600" fill="#3E5A8C" text-anchor="end">UQ</text>
+<text x="56" y="326" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">nexconn_group_id</text>
+<text x="56" y="352" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">bot_user_id</text>
+<text x="56" y="378" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">escalate_after_sec</text>
+<text x="56" y="404" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">status</text>
+<rect x="440" y="130" width="300" height="186" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M440 140 a10 10 0 0 1 10 -10 h280 a10 10 0 0 1 10 10 v30 h-300 z" fill="#FAF5EF"/>
+<line x1="440" y1="170" x2="740" y2="170" stroke="#E8DDD3"/>
+<text x="456" y="157" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">zones</text>
+<text x="456" y="196" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">id</text>
+<text x="726" y="196" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="456" y="222" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">event_id</text>
+<text x="726" y="222" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">FK</text>
+<text x="456" y="248" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">name</text>
+<text x="456" y="274" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">slug</text>
+<text x="456" y="300" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">lead_member_id</text>
+<rect x="810" y="130" width="330" height="238" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M810 140 a10 10 0 0 1 10 -10 h310 a10 10 0 0 1 10 10 v30 h-330 z" fill="#FAF5EF"/>
+<line x1="810" y1="170" x2="1140" y2="170" stroke="#E8DDD3"/>
+<text x="826" y="157" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">members</text>
+<text x="826" y="196" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">id</text>
+<text x="1126" y="196" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="826" y="222" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">event_id</text>
+<text x="1126" y="222" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">FK</text>
+<text x="826" y="248" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">role  lead | volunteer</text>
+<text x="826" y="274" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">name</text>
+<text x="826" y="300" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">zone_id</text>
+<text x="826" y="326" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">on_duty</text>
+<text x="826" y="352" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">nexconn_user_id</text>
+<text x="1126" y="352" font-size="11" font-weight="600" fill="#3E5A8C" text-anchor="end">UQ</text>
+<rect x="1210" y="130" width="330" height="160" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M1210 140 a10 10 0 0 1 10 -10 h310 a10 10 0 0 1 10 10 v30 h-330 z" fill="#FAF5EF"/>
+<line x1="1210" y1="170" x2="1540" y2="170" stroke="#E8DDD3"/>
+<text x="1226" y="157" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">attendees</text>
+<text x="1226" y="196" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">id</text>
+<text x="1526" y="196" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="1226" y="222" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">event_id</text>
+<text x="1526" y="222" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">FK</text>
+<text x="1226" y="248" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">nexconn_user_id</text>
+<text x="1526" y="248" font-size="11" font-weight="600" fill="#3E5A8C" text-anchor="end">UQ</text>
+<text x="1226" y="274" font-size="12.5" font-weight="400" fill="#6B625B">anonymous reporter identity</text>
+<rect x="40" y="470" width="380" height="394" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M40 480 a10 10 0 0 1 10 -10 h360 a10 10 0 0 1 10 10 v30 h-380 z" fill="#FCE9DE"/>
+<line x1="40" y1="510" x2="420" y2="510" stroke="#E8DDD3"/>
+<text x="56" y="497" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">incidents</text>
+<text x="56" y="536" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">id</text>
+<text x="406" y="536" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="56" y="562" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">event_id</text>
+<text x="406" y="562" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">FK</text>
+<text x="56" y="588" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">number  per event</text>
+<text x="56" y="614" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">category · priority</text>
+<text x="56" y="640" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">origin  report | chat</text>
+<text x="56" y="666" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">source_message_id</text>
+<text x="406" y="666" font-size="11" font-weight="600" fill="#3E5A8C" text-anchor="end">UQ</text>
+<text x="56" y="692" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">status  open|claimed|resolved|withdrawn</text>
+<text x="56" y="718" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">owner_member_id</text>
+<text x="56" y="744" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">pass_to_member_id · pass_note</text>
+<text x="56" y="770" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">card_message_id</text>
+<text x="56" y="796" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">version · projected_version</text>
+<text x="56" y="822" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">next_escalation_at</text>
+<text x="56" y="848" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">claimed_at · resolved_at</text>
+<rect x="480" y="470" width="320" height="212" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M480 480 a10 10 0 0 1 10 -10 h300 a10 10 0 0 1 10 10 v30 h-320 z" fill="#FAF5EF"/>
+<line x1="480" y1="510" x2="800" y2="510" stroke="#E8DDD3"/>
+<text x="496" y="497" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">reports</text>
+<text x="496" y="536" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">id</text>
+<text x="786" y="536" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="496" y="562" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">incident_id</text>
+<text x="786" y="562" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">FK</text>
+<text x="496" y="588" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">source  attendee | crew</text>
+<text x="496" y="614" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">attendee_id · member_id</text>
+<text x="496" y="640" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">category · text</text>
+<text x="496" y="666" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">attached_by  new|auto|merge</text>
+<rect x="480" y="770" width="320" height="160" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M480 780 a10 10 0 0 1 10 -10 h300 a10 10 0 0 1 10 10 v30 h-320 z" fill="#FAF5EF"/>
+<line x1="480" y1="810" x2="800" y2="810" stroke="#E8DDD3"/>
+<text x="496" y="797" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">merge_suggestions</text>
+<text x="496" y="836" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">id</text>
+<text x="786" y="836" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="496" y="862" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">incident_id</text>
+<text x="496" y="888" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">candidate_incident_id</text>
+<text x="496" y="914" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">score · status</text>
+<rect x="860" y="470" width="320" height="186" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M860 480 a10 10 0 0 1 10 -10 h300 a10 10 0 0 1 10 10 v30 h-320 z" fill="#FAF5EF"/>
+<line x1="860" y1="510" x2="1180" y2="510" stroke="#E8DDD3"/>
+<text x="876" y="497" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">incident_events</text>
+<text x="876" y="536" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">id</text>
+<text x="1166" y="536" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="876" y="562" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">incident_id</text>
+<text x="876" y="588" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">actor · type</text>
+<text x="876" y="614" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">payload  jsonb</text>
+<text x="876" y="640" font-size="12.5" font-weight="400" fill="#6B625B">append-only audit timeline</text>
+<rect x="1240" y="470" width="300" height="160" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M1240 480 a10 10 0 0 1 10 -10 h280 a10 10 0 0 1 10 10 v30 h-300 z" fill="#FAF5EF"/>
+<line x1="1240" y1="510" x2="1540" y2="510" stroke="#E8DDD3"/>
+<text x="1256" y="497" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">notifications</text>
+<text x="1256" y="536" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">incident_id</text>
+<text x="1526" y="536" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="1256" y="562" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">recipient</text>
+<text x="1526" y="562" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="1256" y="588" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">state</text>
+<text x="1526" y="588" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="1256" y="614" font-size="12.5" font-weight="400" fill="#6B625B">one status message per state</text>
+<rect x="840" y="710" width="720" height="272" rx="14" fill="none" stroke="#BDB3AA" stroke-width="1.4" stroke-dasharray="6 5"/>
+<text x="860" y="738" font-size="12" font-weight="600" fill="#6B625B" letter-spacing="1.2">NEXCONN BOOKKEEPING · no foreign keys</text>
+<rect x="860" y="756" width="320" height="134" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M860 766 a10 10 0 0 1 10 -10 h300 a10 10 0 0 1 10 10 v30 h-320 z" fill="#FAF5EF"/>
+<line x1="860" y1="796" x2="1180" y2="796" stroke="#E8DDD3"/>
+<text x="876" y="783" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">webhook_events</text>
+<text x="876" y="822" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">event_id</text>
+<text x="1166" y="822" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="876" y="848" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">type · payload</text>
+<text x="876" y="874" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">deliveries</text>
+<rect x="1220" y="756" width="320" height="134" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<path d="M1220 766 a10 10 0 0 1 10 -10 h300 a10 10 0 0 1 10 10 v30 h-320 z" fill="#FAF5EF"/>
+<line x1="1220" y1="796" x2="1540" y2="796" stroke="#E8DDD3"/>
+<text x="1236" y="783" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">presence_sessions</text>
+<text x="1236" y="822" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">nexconn_user_id</text>
+<text x="1526" y="822" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="1236" y="848" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">session_id</text>
+<text x="1526" y="848" font-size="11" font-weight="600" fill="#B9501F" text-anchor="end">PK</text>
+<text x="1236" y="874" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">online · changed_at</text>
+<rect x="1220" y="906" width="320" height="58" rx="10" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1236" y="930" font-size="15.5" font-weight="600" fill="#1F1A17" font-family="Menlo, Consolas, monospace">nexconn_tokens</text>
+<text x="1236" y="952" font-size="12.5" font-weight="400" fill="#6B625B">cached access token per user</text>
+<path d="M370 196 L440 196" fill="none" stroke="#6B625B" stroke-width="1.5" marker-end="url(#a)"/>
+<path d="M205 130 L205 108 L1375 108 L1375 130" fill="none" stroke="#6B625B" stroke-width="1.5"/>
+<path d="M975 108 L975 130" fill="none" stroke="#6B625B" stroke-width="1.5" marker-end="url(#a)"/>
+<path d="M1375 108 L1375 130" fill="none" stroke="#6B625B" stroke-width="1.5" marker-end="url(#a)"/>
+<path d="M205 412 L205 470" fill="none" stroke="#6B625B" stroke-width="1.5" marker-end="url(#a)"/>
+<path d="M420 540 L480 540" fill="none" stroke="#6B625B" stroke-width="1.5" marker-end="url(#a)"/>
+<path d="M420 830 L480 830" fill="none" stroke="#6B625B" stroke-width="1.5" marker-end="url(#a)"/>
+<path d="M300 470 L300 450 L1390 450 L1390 470" fill="none" stroke="#6B625B" stroke-width="1.5" marker-end="url(#a)"/>
+<path d="M1020 450 L1020 470" fill="none" stroke="#6B625B" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="214" y="446" font-size="12" font-weight="400" fill="#6B625B">1 → n</text>
+<text x="428" y="532" font-size="12" font-weight="400" fill="#6B625B">1 → n</text>
+<text x="428" y="822" font-size="12" font-weight="400" fill="#6B625B">1 → n</text></svg>

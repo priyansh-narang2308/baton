@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1040" viewBox="0 0 1700 1040" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B625B"/></marker><marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#D9622A"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3E5A8C"/></marker></defs><rect width="1700" height="1040" fill="#FFFFFF"/><text x="40" y="56" font-size="28" font-weight="600" fill="#1F1A17">How Baton uses Nexconn</text>
+<text x="40" y="86" font-size="16" font-weight="400" fill="#6B625B">Chat SDK and Call SDK in the browser, Server API and webhooks on the server. The Chat UI kit is not used.</text>
+<rect x="40" y="160" width="480" height="850" rx="18" fill="#FFFFFF" stroke="#1F1A17" stroke-width="1.6"/>
+<text x="64" y="196" font-size="18" font-weight="600" fill="#1F1A17">Browser</text>
+<text x="496" y="196" font-size="13" font-weight="400" fill="#6B625B" text-anchor="end">every crew member and attendee</text>
+<rect x="610" y="160" width="480" height="850" rx="18" fill="#FCE9DE" stroke="#D9622A" stroke-width="1.6"/>
+<text x="634" y="196" font-size="18" font-weight="600" fill="#B9501F">Nexconn cloud</text>
+<rect x="1180" y="160" width="480" height="850" rx="18" fill="#FFFFFF" stroke="#1F1A17" stroke-width="1.6"/>
+<text x="1204" y="196" font-size="18" font-weight="600" fill="#1F1A17">Baton server</text>
+<text x="1636" y="196" font-size="13" font-weight="400" fill="#6B625B" text-anchor="end">Next.js route handlers</text>
+<rect x="60" y="220" width="440" height="340" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="82" y="252" font-size="17" font-weight="600" fill="#1F1A17">Chat SDK</text>
+<text x="82" y="276" font-size="13" font-weight="400" fill="#6B625B" font-family="Menlo, Consolas, monospace">@nexconn/chat · @nexconn/engine 26.2.1</text>
+<text x="82" y="309" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">NCEngine.initialize({ appKey })</text>
+<text x="82" y="336" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">registerCustomMessages</text>
+<text x="82" y="363" font-size="13" font-weight="400" fill="#B9501F" font-family="Menlo, Consolas, monospace">   BTN:Incident · BTN:Status · BTN:Nudge</text>
+<text x="82" y="390" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">connect({ token }), reconnect on expiry</text>
+<text x="82" y="417" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">onMessageReceived</text>
+<text x="82" y="444" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">onMessageMetadataUpdated</text>
+<text x="82" y="471" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">GroupChannel / DirectChannel.sendMessage</text>
+<text x="82" y="498" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">createMessagesQuery  (history)</text>
+<text x="82" y="525" font-size="13" font-weight="400" fill="#6B625B">lib/nexconn-client.ts</text>
+<rect x="60" y="590" width="440" height="236" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="82" y="622" font-size="17" font-weight="600" fill="#1F1A17">Call SDK</text>
+<text x="82" y="646" font-size="13" font-weight="400" fill="#6B625B" font-family="Menlo, Consolas, monospace">@nexconn/call 26.2.1</text>
+<text x="82" y="679" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">NCCallEngine.install()  before initialize</text>
+<text x="82" y="706" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">startCall  SINGLE · AUDIO</text>
+<text x="82" y="733" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">acceptCall · endCall · enableMicrophone</text>
+<text x="82" y="760" font-size="13.5" font-weight="400" fill="#4A413B">1:1 audio, capped at 10 minutes</text>
+<text x="82" y="787" font-size="13" font-weight="400" fill="#6B625B">lib/nexconn-call.ts</text>
+<rect x="60" y="856" width="440" height="130" rx="12" fill="#FFFFFF" stroke="#BDB3AA" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="82" y="888" font-size="17" font-weight="600" fill="#6B625B">Chat UI kit · not used</text>
+<text x="82" y="918" font-size="14" font-weight="400" fill="#4A413B">Baton draws its own React screens on top of</text>
+<text x="82" y="942" font-size="14" font-weight="400" fill="#4A413B">the Chat SDK: board, crew app, attendee page.</text>
+<rect x="630" y="220" width="440" height="340" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="652" y="252" font-size="17" font-weight="600" fill="#1F1A17">Chat</text>
+<text x="652" y="287" font-size="13.5" font-weight="600" fill="#1F1A17">Crew group channel</text>
+<text x="652" y="316" font-size="13.5" font-weight="400" fill="#4A413B">One per event: crew members plus the event bot</text>
+<text x="652" y="345" font-size="13.5" font-weight="600" fill="#1F1A17">Incident cards</text>
+<text x="652" y="374" font-size="13.5" font-weight="400" fill="#4A413B">BTN:Incident message; live state in its metadata</text>
+<text x="652" y="403" font-size="13.5" font-weight="600" fill="#1F1A17">Targeted group messages (toUserIds)</text>
+<text x="652" y="432" font-size="13.5" font-weight="400" fill="#4A413B">Baton Pass offers, assignments, escalations</text>
+<text x="652" y="461" font-size="13.5" font-weight="600" fill="#1F1A17">Direct channels</text>
+<text x="652" y="490" font-size="13.5" font-weight="400" fill="#4A413B">BTN:Status to reporters; private crew threads</text>
+<rect x="630" y="730" width="440" height="110" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="652" y="762" font-size="17" font-weight="600" fill="#1F1A17">Call</text>
+<text x="652" y="792" font-size="14" font-weight="400" fill="#4A413B">1:1 audio calls between crew members</text>
+<rect x="630" y="590" width="440" height="110" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="652" y="622" font-size="17" font-weight="600" fill="#1F1A17">Server API</text>
+<text x="652" y="652" font-size="14" font-weight="400" fill="#4A413B">Signed requests from Baton's server only.</text>
+<text x="652" y="676" font-size="14" font-weight="400" fill="#4A413B">Delivers cards, metadata and direct messages.</text>
+<rect x="630" y="870" width="440" height="116" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="652" y="902" font-size="17" font-weight="600" fill="#1F1A17">Webhooks · pushed to Baton</text>
+<text x="652" y="932" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">message:send</text>
+<text x="652" y="956" font-size="13" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">user:connection_status</text>
+<rect x="1200" y="220" width="440" height="130" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1222" y="252" font-size="17" font-weight="600" fill="#1F1A17">Access tokens</text>
+<text x="1222" y="276" font-size="13" font-weight="400" fill="#6B625B" font-family="Menlo, Consolas, monospace">/api/session/token</text>
+<text x="1222" y="306" font-size="13.5" font-weight="400" fill="#4A413B">Issues a token for the signed-in member or</text>
+<text x="1222" y="330" font-size="13.5" font-weight="400" fill="#4A413B">attendee. The App Secret stays on the server.</text>
+<rect x="1200" y="380" width="440" height="250" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1222" y="412" font-size="17" font-weight="600" fill="#1F1A17">Server API client</text>
+<text x="1222" y="436" font-size="13" font-weight="400" fill="#6B625B" font-family="Menlo, Consolas, monospace">src/server/nexconn/api.ts</text>
+<text x="1222" y="468" font-size="12.5" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">/v4/auth/access-token/issue</text>
+<text x="1222" y="494" font-size="12.5" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">/v4/group-channel/create · join · leave</text>
+<text x="1222" y="520" font-size="12.5" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">/v4/group-channel/message/send</text>
+<text x="1222" y="546" font-size="12.5" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">/v4/direct-channel/message/send</text>
+<text x="1222" y="572" font-size="12.5" font-weight="400" fill="#4A413B" font-family="Menlo, Consolas, monospace">/v4/channel-type/message/metadata/set</text>
+<text x="1222" y="598" font-size="13" font-weight="400" fill="#6B625B">Signature = sha1(secret + nonce + timestamp)</text>
+<rect x="1200" y="660" width="440" height="150" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1222" y="692" font-size="17" font-weight="600" fill="#1F1A17">Projection</text>
+<text x="1222" y="716" font-size="13" font-weight="400" fill="#6B625B" font-family="Menlo, Consolas, monospace">src/server/domain/projection.ts</text>
+<text x="1222" y="746" font-size="13.5" font-weight="400" fill="#4A413B">Each incident change becomes a card update,</text>
+<text x="1222" y="770" font-size="13.5" font-weight="400" fill="#4A413B">targeted alerts and reporter status messages.</text>
+<rect x="1200" y="840" width="440" height="146" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1222" y="872" font-size="17" font-weight="600" fill="#1F1A17">Webhook receiver</text>
+<text x="1222" y="896" font-size="13" font-weight="400" fill="#6B625B" font-family="Menlo, Consolas, monospace">/api/nexconn/webhook</text>
+<text x="1222" y="926" font-size="13.5" font-weight="400" fill="#4A413B">Verifies signature and timestamp, dedupes by id.</text>
+<text x="1222" y="950" font-size="13.5" font-weight="400" fill="#4A413B">message:send → chat-intake · status → presence</text>
+<rect x="1180" y="992" width="440" height="0" rx="12" fill="none" stroke="none" stroke-width="1.5"/>
+<path d="M500 390 L630 390" fill="none" stroke="#D9622A" stroke-width="1.8" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="565" y="380" font-size="12.5" font-weight="400" fill="#B9501F" text-anchor="middle">live</text>
+<path d="M500 785 L630 785" fill="none" stroke="#D9622A" stroke-width="1.8" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="565" y="775" font-size="12.5" font-weight="400" fill="#B9501F" text-anchor="middle">audio</text>
+<path d="M1200 615 L1070 615" fill="none" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<text x="1135" y="605" font-size="12.5" font-weight="400" fill="#B9501F" text-anchor="middle">signed</text>
+<text x="1135" y="636" font-size="12.5" font-weight="400" fill="#B9501F" text-anchor="middle">HTTPS</text>
+<path d="M1070 928 L1200 928" fill="none" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<text x="1135" y="918" font-size="12.5" font-weight="400" fill="#B9501F" text-anchor="middle">POST</text>
+<path d="M1420 660 L1420 630" fill="none" stroke="#6B625B" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M280 160 L280 128 L1420 128 L1420 160" fill="none" stroke="#6B625B" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="700" y="116" width="300" height="24" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="850" y="133" font-size="13" font-weight="400" fill="#6B625B" text-anchor="middle">HTTPS: access token, report, claim, pass, resolve</text></svg>

@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="940" viewBox="0 0 1700 940" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B625B"/></marker>
+    <marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#D9622A"/></marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3E5A8C"/></marker>
+  </defs>
+  <rect width="1700" height="940" fill="#FFFFFF"/>
+  <text x="40" y="56" font-size="28" font-weight="600" fill="#1F1A17">Baton system architecture</text>
+  <text x="40" y="86" font-size="16" fill="#6B625B">Next.js on Vercel, Postgres as the source of truth, Nexconn for real-time messaging and calls</text>
+
+  <!-- clients -->
+  <text x="40" y="140" font-size="13" font-weight="600" letter-spacing="1.5" fill="#6B625B">CLIENTS · BROWSER, NO INSTALL</text>
+  <g font-size="14" fill="#4A413B">
+    <rect x="40" y="160" width="300" height="104" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+    <text x="62" y="194" font-size="17" font-weight="600" fill="#1F1A17">Organizer board</text>
+    <text x="62" y="220" font-family="Menlo, Consolas, monospace" font-size="13">/o/[eventId] · desktop</text>
+    <text x="62" y="244">Command centre, QR codes, impact</text>
+
+    <rect x="40" y="292" width="300" height="104" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+    <text x="62" y="326" font-size="17" font-weight="600" fill="#1F1A17">Volunteer crew app</text>
+    <text x="62" y="352" font-family="Menlo, Consolas, monospace" font-size="13">/c/[eventId] · phone</text>
+    <text x="62" y="376">Stream, my tasks, inbox, crew</text>
+
+    <rect x="40" y="424" width="300" height="104" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+    <text x="62" y="458" font-size="17" font-weight="600" fill="#1F1A17">Attendee report page</text>
+    <text x="62" y="484" font-family="Menlo, Consolas, monospace" font-size="13">/e/[slug] · phone</text>
+    <text x="62" y="508">Opened from a location QR poster</text>
+
+    <rect x="40" y="556" width="300" height="92" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+    <text x="62" y="590" font-size="17" font-weight="600" fill="#1F1A17">Setup and join</text>
+    <text x="62" y="616" font-family="Menlo, Consolas, monospace" font-size="13">/new · /join/[code]</text>
+  </g>
+
+  <!-- baton container -->
+  <rect x="400" y="120" width="700" height="790" rx="18" fill="#FFFFFF" stroke="#1F1A17" stroke-width="1.6"/>
+  <text x="428" y="156" font-size="18" font-weight="600" fill="#1F1A17">Baton · Next.js 16 on Vercel</text>
+  <text x="1072" y="156" font-size="13" text-anchor="end" fill="#6B625B">region sin1</text>
+
+  <!-- UI -->
+  <rect x="430" y="176" width="640" height="150" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+  <text x="452" y="208" font-size="17" font-weight="600" fill="#1F1A17">React 19 UI</text>
+  <g font-size="14" fill="#4A413B">
+    <text x="452" y="236">Custom screens built on the Chat SDK</text>
+    <text x="452" y="260">Board, crew app, attendee page,</text>
+    <text x="452" y="284">incident sheet, call dock, inbox</text>
+    <text x="452" y="308" fill="#8A7F77">Nexconn Chat UI kit not used</text>
+  </g>
+  <rect x="760" y="192" width="290" height="54" rx="10" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+  <text x="780" y="216" font-size="15" font-weight="600" fill="#1F1A17">Chat SDK client</text>
+  <text x="780" y="236" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#6B625B">lib/nexconn-client.ts</text>
+  <rect x="760" y="256" width="290" height="54" rx="10" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+  <text x="780" y="280" font-size="15" font-weight="600" fill="#1F1A17">Call SDK client</text>
+  <text x="780" y="300" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#6B625B">lib/nexconn-call.ts</text>
+
+  <!-- API -->
+  <rect x="430" y="362" width="640" height="150" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+  <text x="452" y="394" font-size="17" font-weight="600" fill="#1F1A17">Route handlers</text>
+  <text x="590" y="394" font-size="14" font-family="Menlo, Consolas, monospace" fill="#6B625B">src/app/api/*</text>
+  <g font-size="13" font-family="Menlo, Consolas, monospace" fill="#4A413B">
+    <text x="452" y="426">events · join · qr · health</text>
+    <text x="452" y="450">session/token</text>
+    <text x="452" y="474">e/[slug]/reports</text>
+    <text x="452" y="498">demo · demo/[id]/simulate</text>
+    <text x="760" y="426">events/[id]/state</text>
+    <text x="760" y="450">events/[id]/reports</text>
+    <text x="760" y="474">incidents/[id]/[action]</text>
+    <text x="760" y="498" fill="#B9501F">nexconn/webhook</text>
+  </g>
+
+  <!-- domain -->
+  <rect x="430" y="548" width="640" height="196" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+  <text x="452" y="580" font-size="17" font-weight="600" fill="#1F1A17">Domain layer</text>
+  <text x="580" y="580" font-size="14" font-family="Menlo, Consolas, monospace" fill="#6B625B">src/server/domain</text>
+  <g font-size="13.5">
+    <rect x="450" y="598" width="196" height="60" rx="9" fill="#FFFFFF" stroke="#E8DDD3"/><text x="464" y="622" font-weight="600" fill="#1F1A17">incidents</text><text x="464" y="644" fill="#6B625B">claim, pass, resolve</text>
+    <rect x="662" y="598" width="196" height="60" rx="9" fill="#FFFFFF" stroke="#E8DDD3"/><text x="676" y="622" font-weight="600" fill="#1F1A17">consolidation</text><text x="676" y="644" fill="#6B625B">duplicate merging</text>
+    <rect x="874" y="598" width="176" height="60" rx="9" fill="#FFFFFF" stroke="#E8DDD3"/><text x="888" y="622" font-weight="600" fill="#1F1A17">detection</text><text x="888" y="644" fill="#6B625B">chat-intake rules</text>
+    <rect x="450" y="670" width="196" height="60" rx="9" fill="#FFFFFF" stroke="#E8DDD3"/><text x="464" y="694" font-weight="600" fill="#1F1A17">impact</text><text x="464" y="716" fill="#6B625B">time to owner / fix</text>
+    <rect x="662" y="670" width="196" height="60" rx="9" fill="#FFFFFF" stroke="#E8DDD3"/><text x="676" y="694" font-weight="600" fill="#1F1A17">webhooks · presence</text><text x="676" y="716" fill="#6B625B">dedupe, online status</text>
+    <rect x="874" y="670" width="176" height="60" rx="9" fill="#FCE9DE" stroke="#F0C3A7"/><text x="888" y="694" font-weight="600" fill="#1F1A17">projection</text><text x="888" y="716" fill="#6B625B">fan-out to Nexconn</text>
+  </g>
+
+  <!-- worker -->
+  <rect x="430" y="780" width="640" height="104" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+  <text x="452" y="812" font-size="17" font-weight="600" fill="#1F1A17">Worker tick</text>
+  <text x="560" y="812" font-size="14" font-family="Menlo, Consolas, monospace" fill="#6B625B">src/server/worker.ts</text>
+  <text x="452" y="838" font-size="14" fill="#4A413B">Escalates unowned incidents and re-syncs Nexconn cards.</text>
+  <text x="452" y="862" font-size="14" fill="#4A413B">Row-locked with FOR UPDATE SKIP LOCKED; runs after /state polls on Vercel.</text>
+
+  <!-- nexconn -->
+  <rect x="1280" y="120" width="380" height="500" rx="18" fill="#FCE9DE" stroke="#D9622A" stroke-width="1.6"/>
+  <text x="1306" y="156" font-size="18" font-weight="600" fill="#B9501F">Nexconn cloud</text>
+  <g font-size="14" fill="#4A413B">
+    <rect x="1300" y="176" width="340" height="112" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
+    <text x="1322" y="208" font-size="17" font-weight="600" fill="#1F1A17">Chat</text>
+    <text x="1322" y="236">One group channel per event</text>
+    <text x="1322" y="260">Direct channels · custom messages</text>
+    <text x="1322" y="280" font-size="13" fill="#6B625B">Message metadata holds card state</text>
+    <rect x="1300" y="304" width="340" height="80" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
+    <text x="1322" y="336" font-size="17" font-weight="600" fill="#1F1A17">Call</text>
+    <text x="1322" y="362">1:1 audio over WebRTC</text>
+    <rect x="1300" y="512" width="340" height="88" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
+    <text x="1322" y="544" font-size="17" font-weight="600" fill="#1F1A17">Server API</text>
+    <text x="1322" y="572">Signed with App Key, Nonce, Timestamp</text>
+    <rect x="1300" y="400" width="340" height="96" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
+    <text x="1322" y="432" font-size="17" font-weight="600" fill="#1F1A17">Webhooks</text>
+    <text x="1322" y="458" font-family="Menlo, Consolas, monospace" font-size="13">message:send</text>
+    <text x="1322" y="480" font-family="Menlo, Consolas, monospace" font-size="13">user:connection_status</text>
+  </g>
+
+  <!-- postgres -->
+  <rect x="1280" y="660" width="380" height="250" rx="18" fill="#EAF0F8" stroke="#3E5A8C" stroke-width="1.6"/>
+  <text x="1306" y="696" font-size="18" font-weight="600" fill="#2C4573">Postgres</text>
+  <text x="1634" y="696" font-size="13" text-anchor="end" fill="#3E5A8C">Drizzle ORM</text>
+  <g font-size="14" fill="#2C3A52">
+    <text x="1306" y="728" font-weight="600">Source of truth for ownership</text>
+    <text x="1306" y="756">events · zones · members · attendees</text>
+    <text x="1306" y="780">incidents · reports · incident_events</text>
+    <text x="1306" y="804">merge_suggestions · notifications</text>
+    <text x="1306" y="828">webhook_events · presence_sessions</text>
+    <text x="1306" y="852">nexconn_tokens</text>
+    <text x="1306" y="886" font-size="13" fill="#3E5A8C">Neon in production · local cluster in dev</text>
+  </g>
+
+  <!-- arrows: clients to UI -->
+  <g stroke="#6B625B" stroke-width="1.6" fill="none">
+    <path d="M340 212 L430 228" marker-end="url(#a)"/>
+    <path d="M340 344 L430 268" marker-end="url(#a)"/>
+    <path d="M340 476 L430 300" marker-end="url(#a)"/>
+    <path d="M340 602 L430 450" marker-end="url(#a)"/>
+    <path d="M600 326 L600 362" marker-end="url(#a)"/>
+    <path d="M750 512 L750 548" marker-end="url(#a)"/>
+    <path d="M750 780 L750 744" marker-end="url(#a)"/>
+  </g>
+  <g font-size="12.5" fill="#6B625B">
+    <text x="352" y="198">HTTPS</text>
+    <text x="612" y="349">fetch JSON</text>
+  </g>
+  <!-- data -->
+  <g stroke="#3E5A8C" stroke-width="1.8" fill="none">
+    <path d="M1070 730 L1280 760" marker-end="url(#b)"/>
+    <path d="M1070 832 L1280 832" marker-end="url(#b)"/>
+  </g>
+  <g font-size="12.5" fill="#3E5A8C"><text x="1110" y="772">SQL transactions</text></g>
+  <g stroke="#D9622A" stroke-width="1.8" fill="none">
+    <path d="M1050 219 L1300 222" marker-start="url(#t)" marker-end="url(#t)"/>
+    <path d="M1050 283 L1300 340" marker-start="url(#t)" marker-end="url(#t)"/>
+    <path d="M1050 700 C1180 700 1180 556 1300 556" marker-end="url(#t)"/>
+    <path d="M1300 448 L1070 470" marker-end="url(#t)"/>
+  </g>
+  <g font-size="12.5" fill="#B9501F">
+    <text x="1110" y="210">live connection</text>
+    <text x="1078" y="342">WebRTC audio</text>
+    <text x="1196" y="654">signed HTTPS</text>
+    <text x="1118" y="446">POST webhook</text>
+  </g>
+</svg>

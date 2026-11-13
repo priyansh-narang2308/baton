@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1468" viewBox="0 0 1700 1468" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B625B"/></marker><marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#D9622A"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3E5A8C"/></marker></defs><rect width="1700" height="1468" fill="#FFFFFF"/><line x1="150" y1="182" x2="150" y2="1448" stroke="#D8CEC5" stroke-width="1.5" stroke-dasharray="4 5"/>
+<line x1="420" y1="182" x2="420" y2="1448" stroke="#D8CEC5" stroke-width="1.5" stroke-dasharray="4 5"/>
+<line x1="700" y1="182" x2="700" y2="1448" stroke="#D8CEC5" stroke-width="1.5" stroke-dasharray="4 5"/>
+<line x1="960" y1="182" x2="960" y2="1448" stroke="#D8CEC5" stroke-width="1.5" stroke-dasharray="4 5"/>
+<line x1="1220" y1="182" x2="1220" y2="1448" stroke="#D8CEC5" stroke-width="1.5" stroke-dasharray="4 5"/>
+<line x1="1540" y1="182" x2="1540" y2="1448" stroke="#D8CEC5" stroke-width="1.5" stroke-dasharray="4 5"/>
+<text x="40" y="56" font-size="28" font-weight="600" fill="#1F1A17">Real-time message flow</text>
+<text x="40" y="86" font-size="16" font-weight="400" fill="#6B625B">Postgres decides; Nexconn delivers. Every change is committed first, then projected to every open screen.</text>
+<rect x="40" y="120" width="220" height="62" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="150" y="148" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="middle">Attendee page</text>
+<text x="150" y="168" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="middle">reporter</text>
+<rect x="310" y="120" width="220" height="62" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="420" y="148" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="middle">Volunteer</text>
+<text x="420" y="168" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="middle">claims the request</text>
+<rect x="590" y="120" width="220" height="62" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="700" y="148" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="middle">Baton API</text>
+<text x="700" y="168" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="middle">route handlers</text>
+<rect x="850" y="120" width="220" height="62" rx="12" fill="#EAF0F8" stroke="#3E5A8C" stroke-width="1.5"/>
+<text x="960" y="148" font-size="16" font-weight="600" fill="#2C4573" text-anchor="middle">Postgres</text>
+<text x="960" y="168" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="middle">source of truth</text>
+<rect x="1110" y="120" width="220" height="62" rx="12" fill="#FCE9DE" stroke="#D9622A" stroke-width="1.5"/>
+<text x="1220" y="148" font-size="16" font-weight="600" fill="#B9501F" text-anchor="middle">Nexconn</text>
+<text x="1220" y="168" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="middle">Chat service</text>
+<rect x="1430" y="120" width="220" height="62" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1540" y="148" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="middle">Crew + board</text>
+<text x="1540" y="168" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="middle">every open screen</text>
+<rect x="30" y="208" width="1640" height="30" rx="6" fill="#F6F1EB" stroke="none" stroke-width="1.5"/>
+<text x="46" y="228" font-size="12.5" font-weight="600" fill="#6B625B" letter-spacing="1.2">1 · AN ATTENDEE REPORTS A PROBLEM</text>
+<path d="M150 272 L696 272" fill="none" stroke="#6B625B" stroke-width="1.7" marker-end="url(#a)"/>
+<rect x="315.3" y="245" width="219.4" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="425.0" y="261" font-size="13" font-weight="500" fill="#1F1A17" font-family="Menlo, Consolas, monospace" text-anchor="middle">POST /api/e/[slug]/reports</text>
+<path d="M700 320 L956 320" fill="none" stroke="#6B625B" stroke-width="1.7" marker-end="url(#a)"/>
+<rect x="784.5" y="293" width="91.0" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="830.0" y="309" font-size="13" font-weight="500" fill="#1F1A17" text-anchor="middle">transaction</text>
+<rect x="810.0" y="344" width="300" height="64" rx="8" fill="#EAF0F8" stroke="#B9C8E0" stroke-width="1.5"/>
+<text x="960" y="364" font-size="12.5" font-weight="400" fill="#2C4573" text-anchor="middle">match duplicates · insert report</text>
+<text x="960" y="384" font-size="12.5" font-weight="400" fill="#2C4573" text-anchor="middle">new incident or attach · audit entry</text>
+<path d="M700 446 L1216 446" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="834.5" y="419" width="251.0" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="960.0" y="435" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">/v4/group-channel/message/send</text>
+<rect x="772.5" y="452" width="375.0" height="20" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="960.0" y="467" font-size="12" font-weight="400" fill="#6B625B" text-anchor="middle">BTN:Incident card from the event bot, state in metadata</text>
+<path d="M1220 512 L1536 512" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="1305.85" y="485" width="148.3" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="1380.0" y="501" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">onMessageReceived</text>
+<rect x="1321.2" y="518" width="117.6" height="20" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="1380.0" y="533" font-size="12" font-weight="400" fill="#6B625B" text-anchor="middle">the card appears</text>
+<path d="M700 578 L1216 578" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="830.55" y="551" width="258.9" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="960.0" y="567" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">/v4/direct-channel/message/send</text>
+<path d="M1220 626 L154 626" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="559.5" y="599" width="251.0" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="685.0" y="615" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">BTN:Status  “Sent to the crew”</text>
+<rect x="30" y="672" width="1640" height="30" rx="6" fill="#F6F1EB" stroke="none" stroke-width="1.5"/>
+<text x="46" y="692" font-size="12.5" font-weight="600" fill="#6B625B" letter-spacing="1.2">2 · A VOLUNTEER TAKES IT</text>
+<path d="M420 736 L696 736" fill="none" stroke="#6B625B" stroke-width="1.7" marker-end="url(#a)"/>
+<rect x="387.1" y="709" width="345.8" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="560.0" y="725" font-size="13" font-weight="500" fill="#1F1A17" font-family="Menlo, Consolas, monospace" text-anchor="middle">POST /api/events/[id]/incidents/[id]/claim</text>
+<path d="M700 784 L956 784" fill="none" stroke="#6B625B" stroke-width="1.7" marker-end="url(#a)"/>
+<rect x="704.5" y="757" width="251.0" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="830.0" y="773" font-size="13" font-weight="500" fill="#1F1A17" font-family="Menlo, Consolas, monospace" text-anchor="middle">UPDATE … WHERE status = 'open'</text>
+<rect x="810.0" y="808" width="300" height="64" rx="8" fill="#EAF0F8" stroke="#B9C8E0" stroke-width="1.5"/>
+<text x="960" y="828" font-size="12.5" font-weight="400" fill="#2C4573" text-anchor="middle">one winner · version + 1</text>
+<text x="960" y="848" font-size="12.5" font-weight="400" fill="#2C4573" text-anchor="middle">losers get “already taken”</text>
+<path d="M700 910 L1216 910" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="806.85" y="883" width="306.3" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="960.0" y="899" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">/v4/channel-type/message/metadata/set</text>
+<rect x="789.0" y="916" width="342.0" height="20" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="960.0" y="931" font-size="12" font-weight="400" fill="#6B625B" text-anchor="middle">status, owner, report count, pending pass, version</text>
+<path d="M1220 976 L1536 976" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="1278.2" y="949" width="203.60000000000002" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="1380.0" y="965" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">onMessageMetadataUpdated</text>
+<rect x="1271.7" y="982" width="216.6" height="20" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="1380.0" y="997" font-size="12" font-weight="400" fill="#6B625B" text-anchor="middle">applied if the version is newer</text>
+<path d="M1220 1042 L154 1042" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="571.35" y="1015" width="227.3" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="685.0" y="1031" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">BTN:Status  “Riya is on it”</text>
+<rect x="30" y="1088" width="1640" height="30" rx="6" fill="#F6F1EB" stroke="none" stroke-width="1.5"/>
+<text x="46" y="1108" font-size="12.5" font-weight="600" fill="#6B625B" letter-spacing="1.2">3 · A REQUEST TYPED IN CREW CHAT</text>
+<path d="M1540 1152 L1224 1152" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="1278.2" y="1125" width="203.60000000000002" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="1380.0" y="1141" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">GroupChannel.sendMessage</text>
+<rect x="1298.1" y="1158" width="163.79999999999998" height="20" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="1380.0" y="1173" font-size="12" font-weight="400" fill="#6B625B" text-anchor="middle">“water's out at gate 3”</text>
+<path d="M1220 1218 L704 1218" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="870.05" y="1191" width="179.9" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="960.0" y="1207" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">webhook  message:send</text>
+<path d="M700 1266 L956 1266" fill="none" stroke="#6B625B" stroke-width="1.7" marker-end="url(#a)"/>
+<rect x="704.0" y="1239" width="252.0" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="830.0" y="1255" font-size="13" font-weight="500" fill="#1F1A17" text-anchor="middle">verify signature · dedupe envelope</text>
+<rect x="810.0" y="1290" width="300" height="64" rx="8" fill="#EAF0F8" stroke="#B9C8E0" stroke-width="1.5"/>
+<text x="960" y="1310" font-size="12.5" font-weight="400" fill="#2C4573" text-anchor="middle">rule-based detection</text>
+<text x="960" y="1330" font-size="12.5" font-weight="400" fill="#2C4573" text-anchor="middle">incident keyed by source_message_id</text>
+<path d="M700 1392 L1216 1392" fill="none" stroke="#D9622A" stroke-width="1.7" marker-end="url(#t)"/>
+<rect x="834.5" y="1365" width="251.0" height="22" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="960.0" y="1381" font-size="13" font-weight="500" fill="#B9501F" font-family="Menlo, Consolas, monospace" text-anchor="middle">/v4/group-channel/message/send</text>
+<rect x="831.9" y="1398" width="256.2" height="20" rx="4" fill="#FFFFFF" stroke="none" stroke-width="1.5"/>
+<text x="960.0" y="1413" font-size="12" font-weight="400" fill="#6B625B" text-anchor="middle">BTN:Incident card for the new request</text></svg>
