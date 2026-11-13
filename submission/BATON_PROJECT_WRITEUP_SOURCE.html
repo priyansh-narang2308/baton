@@ -24,6 +24,7 @@ html, body { background: #fff; }
 body { font-family: "Inter", sans-serif; color: var(--ink); font-size: 9.1pt; line-height: 1.45; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
 .page { width: 210mm; height: 297mm; padding: 15mm 15mm 13mm; position: relative; overflow: hidden; page-break-after: always; break-after: page; display: flex; flex-direction: column; }
+.page > * { flex-shrink: 0; }
 .page:last-child { page-break-after: auto; break-after: auto; }
 
 .run { display: flex; justify-content: space-between; align-items: center; font-size: 7.4pt; color: var(--ink3); letter-spacing: .04em; text-transform: uppercase; border-bottom: 1px solid var(--line); padding-bottom: 2.4mm; margin-bottom: 6mm; }
@@ -62,9 +63,10 @@ table { width: 100%; border-collapse: collapse; font-size: 7.7pt; line-height: 1
 th { text-align: left; font-size: 6.9pt; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); padding: 1.6mm 1.8mm; border-bottom: 1.2px solid var(--ink); }
 td { padding: 1.55mm 1.8mm; border-bottom: 1px solid var(--line); vertical-align: top; }
 td:first-child { font-weight: 600; }
-td code { font-size: 6.9pt; padding: 0 .7mm; }
+td code { font-size: 6.9pt; padding: 0 .7mm; white-space: nowrap; }
+td:last-child { white-space: nowrap; }
 
-.meta { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.meta { display: grid; grid-template-columns: 1fr .82fr 1.3fr 1fr; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .meta > div { padding: 2.6mm 3mm; border-right: 1px solid var(--line); }
 .meta > div:last-child { border-right: none; }
 .meta .k { font-size: 6.8pt; text-transform: uppercase; letter-spacing: .1em; color: var(--ink3); margin-bottom: .6mm; }
@@ -105,7 +107,7 @@ td code { font-size: 6.9pt; padding: 0 .7mm; }
   <div class="meta" style="margin-bottom:4.5mm;">
     <div><div class="k">Live app</div><div class="v"><a href="https://baton.priyanshnarang.in">baton.priyanshnarang.in</a></div></div>
     <div><div class="k">Nexconn App Key</div><div class="v mono" style="background:none;padding:0;font-size:8.6pt">e5t4ouvpen0va</div></div>
-    <div><div class="k">Source code</div><div class="v"><a href="https://github.com/priyansh-narang2308/baton">github.com/<br>priyansh-narang2308/baton</a></div></div>
+    <div><div class="k">Source code</div><div class="v"><a href="https://github.com/priyansh-narang2308/baton">github.com/<br><span style="white-space:nowrap">priyansh-narang2308/baton</span></a></div></div>
     <div><div class="k">Demo video</div><div class="v">{{VIDEO}}</div></div>
   </div>
 
@@ -218,10 +220,10 @@ td code { font-size: 6.9pt; padding: 0 .7mm; }
   <p style="margin-bottom:3mm; color:var(--ink2)">Baton uses the <b>Nexconn Chat SDK</b> (<code>@nexconn/chat</code> 26.2.1) with its own React interface, the <b>Nexconn Server API</b> from the backend, <b>webhooks</b> for messages and presence, and the <b>Nexconn Call SDK</b> (<code>@nexconn/call</code>) for voice. The App Secret stays on the server; browsers only receive short-lived access tokens.</p>
 
   <table style="margin-bottom:4mm;">
-    <thead><tr><th style="width:21%">Baton feature</th><th style="width:30%">Nexconn capability</th><th>Implementation role</th><th style="width:15%">Evidence</th></tr></thead>
+    <thead><tr><th style="width:20%">Baton feature</th><th style="width:30%">Nexconn capability</th><th>Implementation role</th><th style="width:18%">Evidence</th></tr></thead>
     <tbody>
       <tr><td>Sign-in without accounts</td><td>Server API <code>/v4/auth/access-token/issue</code></td><td>Server issues a token per volunteer and per anonymous attendee; client refetches on expiry</td><td><span class="tag live">Live</span></td></tr>
-      <tr><td>Crew chat</td><td>Group channel (<code>group-channel/create</code>, <code>join</code>), Chat SDK <code>GroupChannel.sendMessage</code>, history query</td><td>One group per event; custom React chat UI; late joiners load history</td><td><span class="tag live">Live</span> run check 8</td></tr>
+      <tr><td>Crew chat</td><td>Group channel (<code>group-channel/create</code>, <code>join</code>), Chat SDK <code>GroupChannel.sendMessage</code>, history query</td><td>One group per event; custom React chat UI; late joiners load history</td><td><span class="tag live">Live</span> check 8</td></tr>
       <tr><td>Incident cards in chat</td><td>Custom message types <code>BTN:Incident</code>, <code>BTN:Status</code>, <code>BTN:Nudge</code></td><td>Registered with <code>NCEngine.registerCustomMessages</code>; the event bot posts cards via the Server API</td><td><span class="tag live">Live</span> check 7</td></tr>
       <tr><td>Live owner and status on every screen</td><td>Message metadata (<code>message/metadata/set</code>, <code>onMessageMetadataUpdated</code>)</td><td>Card state rides on the message; clients apply only newer versions</td><td><span class="tag live">Live</span> checks 12, 16</td></tr>
       <tr><td>Chat line → request</td><td>Webhook <code>message:send</code></td><td>Signature and freshness checked, envelope deduplicated, rule-based detection, one incident per message</td><td><span class="tag live">Live</span> check 9</td></tr>
