@@ -579,7 +579,7 @@ export async function attendeeReports(db: Db, attendeeId: string) {
 export type HuddleOutcome = "connected" | "no_answer" | "declined" | "cancelled" | "failed";
 
 /**
- * Records a Nexconn Call voice huddle in the incident timeline. The caller's browser reports it once the call ends
+ * Records a Nexconn Call voice or video huddle in the incident timeline. The caller's browser reports it once the call ends
  * (from the SDK's local call log), so the duration is as the caller's app measured it. One entry per call ID.
  */
 export async function logHuddle(
@@ -587,7 +587,7 @@ export async function logHuddle(
   eventId: string,
   incidentId: string,
   memberId: string,
-  input: { callId: string; withMemberId: string; outcome: HuddleOutcome; durationSec: number },
+  input: { callId: string; withMemberId: string; outcome: HuddleOutcome; durationSec: number; video?: boolean },
 ) {
   return db.transaction(async (tx) => {
     await activeMember(tx, memberId, eventId);
@@ -608,6 +608,7 @@ export async function logHuddle(
       withName: other.name,
       outcome: input.outcome,
       durationSec,
+      video: Boolean(input.video),
     });
     return { logged: true };
   });

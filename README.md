@@ -37,7 +37,7 @@ Baton keeps the chat and adds one rule on top of it: **every request has exactly
 | **Duplicate merging**   | A second report about the same problem attaches to the existing incident. Matching is rule-based (location, category, keywords, recency), not AI. |
 | **Atomic claim**        | One tap takes ownership. If several volunteers tap at once, exactly one wins.                                                                     |
 | **Baton Pass**          | The owner offers the incident to a teammate with a note. Ownership moves only when they accept, so it is never ownerless.                         |
-| **Voice huddle**        | A 1:1 audio call started from the incident, logged on its timeline.                                                                               |
+| **Huddle**              | A 1:1 voice or video call started from the incident, logged on its timeline.                                                                      |
 | **Closed loop**         | The reporter sees "Sent", then who is on it, then "Fixed".                                                                                        |
 | **Escalation**          | Unowned incidents privately re-alert the location's lead, or the event leads, after 2 minutes (45 seconds if urgent).                             |
 | **Audit and impact**    | Every transition is recorded. Each incident shows time to owner and time to fix.                                                                  |
@@ -59,7 +59,7 @@ Baton keeps the chat and adds one rule on top of it: **every request has exactly
     <td><img src="docs/images/screen-incident-record.jpg" alt="Fixed incident with merged reports and timings"></td>
   </tr>
   <tr>
-    <td><sub><b>Voice huddle.</b> A Nexconn 1:1 audio call between crew members.</sub></td>
+    <td><sub><b>Voice huddle.</b> A Nexconn 1:1 call between crew members, by voice or video.</sub></td>
     <td><sub><b>Activity.</b> Chat detection and the call are logged on the incident.</sub></td>
     <td><sub><b>Record.</b> Two merged reports, time to owner 57 s, time to fix 2 m 48 s.</sub></td>
   </tr>
@@ -107,7 +107,7 @@ The landing page also has **Try Baton live**, which creates a private, labelled 
 
 <p align="center"><img src="docs/images/nexconn-architecture.png" alt="How Baton uses Nexconn" width="900"></p>
 
-Baton uses the **Chat SDK with its own React interface**. The Nexconn Chat UI kit is not used.
+Baton uses the **Chat SDK with its own React interface** for the crew group chat, incident cards and attendee status threads, and **Nexconn Chat UI** (`@nexconn/chatui`) for private 1:1 conversations between crew members. Both share one Nexconn connection per page.
 
 | Baton feature                                       | Nexconn capability                                                                                                                                   | Code                                                                       |
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
@@ -117,11 +117,12 @@ Baton uses the **Chat SDK with its own React interface**. The Nexconn Chat UI ki
 | Incident cards                                      | Custom message types `BTN:Incident`, `BTN:Status`, `BTN:Nudge` (`NCEngine.registerCustomMessages`)                                                   | `src/lib/nexconn-client.ts`                                                |
 | Live card state                                     | Message metadata: `/v4/channel-type/message/metadata/set` on the server, `onMessageMetadataUpdated` on clients, applied only if the version is newer | `src/server/domain/projection.ts`                                          |
 | Private alerts (Baton Pass, assignment, escalation) | Group message with `toUserIds`                                                                                                                       | `src/server/domain/projection.ts`, `src/server/worker.ts`                  |
-| Reporter status and 1:1 crew threads                | Direct channel messages (`/v4/direct-channel/message/send`, `DirectChannel`)                                                                         | `projection.ts`, `src/components/direct-thread.tsx`                        |
+| Reporter status threads                             | Direct channel messages (`/v4/direct-channel/message/send`)                                                                                          | `src/server/domain/projection.ts`                                          |
+| Private 1:1 crew conversations                      | Chat UI `NCChatUIApplication`, `nc-channel-detail-provider` on a Direct channel                                                                      | `src/lib/nexconn-chatui.ts`, `src/components/direct-thread.tsx`            |
 | Chat line → request                                 | Webhook `message:send`                                                                                                                               | `src/app/api/nexconn/webhook/route.ts`, `src/server/domain/chat-intake.ts` |
 | Crew online status                                  | Webhook `user:connection_status`                                                                                                                     | `src/server/domain/presence.ts`                                            |
 | Reconnect and token refresh                         | Connection status handler, `NCEngine.connect` with a fresh token                                                                                     | `src/lib/nexconn-client.ts`                                                |
-| Voice huddle                                        | Call SDK `NCCallEngine.install`, `startCall` (single, audio), `acceptCall`, `endCall`, `enableMicrophone`; 10-minute cap                             | `src/lib/nexconn-call.ts`, `src/components/call-dock.tsx`                  |
+| Voice and video huddles                             | Call SDK `NCCallEngine.install`, `startCall` (single, audio or audio+video), `acceptCall`, `endCall`, `enableMicrophone`, `enableCamera`, `setLocalVideoView`/`setRemoteVideoView`, `onRemoteCameraStateChanged`; 10-minute cap | `src/lib/nexconn-call.ts`, `src/components/call-dock.tsx`                  |
 
 Reference: [Nexconn documentation](https://docs.nexconn.ai/).
 
@@ -170,7 +171,7 @@ See [`.env.example`](.env.example). Without Nexconn keys the app starts and show
 1. Create an app in the [Nexconn Console](https://console.nexconn.ai) and copy the App Key and App Secret into `.env.local`.
 2. Under Chat settings, enable pre-join history access for new group members.
 3. To use chat-to-request and presence, add a webhook pointing at `https://<your-host>/api/nexconn/webhook` with the events `message:send` and `user:connection_status`. Nexconn must be able to reach the URL, so use a deployed host or a tunnel.
-4. To use voice huddles, enable Nexconn Call for the app.
+4. To use voice and video huddles, enable Nexconn Call for the app.
 
 ## Testing
 
@@ -221,8 +222,8 @@ Baton was built during the Nexconn Build Challenge 2026 (first commit 28 Oct 202
 | Known limitation   | Detail                                                                                                                                    |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | Latency            | Some actions take a few seconds because of database round trips across regions.                                                           |
-| Calls              | 1:1 audio only.                                                                                                                           |
+| Calls              | 1:1 voice and video; no group calls.                                                                                                      |
 | Duplicate matching | Rule-based; reports worded very differently can be missed. Sensitive categories are only suggested as merges, never merged automatically. |
-| Chat features      | No read receipts or typing indicators.                                                                                                    |
+| Chat features      | Typing indicators in 1:1 crew conversations only (Nexconn supports typing in direct channels, not groups).                                |
 
 The landing hero is adapted from an Originkit block and the footer from Watermelon's footer-29.

@@ -64,6 +64,8 @@ We do **not** claim that every one of the 869 pages was read line by line. The t
 
 **Decision: not used yet.** A half-day isolated spike for the desktop Messages pane (DMs only) is scheduled after deployment. Phones keep the custom SDK views. We will not build a look-alike and call it Chat UI.
 
+**Update 13 Nov: adopted for 1:1 crew conversations only.** `@nexconn/chatui` 26.2.5 (on chat/engine 26.2.1, no bump needed) renders every private crew thread, on phones and desktop, via `nc-channel-detail-provider` beside Baton's own inbox. The crew group chat and incident cards stay on the Chat SDK, so the metadata limitation does not apply. See `src/lib/nexconn-chatui.ts`.
+
 ## C. Call SDK for Web (`@nexconn/call`) and Server Call API
 
 **What exists (read in full):**

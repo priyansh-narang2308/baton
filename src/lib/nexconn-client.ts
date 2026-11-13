@@ -204,6 +204,17 @@ export async function connect(
         console.warn("[baton] Nexconn Call setup failed; chat continues without huddles", e);
       }
     }
+    if (canCall) {
+      // Private 1:1 crew conversations render with Nexconn Chat UI, which must be initialised after
+      // NCEngine.initialize and before connect (Chat UI quickstart). Failure leaves everything else working.
+      try {
+        await (await import("./nexconn-chatui")).installChatUi(
+          process.env.NODE_ENV === "production" ? LogLevel.WARN : LogLevel.DEBUG,
+        );
+      } catch (e) {
+        console.warn("[baton] Nexconn Chat UI unavailable; private messages disabled", e);
+      }
+    }
     conn.initialized = true;
   }
   let result = await NCEngine.connect({ token: tok.token });

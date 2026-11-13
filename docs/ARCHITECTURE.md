@@ -123,8 +123,6 @@ The rule: a state change is settled in Postgres first, inside one conditional `U
 |---|---|
 | Web Push when the tab is closed | The Nexconn Web SDK has no push. Building VAPID push is real work that judges can't see in a demo. Escalations reach the phone while the tab is open. |
 | AI / LLM request detection | Transparent rules are explainable, free and testable (see `detection.test.ts`). An LLM adds cost, latency and a key to manage. |
-| Nexconn Call SDK (1:1 audio) | Requires Console enablement and a credit card to claim free minutes, which the owner must do. No simulated calls. See NEXCONN_DOCS_AUDIT §4. |
-| Nexconn Chat UI kit | Our cards and states are domain-specific; the kit would fight them, and portrait phones aren't supported. Now that the channel list works, a desktop-only spike for the Messages pane is scheduled (SCORE_IMPROVEMENT_PLAN §3). |
 
 ## 9. Console settings required (owner action)
 

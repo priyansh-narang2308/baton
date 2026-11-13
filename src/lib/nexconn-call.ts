@@ -1,6 +1,6 @@
 "use client";
 
-// Voice huddles over Nexconn Call (@nexconn/call 26.2.1). API names verified against its index.d.ts and the
+// Voice and video huddles over Nexconn Call (@nexconn/call 26.2.1). API names verified against its index.d.ts and the
 // "Make your first call" / "1-to-1 call" docs. Call signalling rides the Chat connection from nexconn-client.ts,
 // so `NCCallEngine.install()` runs before `NCEngine.initialize` and the handler is registered before `connect`.
 import { useSyncExternalStore } from "react";
@@ -17,6 +17,8 @@ export type HuddleContext = {
   callerName: string;
   callerMemberId: string;
   calleeMemberId: string;
+  /** Video huddle (audio + camera) rather than voice only. */
+  video?: boolean;
 };
 
 export type CallUi =
@@ -29,6 +31,12 @@ export type CallUi =
       connectedAt: number | null;
       micOn: boolean;
       busy: boolean;
+      /** Nexconn user ID of the other person (their video stream is bound to it). */
+      peerUserId: string;
+      video: boolean;
+      camOn: boolean;
+      /** False once the other person turns their camera off. */
+      peerCamOn: boolean;
     }
   | { phase: "ended"; peerName: string; message: string };
 
@@ -45,6 +53,7 @@ const state = {
   hideTimer: null as ReturnType<typeof setTimeout> | null,
   ring: null as { stop: () => void } | null,
   video: null as HTMLVideoElement | null,
+  remoteVideo: null as HTMLVideoElement | null,
   listeners: new Set<() => void>(),
 };
 
@@ -69,6 +78,40 @@ function subscribe(l: () => void) {
 const IDLE: CallUi = { phase: "idle" };
 export function useCall(): CallUi {
   return useSyncExternalStore(subscribe, () => state.ui, () => IDLE);
+}
+
+/**
+ * The two <video> elements the SDK plays into. They live outside React so the SDK's binding survives re-renders;
+ * the call dock moves them into its video stage while a video huddle is on screen.
+ */
+export function videoElements() {
+  return { local: ensureVideo("local"), remote: ensureVideo("remote") };
+}
+
+function ensureVideo(which: "local" | "remote") {
+  const key = which === "local" ? "video" : "remoteVideo";
+  if (!state[key]) {
+    const v = document.createElement("video");
+    v.muted = which === "local"; // never play your own microphone back; the SDK plays remote audio itself
+    v.playsInline = true;
+    v.autoplay = true;
+    v.style.display = "none";
+    v.dataset.huddleVideo = which;
+    document.body.appendChild(v);
+    state[key] = v;
+  }
+  return state[key]!;
+}
+
+/** Puts the elements back in their hidden parking spot when no video huddle is showing. */
+function parkVideos() {
+  for (const v of [state.video, state.remoteVideo]) {
+    if (!v) continue;
+    v.style.display = "none";
+    v.pause();
+    v.srcObject = null; // release the finished call's stream
+    if (v.parentElement !== document.body) document.body.appendChild(v);
+  }
 }
 
 /** True once the Call engine is set up on this page (crew and organizer pages, after connecting). */
@@ -140,7 +183,23 @@ export function setupCall(q: string) {
         return;
       }
       clearHide();
-      set({ phase: "incoming", callId, peerName: ctx.callerName, ctx, connectedAt: null, micOn: true, busy: false });
+      const video = session.getMediaType() === state.sdk!.NCCallMediaType.AUDIO_VIDEO;
+      set({
+        phase: "incoming",
+        callId,
+        peerName: ctx.callerName,
+        ctx,
+        connectedAt: null,
+        micOn: true,
+        busy: false,
+        peerUserId: session.getCallerUserId(),
+        video,
+        camOn: video,
+        peerCamOn: video,
+      });
+    },
+    onRemoteCameraStateChanged({ disabled }) {
+      patch({ peerCamOn: !disabled });
     },
     onCallConnected() {
       patch({ phase: "connected", connectedAt: Date.now(), busy: false });
@@ -160,6 +219,8 @@ export function setupCall(q: string) {
         const durationSec = wasConnected ? Math.round((Date.now() - (ui.connectedAt ?? Date.now())) / 1000) : 0;
         void logHuddle(ui.ctx, session.getCallId(), outcomeFor(reason, wasConnected), durationSec);
       }
+      if (ui.video) engine.removeVideoView([ui.peerUserId]);
+      parkVideos();
       set({ phase: "ended", peerName: ui.peerName, message: endedMessage(reason, wasConnected, outgoing, ui.peerName) });
       state.hideTimer = setTimeout(() => set({ phase: "idle" }), 4000);
     },
@@ -170,18 +231,13 @@ export function setupCall(q: string) {
 
 /**
  * The docs ask for a local view before placing or answering. It needs the connected user, so it is bound just before
- * each call; huddles are audio-only, so the element stays hidden.
+ * each call. For a video huddle the remote view is bound up front too (the docs allow binding it in advance); for a
+ * voice huddle both elements stay hidden.
  */
-function bindLocalView(engine: Engine) {
-  if (!state.video) {
-    const v = document.createElement("video");
-    v.muted = true;
-    v.playsInline = true;
-    v.style.display = "none";
-    document.body.appendChild(v);
-    state.video = v;
-  }
-  engine.setLocalVideoView({ videoElement: state.video });
+function bindViews(engine: Engine, peerUserId: string, video: boolean) {
+  const { local, remote } = videoElements();
+  engine.setLocalVideoView({ videoElement: local });
+  if (video) engine.setRemoteVideoView([{ userId: peerUserId, videoElement: remote, enableLowResolutionStream: false }]);
 }
 
 /** Who placed the call is remembered per page; the callee never logs, so each call is recorded once. */
@@ -205,7 +261,7 @@ async function logHuddle(ctx: HuddleContext, callId: string, outcome: string, du
     await fetch(`/api/events/${ctx.eventId}/incidents/${ctx.incidentId}/huddle${state.q}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ callId, withMemberId: ctx.calleeMemberId, outcome, durationSec }),
+      body: JSON.stringify({ callId, withMemberId: ctx.calleeMemberId, outcome, durationSec, video: Boolean(ctx.video) }),
     });
     logged.forEach((l) => l(ctx.incidentId));
   } catch {
@@ -222,7 +278,7 @@ function clearHide() {
   state.hideTimer = null;
 }
 
-/** Rings a teammate's Baton page about one incident. Audio only. */
+/** Rings a teammate's Baton page about one incident, as a voice huddle or (with `ctx.video`) a video huddle. */
 export async function startHuddle(ctx: HuddleContext, peerUserId: string, peerName: string) {
   const engine = state.engine;
   const sdk = state.sdk;
@@ -230,17 +286,20 @@ export async function startHuddle(ctx: HuddleContext, peerUserId: string, peerNa
   if (state.ui.phase !== "idle" && state.ui.phase !== "ended") throw new Error("You're already in a call");
   clearHide();
   placed.add(`${ctx.incidentId}:${ctx.calleeMemberId}`);
-  set({ phase: "outgoing", callId: null, peerName, ctx, connectedAt: null, micOn: true, busy: true });
-  bindLocalView(engine);
+  const video = Boolean(ctx.video);
+  set({ phase: "outgoing", callId: null, peerName, ctx, connectedAt: null, micOn: true, busy: true, peerUserId, video, camOn: video, peerCamOn: video });
+  bindViews(engine, peerUserId, video);
   const { code, callId } = await engine.startCall({
     calleeIds: [peerUserId],
     callType: sdk.NCCallType.SINGLE,
-    mediaType: sdk.NCCallMediaType.AUDIO,
+    mediaType: video ? sdk.NCCallMediaType.AUDIO_VIDEO : sdk.NCCallMediaType.AUDIO,
     extra: JSON.stringify(ctx),
   });
   if (code !== 0 || !callId) {
     placed.delete(`${ctx.incidentId}:${ctx.calleeMemberId}`);
-    set({ phase: "ended", peerName, message: micHint(`Couldn't start the call (code ${code})`, code) });
+    if (video) engine.removeVideoView([peerUserId]);
+    parkVideos();
+    set({ phase: "ended", peerName, message: micHint(`Couldn't start the call (code ${code})`, code, video) });
     state.hideTimer = setTimeout(() => set({ phase: "idle" }), 6000);
     return;
   }
@@ -250,23 +309,26 @@ export async function startHuddle(ctx: HuddleContext, peerUserId: string, peerNa
 // 53012: the SDK's code when the browser refuses the microphone (seen in its log as getUserMedia "Permission denied").
 const MIC_DENIED = 53012;
 
-function micHint(fallback: string, code?: number) {
-  if (code === MIC_DENIED) return "Your microphone is blocked. Allow it for this site (icon in the address bar), then call again.";
+function micHint(fallback: string, code?: number, video = false) {
+  const devices = video ? "camera and microphone" : "microphone";
+  if (code === MIC_DENIED) return `Your ${devices} ${video ? "are" : "is"} blocked. Allow ${video ? "them" : "it"} for this site (icon in the address bar), then call again.`;
   // Browsers refuse the microphone over plain http or after the user blocked it; say so instead of a bare code.
   return typeof navigator !== "undefined" && !navigator.mediaDevices
-    ? "This browser can't use the microphone here (needs https)"
-    : `${fallback}. Check that the browser may use your microphone.`;
+    ? `This browser can't use the ${devices} here (needs https)`
+    : `${fallback}. Check that the browser may use your ${devices}.`;
 }
 
 export async function acceptHuddle() {
   const ui = state.ui;
   if (ui.phase !== "incoming" || !ui.callId || !state.engine) return;
   patch({ busy: true });
-  bindLocalView(state.engine);
+  bindViews(state.engine, ui.peerUserId, ui.video);
   const { code } = await state.engine.acceptCall({ callId: ui.callId });
   if (code !== 0) {
     await state.engine.endCall({ callId: ui.callId }).catch(() => undefined);
-    set({ phase: "ended", peerName: ui.peerName, message: micHint(`Couldn't answer (code ${code})`, code) });
+    if (ui.video) state.engine.removeVideoView([ui.peerUserId]);
+    parkVideos();
+    set({ phase: "ended", peerName: ui.peerName, message: micHint(`Couldn't answer (code ${code})`, code, ui.video) });
     state.hideTimer = setTimeout(() => set({ phase: "idle" }), 6000);
   }
 }
@@ -285,6 +347,15 @@ export async function toggleMic() {
   const next = !ui.micOn;
   const { code } = await state.engine.enableMicrophone(next);
   if (code === 0) patch({ micOn: next });
+}
+
+/** Turns the camera off or back on during a video huddle (the other side gets onRemoteCameraStateChanged). */
+export async function toggleCamera() {
+  const ui = state.ui;
+  if (ui.phase !== "connected" || !ui.video || !state.engine) return;
+  const next = !ui.camOn;
+  const { code } = await state.engine.enableCamera(next);
+  if (code === 0) patch({ camOn: next });
 }
 
 /** A soft two-tone ring while a call is incoming. Silent if the browser hasn't allowed audio yet. */

@@ -7,6 +7,7 @@ import {
   MessageCircle,
   Phone,
   UserPlus,
+  Video,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -328,7 +329,7 @@ export function IncidentDetail({
 }
 
 /**
- * Voice huddle: a real 1-to-1 audio call over Nexconn Call to a teammate, about this incident. The callee's Baton page
+ * Huddle: a real 1-to-1 voice or video call over Nexconn Call to a teammate, about this incident. The callee's Baton page
  * rings with the incident's number and title; when it ends, the caller's page writes one line into the timeline.
  */
 function Huddle({
@@ -357,7 +358,7 @@ function Huddle({
   const inCall = call.phase !== "idle" && call.phase !== "ended";
   if (!m) return null;
 
-  async function ring() {
+  async function ring(video: boolean) {
     setError(null);
     try {
       await startHuddle(
@@ -369,6 +370,7 @@ function Huddle({
           callerName: me.name,
           callerMemberId: me.id,
           calleeMemberId: m!.id,
+          video,
         },
         m!.nexconnUserId,
         m!.name,
@@ -384,7 +386,7 @@ function Huddle({
         <Phone className="size-4 text-accent" aria-hidden /> Talk it through
       </p>
       <p className="mt-0.5 text-xs text-text-3">
-        A live voice call over Nexconn Call. Their Baton page rings about #{i.number}; the call is logged in the timeline.
+        A live voice or video call over Nexconn Call. Their Baton page rings about #{i.number}; the call is logged in the timeline.
       </p>
       <div className="mt-2 flex gap-2">
         <Picker
@@ -402,8 +404,17 @@ function Huddle({
             badge: c.id === i.ownerMemberId ? "Owner" : undefined,
           }))}
         />
-        <Button variant="primary" onClick={ring} disabled={!ready || inCall}>
+        <Button variant="primary" onClick={() => void ring(false)} disabled={!ready || inCall}>
           {ready ? (inCall ? "In a call" : `Call ${m.name.split(" ")[0]}`) : "Connecting…"}
+        </Button>
+        <Button
+          onClick={() => void ring(true)}
+          disabled={!ready || inCall}
+          aria-label={`Video call ${m.name}`}
+          title={`Video call ${m.name}`}
+          className="w-10 shrink-0 px-0"
+        >
+          <Video className="size-4" aria-hidden />
         </Button>
       </div>
       {m.online === false && (
@@ -704,8 +715,9 @@ function describe(e: ActivityEntry): string {
       const sec = Number(d.durationSec ?? 0);
       const len = sec >= 60 ? `${Math.floor(sec / 60)}m ${String(sec % 60).padStart(2, "0")}s` : `${sec}s`;
       const withName = String(d.withName ?? "a teammate");
+      const kind = d.video ? "video" : "voice";
       return d.outcome === "connected"
-        ? `${who} had a voice huddle with ${withName} (${len})`
+        ? `${who} had a ${kind} huddle with ${withName} (${len})`
         : d.outcome === "declined"
           ? `${who} called ${withName} — they declined`
           : d.outcome === "cancelled"

@@ -19,6 +19,10 @@ export function useDirectThreads(connected: boolean, crew: CrewMemberView[] | un
   useEffect(() => {
     refresh();
   }, [refresh]);
+  // Crew names for Nexconn Chat UI's private conversations (it asks for profiles by Nexconn user id).
+  useEffect(() => {
+    if (crew) void import("@/lib/nexconn-chatui").then((m) => m.rememberProfiles(crew));
+  }, [crew]);
   useEffect(
     () =>
       onMessage((m) => {

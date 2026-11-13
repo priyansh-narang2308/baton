@@ -25,6 +25,7 @@ const Huddle = z.object({
   withMemberId: z.string().min(1).max(40),
   outcome: z.enum(["connected", "no_answer", "declined", "cancelled", "failed"]),
   durationSec: z.number().min(0).max(86400),
+  video: z.boolean().default(false),
 });
 const Pass = z.object({ memberId: z.string().min(1).max(40), note: z.string().max(280).default("") });
 
@@ -112,7 +113,7 @@ export async function POST(
         break;
       }
       case "huddle": {
-        // A Nexconn Call voice huddle ended; the timeline gets one line. Nothing to project to the crew group.
+        // A Nexconn Call voice or video huddle ended; the timeline gets one line. Nothing to project to the crew group.
         const input = await body(req, Huddle);
         payload = await logHuddle(db(), eventId, incidentId, memberId, input);
         effects = [];

@@ -322,7 +322,16 @@ describe("Baton Pass (owner hands over, teammate must accept)", () => {
   });
 });
 
-describe("voice huddles (Nexconn Call) in the timeline", () => {
+describe("voice and video huddles (Nexconn Call) in the timeline", () => {
+  it("records whether the huddle was a video call", async () => {
+    const { incidentId } = await report();
+    await logHuddle(db, EVENT, incidentId, "mbriya", { callId: "v1", withMemberId: "mbsam", outcome: "connected", durationSec: 30, video: true });
+    await logHuddle(db, EVENT, incidentId, "mbriya", { callId: "v2", withMemberId: "mbsam", outcome: "connected", durationSec: 12 });
+    const detail = await incidentDetail(db, EVENT, incidentId);
+    const byCall = Object.fromEntries(detail.activity.filter((a) => a.type === "huddle.ended").map((a) => [a.detail.callId, a.detail.video]));
+    expect(byCall).toEqual({ v1: true, v2: false });
+  });
+
   it("records one entry per call, with the person called and the duration", async () => {
     const { incidentId } = await report();
     const r = await logHuddle(db, EVENT, incidentId, "mbriya", { callId: "call1", withMemberId: "mbsam", outcome: "connected", durationSec: 83.4 });

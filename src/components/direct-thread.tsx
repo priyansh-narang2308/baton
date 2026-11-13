@@ -1,122 +1,85 @@
 "use client";
 
-import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { clearDirectUnread, DIRECT, loadHistory, messageText, onMessage, sendDirectText, type ChatMessage } from "@/lib/nexconn-client";
-import { Button, cx, inputClass } from "./ui";
+import { clearDirectUnread, DIRECT, onMessage } from "@/lib/nexconn-client";
+import { CHAT_UI_DETAIL_TAG, chatUiReady, fitToContainer, onChatUiSend, openDirect, prefillInput, rememberProfiles } from "@/lib/nexconn-chatui";
+import { SdkDirectThread } from "./direct-thread-sdk";
+
+type Props = { peerUserId: string; peerName: string; meUserId: string | null; connected: boolean; draft?: string; onActivity?: () => void };
 
 /**
- * A Nexconn direct channel between two crew members (organizer ↔ volunteer). Nexconn stores the history; we load
- * the last page, append live messages and clear the unread count while the thread is open.
+ * A private Nexconn direct channel between two crew members, rendered by Nexconn Chat UI (its conversation pane,
+ * `nc-channel-detail-provider`; Baton's own inbox lists the conversations). Chat UI shares the page's single
+ * Nexconn session; if it failed to load, the SDK-based thread is used instead so messaging never breaks.
  */
-export function DirectThread({ peerUserId, peerName, meUserId, connected, draft = "", onActivity }: { peerUserId: string; peerName: string; meUserId: string | null; connected: boolean; draft?: string; onActivity?: () => void }) {
-  const [messages, setMessages] = useState<ChatMessage[] | null>(null);
-  const [text, setText] = useState(draft);
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const bottom = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!connected) return;
-    let cancelled = false;
-    loadHistory("direct", peerUserId, 50)
-      .then((h) => {
-        if (cancelled) return;
-        setMessages((cur) => merge(h, cur ?? []));
-        void clearDirectUnread(peerUserId).then(() => onActivity?.());
-      })
-      .catch(() => !cancelled && setMessages([]));
-    return () => {
-      cancelled = true;
-    };
-  }, [connected, peerUserId, onActivity]);
-
-  useEffect(
-    () =>
-      onMessage((m) => {
-        if (m.channelType !== DIRECT || m.channelId !== peerUserId) return;
-        setMessages((cur) => merge(cur ?? [], [m]));
-        void clearDirectUnread(peerUserId).then(() => onActivity?.());
-      }),
-    [peerUserId, onActivity],
-  );
-
-  useEffect(() => {
-    bottom.current?.scrollIntoView({ block: "end" });
-  }, [messages?.length]);
-
-  async function send() {
-    const body = text.trim();
-    if (!body) return;
-    setSending(true);
-    setError(null);
-    try {
-      const m = await sendDirectText(peerUserId, body);
-      setMessages((cur) => merge(cur ?? [], [m]));
-      setText("");
-      onActivity?.();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setSending(false);
-    }
-  }
-
-  return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <ol className="min-h-40 flex-1 space-y-2 overflow-y-auto px-4 py-3" aria-label={`Messages with ${peerName}`}>
-        {!connected && <li className="py-6 text-center text-sm text-text-3">Connecting to messaging…</li>}
-        {connected && messages === null && <li className="py-6 text-center text-sm text-text-3">Loading messages…</li>}
-        {messages?.length === 0 && <li className="py-6 text-center text-sm text-text-3">No messages with {peerName} yet. Only the two of you see this conversation.</li>}
-        {messages?.map((m) => {
-          const own = m.senderUserId === meUserId;
-          return (
-            <li key={m.messageId} className={cx("flex flex-col", own ? "items-end" : "items-start")}>
-              <span className={cx("max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-[15px]", own ? "bg-accent text-accent-ink" : "border border-border bg-surface")}>{messageText(m)}</span>
-              <span className="mt-0.5 px-1 text-[11px] text-text-3">{new Date(m.sentTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-            </li>
-          );
-        })}
-        <div ref={bottom} />
-      </ol>
-      <div className="border-t border-border bg-surface px-3 py-2.5">
-        {error && (
-          <p role="alert" className="mb-2 text-[13px] text-danger">
-            {error}
-          </p>
-        )}
-        <div className="flex items-end gap-2">
-          <textarea
-            rows={1}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-                e.preventDefault();
-                void send();
-              }
-            }}
-            // A prefilled "Re #N …" draft is focused with the caret after it, ready to type.
-            autoFocus={Boolean(draft)}
-            onFocus={(e) => {
-              const len = e.currentTarget.value.length;
-              e.currentTarget.setSelectionRange(len, len);
-            }}
-            placeholder={connected ? `Message ${peerName}` : "Connecting…"}
-            aria-label={`Message ${peerName}`}
-            className={cx(inputClass, "min-h-10 resize-none py-2 text-[15px]")}
-          />
-          <Button variant="primary" busy={sending} disabled={!connected || !text.trim()} aria-label="Send" onClick={send} className="w-10 px-0">
-            <Send className="size-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+export function DirectThread(props: Props) {
+  const { connected } = props;
+  if (connected && !chatUiReady()) return <SdkDirectThread {...props} />;
+  return <ChatUiThread {...props} />;
 }
 
-function merge(a: ChatMessage[], b: ChatMessage[]) {
-  const byId = new Map<string, ChatMessage>();
-  for (const m of [...a, ...b]) byId.set(m.messageId, m);
-  return [...byId.values()].sort((x, y) => x.sentTime - y.sentTime);
+function ChatUiThread({ peerUserId, peerName, meUserId, connected, draft, onActivity }: Props) {
+  const host = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const activity = useRef(onActivity);
+  useEffect(() => {
+    activity.current = onActivity;
+  }, [onActivity]);
+
+  useEffect(() => {
+    rememberProfiles([{ nexconnUserId: peerUserId, name: peerName }]);
+  }, [peerUserId, peerName]);
+
+  useEffect(() => {
+    const el = host.current;
+    if (!connected || !el) return;
+    let cancelled = false;
+    const root = document.createElement(CHAT_UI_DETAIL_TAG);
+    root.style.display = "block";
+    root.style.width = "100%";
+    root.style.height = "100%";
+    el.appendChild(root);
+    fitToContainer(root);
+    openDirect(peerUserId)
+      .then(async () => {
+        if (cancelled) return;
+        setError(null);
+        // A "Re #N …" draft from an incident: wait for Chat UI to render its input, then fill it.
+        for (let i = 0; draft && i < 20 && !cancelled && !prefillInput(root, draft); i++) await new Promise((r) => setTimeout(r, 150));
+        void clearDirectUnread(peerUserId).then(() => activity.current?.());
+      })
+      .catch((e: Error) => !cancelled && setError(e.message));
+    return () => {
+      cancelled = true;
+      root.remove();
+    };
+    // The draft only seeds the input when the conversation is first opened.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected, peerUserId]);
+
+  useEffect(() => {
+    const offSend = onChatUiSend((peer) => {
+      if (peer === peerUserId) setTimeout(() => activity.current?.(), 500);
+    });
+    const offMsg = onMessage((m) => {
+      if (m.channelType !== DIRECT || m.channelId !== peerUserId) return;
+      void clearDirectUnread(peerUserId).then(() => activity.current?.());
+    });
+    return () => {
+      offSend();
+      offMsg();
+    };
+  }, [peerUserId]);
+
+  return (
+    <div className="relative flex min-h-0 flex-1 flex-col" data-me={meUserId ?? undefined}>
+      {!connected && <p className="py-6 text-center text-sm text-text-3">Connecting to messaging…</p>}
+      {error && (
+        <p role="alert" className="px-4 py-3 text-center text-[13px] text-danger">
+          {error}
+        </p>
+      )}
+      <div ref={host} className="nc-host min-h-[360px] flex-1" aria-label={`Private conversation with ${peerName}`} />
+    </div>
+  );
 }
