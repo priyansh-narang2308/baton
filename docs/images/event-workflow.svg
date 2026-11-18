@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="830" viewBox="0 0 1700 830" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B625B"/></marker><marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#D9622A"/></marker><marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#4C9A6A"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3E5A8C"/></marker></defs>
+<rect width="1700" height="830" fill="#FFFFFF"/>
+<text x="40" y="56" font-size="28" font-weight="600" fill="#1F1A17" text-anchor="start">How an event runs on Baton</text>
+<text x="40" y="86" font-size="16" font-weight="400" fill="#6B625B" text-anchor="start">Three roles, no app installs. Baton decides who owns what; Nexconn carries every update to every screen.</text>
+<rect x="256" y="130" width="266" height="40" rx="8" fill="#F4EEE8" stroke="#F4EEE8" stroke-width="1.5"/>
+<text x="389.0" y="156" font-size="13" font-weight="700" fill="#6B625B" text-anchor="middle">1 · SET UP</text>
+<rect x="534" y="130" width="266" height="40" rx="8" fill="#F4EEE8" stroke="#F4EEE8" stroke-width="1.5"/>
+<text x="667.0" y="156" font-size="13" font-weight="700" fill="#6B625B" text-anchor="middle">2 · JOIN</text>
+<rect x="812" y="130" width="266" height="40" rx="8" fill="#F4EEE8" stroke="#F4EEE8" stroke-width="1.5"/>
+<text x="945.0" y="156" font-size="13" font-weight="700" fill="#6B625B" text-anchor="middle">3 · REPORT</text>
+<rect x="1090" y="130" width="266" height="40" rx="8" fill="#F4EEE8" stroke="#F4EEE8" stroke-width="1.5"/>
+<text x="1223.0" y="156" font-size="13" font-weight="700" fill="#6B625B" text-anchor="middle">4 · COORDINATE</text>
+<rect x="1368" y="130" width="266" height="40" rx="8" fill="#F4EEE8" stroke="#F4EEE8" stroke-width="1.5"/>
+<text x="1501.0" y="156" font-size="13" font-weight="700" fill="#6B625B" text-anchor="middle">5 · CLOSE THE LOOP</text>
+<rect x="40" y="190" width="1620" height="131" rx="16" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="62" y="246" font-size="18" font-weight="600" fill="#1F1A17" text-anchor="start">Organizer</text>
+<text x="62" y="270" font-size="12" font-weight="400" fill="#6B625B" text-anchor="start" font-family="Menlo, Consolas, monospace">desktop · /o/[eventId]</text>
+<rect x="258" y="204" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="276" y="234" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Creates the event</text>
+<text x="276" y="255" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">names it and its locations</text>
+<text x="276" y="276" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">at /new</text>
+<line x1="520" y1="255.5" x2="534" y2="255.5" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="536" y="204" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="554" y="234" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Shares the crew QR</text>
+<text x="554" y="255" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">and prints one report</text>
+<text x="554" y="276" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">poster per location</text>
+<line x1="798" y1="255.5" x2="812" y2="255.5" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="814" y="204" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="832" y="234" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Sees the card land</text>
+<text x="832" y="255" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">on the board, live,</text>
+<text x="832" y="276" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">no reload</text>
+<line x1="1076" y1="255.5" x2="1090" y2="255.5" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="1092" y="204" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1110" y="234" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Assigns and watches</text>
+<text x="1110" y="255" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">escalations, Baton Passes,</text>
+<text x="1110" y="276" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">calls and DMs</text>
+<line x1="1354" y1="255.5" x2="1368" y2="255.5" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="1370" y="204" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1388" y="234" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Reads the impact</text>
+<text x="1388" y="255" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">time to owner and</text>
+<text x="1388" y="276" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">time to fix per incident</text>
+<rect x="40" y="335" width="1620" height="131" rx="16" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="62" y="391" font-size="18" font-weight="600" fill="#1F1A17" text-anchor="start">Volunteer crew</text>
+<text x="62" y="415" font-size="12" font-weight="400" fill="#6B625B" text-anchor="start" font-family="Menlo, Consolas, monospace">phone · /c/[eventId]</text>
+<text x="389.0" y="415" font-size="16" font-weight="400" fill="#C9BFB6" text-anchor="middle">—</text>
+<rect x="536" y="349" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="554" y="379" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Scans the crew QR</text>
+<text x="554" y="400" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">types a name, lands in</text>
+<text x="554" y="421" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">the crew app</text>
+<line x1="798" y1="400.5" x2="812" y2="400.5" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="814" y="349" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="832" y="379" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Gets the card</text>
+<text x="832" y="400" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">on every crew phone</text>
+<text x="832" y="421" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">with an I&#x27;ll take it button</text>
+<line x1="1076" y1="400.5" x2="1090" y2="400.5" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="1092" y="349" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1110" y="379" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Claims · passes · calls</text>
+<text x="1110" y="400" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">one owner at a time;</text>
+<text x="1110" y="421" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">voice/video huddle, DMs</text>
+<line x1="1354" y1="400.5" x2="1368" y2="400.5" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="1370" y="349" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1388" y="379" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Marks it fixed</text>
+<text x="1388" y="400" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">the whole crew sees</text>
+<text x="1388" y="421" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">it close</text>
+<rect x="40" y="480" width="1620" height="131" rx="16" fill="#FFFFFF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="62" y="536" font-size="18" font-weight="600" fill="#1F1A17" text-anchor="start">Attendee</text>
+<text x="62" y="560" font-size="12" font-weight="400" fill="#6B625B" text-anchor="start" font-family="Menlo, Consolas, monospace">phone · /e/[slug]</text>
+<text x="389.0" y="560" font-size="16" font-weight="400" fill="#C9BFB6" text-anchor="middle">—</text>
+<text x="667.0" y="560" font-size="16" font-weight="400" fill="#C9BFB6" text-anchor="middle">—</text>
+<rect x="814" y="494" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="832" y="524" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Scans a poster</text>
+<text x="832" y="545" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">picks a category, sends;</text>
+<text x="832" y="566" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">anonymous, no account</text>
+<line x1="1076" y1="545.5" x2="1090" y2="545.5" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="1092" y="494" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1110" y="524" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Sees who is on it</text>
+<text x="1110" y="545" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">status thread:</text>
+<text x="1110" y="566" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">“Riya is on it”</text>
+<line x1="1354" y1="545.5" x2="1368" y2="545.5" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="1370" y="494" width="262" height="103" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="1388" y="524" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Sees “Fixed”</text>
+<text x="1388" y="545" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">the person who asked</text>
+<text x="1388" y="566" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">hears back</text>
+<rect x="40" y="625" width="1620" height="131" rx="16" fill="#FFF8F3" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="62" y="681" font-size="18" font-weight="600" fill="#B9501F" text-anchor="start">Nexconn</text>
+<text x="62" y="705" font-size="12" font-weight="400" fill="#6B625B" text-anchor="start" font-family="Menlo, Consolas, monospace">Chat · Call · webhooks</text>
+<rect x="258" y="639" width="262" height="103" rx="12" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="276" y="669" font-size="16" font-weight="600" fill="#B9501F" text-anchor="start">Group channel</text>
+<text x="276" y="690" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">one crew group per event,</text>
+<text x="276" y="711" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">created by the Server API</text>
+<line x1="520" y1="690.5" x2="534" y2="690.5" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<rect x="536" y="639" width="262" height="103" rx="12" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="554" y="669" font-size="16" font-weight="600" fill="#B9501F" text-anchor="start">Access token</text>
+<text x="554" y="690" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">member joins the group;</text>
+<text x="554" y="711" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">browser connects</text>
+<line x1="798" y1="690.5" x2="812" y2="690.5" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<rect x="814" y="639" width="262" height="103" rx="12" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="832" y="669" font-size="16" font-weight="600" fill="#B9501F" text-anchor="start">Incident card</text>
+<text x="832" y="690" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">BTN:Incident in the group;</text>
+<text x="832" y="711" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">BTN:Status to the reporter</text>
+<line x1="1076" y1="690.5" x2="1090" y2="690.5" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<rect x="1092" y="639" width="262" height="103" rx="12" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="1110" y="669" font-size="16" font-weight="600" fill="#B9501F" text-anchor="start">Metadata + alerts</text>
+<text x="1110" y="690" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">card state in metadata;</text>
+<text x="1110" y="711" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">toUserIds private alerts</text>
+<line x1="1354" y1="690.5" x2="1368" y2="690.5" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<rect x="1370" y="639" width="262" height="103" rx="12" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="1388" y="669" font-size="16" font-weight="600" fill="#B9501F" text-anchor="start">Final update</text>
+<text x="1388" y="690" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">metadata says fixed;</text>
+<text x="1388" y="711" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">reporter gets BTN:Status</text>
+<text x="40" y="808" font-size="13" font-weight="400" fill="#6B625B" text-anchor="start">Postgres is the source of truth for ownership; each change is committed first, then projected through Nexconn.</text>
+</svg>

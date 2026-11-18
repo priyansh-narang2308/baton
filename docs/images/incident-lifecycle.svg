@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1000" viewBox="0 0 1700 1000" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6B625B"/></marker><marker id="t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#D9622A"/></marker><marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#4C9A6A"/></marker><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3E5A8C"/></marker></defs>
+<rect width="1700" height="1000" fill="#FFFFFF"/>
+<text x="40" y="56" font-size="28" font-weight="600" fill="#1F1A17" text-anchor="start">Incident lifecycle</text>
+<text x="40" y="86" font-size="16" font-weight="400" fill="#6B625B" text-anchor="start">Exactly one owner at a time. Every transition is decided in a Postgres transaction, then pushed to every screen.</text>
+<rect x="40" y="380" width="230" height="120" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="58" y="410" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Report arrives</text>
+<text x="58" y="431" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">QR poster, or a request</text>
+<text x="58" y="452" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">typed in crew chat</text>
+<polygon points="395,370.0 490,440.0 395,510.0 300,440.0" fill="#FFFFFF" stroke="#6B625B" stroke-width="1.5"/>
+<text x="395" y="434.0" font-size="13.5" font-weight="600" fill="#1F1A17" text-anchor="middle">Same problem</text>
+<text x="395" y="454.0" font-size="13.5" font-weight="600" fill="#1F1A17" text-anchor="middle">already open?</text>
+<line x1="270" y1="440.0" x2="298" y2="440.0" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="580" y="380" width="270" height="120" rx="12" fill="#FFF4EC" stroke="#E9A47F" stroke-width="1.5"/>
+<text x="598" y="410" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Needs an owner</text>
+<text x="598" y="431" font-size="12" font-weight="400" fill="#6B625B" text-anchor="start" font-family="Menlo, Consolas, monospace">open</text>
+<text x="598" y="452" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">status open · numbered card</text>
+<text x="598" y="473" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">on the board and every phone</text>
+<line x1="490" y1="440.0" x2="578" y2="440.0" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="535" y="430.0" font-size="12.5" font-weight="500" fill="#6B625B" text-anchor="middle">no</text>
+<rect x="1010" y="380" width="270" height="120" rx="12" fill="#E9EFF7" stroke="#3E5A8C" stroke-width="1.5"/>
+<text x="1028" y="410" font-size="16" font-weight="600" fill="#2E4A7A" text-anchor="start">Being handled</text>
+<text x="1028" y="431" font-size="12" font-weight="400" fill="#2E4A7A" text-anchor="start" font-family="Menlo, Consolas, monospace">claimed</text>
+<text x="1028" y="452" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">atomic claim: one winner;</text>
+<text x="1028" y="473" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">owner shown to everyone</text>
+<line x1="850" y1="422.0" x2="1008" y2="422.0" stroke="#3E5A8C" stroke-width="1.8" marker-end="url(#b)"/>
+<text x="930.0" y="410.0" font-size="12.5" font-weight="500" fill="#2E4A7A" text-anchor="middle">I&#x27;ll take it  ·  lead assigns</text>
+<path d="M 1010 470.0 C 950 530.0, 910 530.0, 852 474.0" fill="none" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="930.0" y="532.0" font-size="12.5" font-weight="500" fill="#6B625B" text-anchor="middle">release</text>
+<rect x="1400" y="380" width="260" height="120" rx="12" fill="#E6F2EA" stroke="#4C9A6A" stroke-width="1.5"/>
+<text x="1418" y="410" font-size="16" font-weight="600" fill="#2F7A4D" text-anchor="start">Fixed</text>
+<text x="1418" y="431" font-size="12" font-weight="400" fill="#2F7A4D" text-anchor="start" font-family="Menlo, Consolas, monospace">resolved</text>
+<text x="1418" y="452" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">owner marks it fixed;</text>
+<text x="1418" y="473" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">times to owner and fix kept</text>
+<line x1="1280" y1="440.0" x2="1398" y2="440.0" stroke="#4C9A6A" stroke-width="1.8" marker-end="url(#g)"/>
+<text x="1340.0" y="430.0" font-size="12.5" font-weight="500" fill="#2F7A4D" text-anchor="middle">mark fixed</text>
+<rect x="260" y="600" width="280" height="120" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="278" y="630" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Attached to that incident</text>
+<text x="278" y="651" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">report count +1, no new card;</text>
+<text x="278" y="672" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">sensitive categories are only</text>
+<text x="278" y="693" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">suggested to a lead</text>
+<line x1="395" y1="510.0" x2="395" y2="598" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<text x="415" y="560.0" font-size="12.5" font-weight="500" fill="#6B625B" text-anchor="start">yes</text>
+<rect x="560" y="150" width="310" height="120" rx="12" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="578" y="180" font-size="16" font-weight="600" fill="#B9501F" text-anchor="start">Escalation</text>
+<text x="578" y="201" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">unowned 2 min (45 s if urgent):</text>
+<text x="578" y="222" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">private alert to the location</text>
+<text x="578" y="243" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">lead or the event leads</text>
+<path d="M 650 380 L 650 272" fill="none" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<text x="642" y="340" font-size="12.5" font-weight="500" fill="#B9501F" text-anchor="end">worker tick</text>
+<path d="M 780 272 L 780 378" fill="none" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<text x="790" y="340" font-size="12.5" font-weight="500" fill="#B9501F" text-anchor="start">re-alert</text>
+<rect x="990" y="150" width="310" height="120" rx="12" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="1008" y="180" font-size="16" font-weight="600" fill="#B9501F" text-anchor="start">Baton Pass offered</text>
+<text x="1008" y="201" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">owner picks a teammate + note;</text>
+<text x="1008" y="222" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">only they see the offer;</text>
+<text x="1008" y="243" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">the owner keeps it meanwhile</text>
+<path d="M 1070 380 L 1070 272" fill="none" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<text x="1062" y="340" font-size="12.5" font-weight="500" fill="#B9501F" text-anchor="end">pass</text>
+<path d="M 1220 272 L 1220 378" fill="none" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)"/>
+<text x="1230" y="326" font-size="12.5" font-weight="500" fill="#B9501F" text-anchor="start">accept → new owner</text>
+<text x="1230" y="346" font-size="12.5" font-weight="500" fill="#6B625B" text-anchor="start">decline / cancel → same owner</text>
+<rect x="600" y="640" width="230" height="100" rx="12" fill="#FFFFFF" stroke="#BDB3AA" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="618" y="670" font-size="16" font-weight="600" fill="#1F1A17" text-anchor="start">Withdrawn</text>
+<text x="618" y="691" font-size="12" font-weight="400" fill="#6B625B" text-anchor="start" font-family="Menlo, Consolas, monospace">withdrawn</text>
+<text x="618" y="712" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">“Not a request”</text>
+<text x="618" y="733" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">or merged into another</text>
+<line x1="715" y1="500" x2="715" y2="638" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)" stroke-dasharray="5 4"/>
+<rect x="1000" y="640" width="290" height="100" rx="12" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="1018" y="670" font-size="16" font-weight="600" fill="#B9501F" text-anchor="start">Huddle</text>
+<text x="1018" y="691" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">1:1 voice or video call from</text>
+<text x="1018" y="712" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">the incident, logged on it</text>
+<path d="M 1145 500 L 1145 638" fill="none" stroke="#D9622A" stroke-width="1.8" marker-end="url(#t)" stroke-dasharray="5 4"/>
+<rect x="1400" y="640" width="260" height="100" rx="12" fill="#E6F2EA" stroke="#4C9A6A" stroke-width="1.5"/>
+<text x="1418" y="670" font-size="16" font-weight="600" fill="#2F7A4D" text-anchor="start">Reporter sees “Fixed”</text>
+<text x="1418" y="691" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">direct-channel status;</text>
+<text x="1418" y="712" font-size="13.5" font-weight="400" fill="#4A413B" text-anchor="start">the loop is closed</text>
+<line x1="1530" y1="500" x2="1530" y2="638" stroke="#4C9A6A" stroke-width="1.8" marker-end="url(#g)"/>
+<rect x="40" y="820" width="1620" height="130" rx="16" fill="#F7F3EE" stroke="#F7F3EE" stroke-width="1.5"/>
+<text x="64" y="854" font-size="13" font-weight="700" fill="#6B625B" text-anchor="start">ON EVERY TRANSITION</text>
+<rect x="64" y="870" width="290" height="62" rx="10" fill="#E9EFF7" stroke="#3E5A8C" stroke-width="1.5"/>
+<text x="80" y="896" font-size="15" font-weight="600" fill="#2E4A7A" text-anchor="start">Postgres transaction</text>
+<text x="80" y="918" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="start">authorise · version + 1</text>
+<line x1="356" y1="901" x2="382" y2="901" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="384" y="870" width="290" height="62" rx="10" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
+<text x="400" y="896" font-size="15" font-weight="600" fill="#1F1A17" text-anchor="start">Audit row</text>
+<text x="400" y="918" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="start">incident_events, append-only</text>
+<line x1="676" y1="901" x2="702" y2="901" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="704" y="870" width="290" height="62" rx="10" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="720" y="896" font-size="15" font-weight="600" fill="#B9501F" text-anchor="start">Nexconn metadata</text>
+<text x="720" y="918" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="start">card state on the message</text>
+<line x1="996" y1="901" x2="1022" y2="901" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="1024" y="870" width="290" height="62" rx="10" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="1040" y="896" font-size="15" font-weight="600" fill="#B9501F" text-anchor="start">Targeted alerts</text>
+<text x="1040" y="918" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="start">toUserIds group message</text>
+<line x1="1316" y1="901" x2="1342" y2="901" stroke="#6B625B" stroke-width="1.8" marker-end="url(#a)"/>
+<rect x="1344" y="870" width="290" height="62" rx="10" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
+<text x="1360" y="896" font-size="15" font-weight="600" fill="#B9501F" text-anchor="start">Reporter status</text>
+<text x="1360" y="918" font-size="12.5" font-weight="400" fill="#6B625B" text-anchor="start">BTN:Status direct message</text>
+</svg>

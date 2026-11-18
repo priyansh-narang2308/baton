@@ -69,6 +69,8 @@ Baton keeps the chat and adds one rule on top of it: **every request has exactly
 
 ## How it works
 
+<p align="center"><img src="docs/images/event-workflow.png" alt="How an event runs on Baton: organizer, volunteer and attendee across set up, join, report, coordinate and close" width="900"></p>
+
 1. **Set up.** The organizer names the event and its locations at `/new`. Baton creates a Nexconn group channel for the crew and generates a crew QR code plus one report poster per location.
 2. **Join.** Volunteers scan the crew code, type a name and land in the crew app.
 3. **Report.** An attendee scans a poster, picks a category and sends. They get an anonymous identity and a private status thread.
@@ -82,6 +84,14 @@ Baton keeps the chat and adds one rule on top of it: **every request has exactly
 | Attendee         | Report and status (`/e/[slug]`)                | Phone   |
 
 The landing page also has **Try Baton live**, which creates a private, labelled demo event so you can try every role in one browser.
+
+### Incident lifecycle
+
+<p align="center"><img src="docs/images/incident-lifecycle.png" alt="Incident lifecycle: report, duplicate check, needs an owner, being handled, Baton Pass, escalation, fixed" width="900"></p>
+
+- **One owner at a time.** A claim is a conditional update, so if two volunteers tap at once exactly one wins.
+- **Handover never drops the ball.** During a Baton Pass the current owner keeps the incident until the teammate accepts.
+- **Nothing waits silently.** An unowned incident re-alerts the right lead after 2 minutes (45 seconds if urgent).
 
 ## Architecture
 
@@ -98,7 +108,7 @@ The landing page also has **Try Baton live**, which creates a private, labelled 
 | App                | Next.js 16 (App Router), React 19, TypeScript                                                      |
 | Styling and motion | Tailwind CSS 4, Framer Motion, Radix dropdown, Lucide icons                                        |
 | Data               | Postgres 16, Drizzle ORM, `postgres` driver, Zod validation                                        |
-| Real time          | Nexconn Chat SDK for Web (`@nexconn/chat`, `@nexconn/engine` 26.2.1), Nexconn Server API, webhooks |
+| Real time          | Nexconn Chat SDK for Web (`@nexconn/chat`, `@nexconn/engine` 26.2.1), Chat UI (`@nexconn/chatui` 26.2.5), Server API, webhooks |
 | Calls              | Nexconn Call SDK for Web (`@nexconn/call` 26.2.1)                                                  |
 | Testing            | Vitest (unit and real-Postgres integration), scripted multi-user E2E                               |
 | Hosting            | Vercel (`sin1`) with Neon Postgres; Dockerfile for long-running hosts                              |

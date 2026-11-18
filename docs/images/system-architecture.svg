@@ -40,10 +40,10 @@
   <rect x="430" y="176" width="640" height="150" rx="12" fill="#FAF5EF" stroke="#E8DDD3" stroke-width="1.5"/>
   <text x="452" y="208" font-size="17" font-weight="600" fill="#1F1A17">React 19 UI</text>
   <g font-size="14" fill="#4A413B">
-    <text x="452" y="236">Custom screens built on the Chat SDK</text>
-    <text x="452" y="260">Board, crew app, attendee page,</text>
-    <text x="452" y="284">incident sheet, call dock, inbox</text>
-    <text x="452" y="308" fill="#8A7F77">Nexconn Chat UI kit not used</text>
+    <text x="452" y="236">Custom screens on the Chat SDK, plus</text>
+    <text x="452" y="260">Chat UI for private crew messages.</text>
+    <text x="452" y="284">Board, crew app, attendee page,</text>
+    <text x="452" y="308">incident sheet, call dock, inbox</text>
   </g>
   <rect x="760" y="192" width="290" height="54" rx="10" fill="#FCE9DE" stroke="#F0C3A7" stroke-width="1.5"/>
   <text x="780" y="216" font-size="15" font-weight="600" fill="#1F1A17">Chat SDK client</text>
@@ -98,7 +98,7 @@
     <text x="1322" y="280" font-size="13" fill="#6B625B">Message metadata holds card state</text>
     <rect x="1300" y="304" width="340" height="80" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
     <text x="1322" y="336" font-size="17" font-weight="600" fill="#1F1A17">Call</text>
-    <text x="1322" y="362">1:1 audio over WebRTC</text>
+    <text x="1322" y="362">1:1 voice and video over WebRTC</text>
     <rect x="1300" y="512" width="340" height="88" rx="12" fill="#FFFFFF" stroke="#F0C3A7" stroke-width="1.5"/>
     <text x="1322" y="544" font-size="17" font-weight="600" fill="#1F1A17">Server API</text>
     <text x="1322" y="572">Signed with App Key, Nonce, Timestamp</text>
@@ -150,7 +150,7 @@
   </g>
   <g font-size="12.5" fill="#B9501F">
     <text x="1110" y="210">live connection</text>
-    <text x="1078" y="342">WebRTC audio</text>
+    <text x="1078" y="342">voice + video</text>
     <text x="1196" y="654">signed HTTPS</text>
     <text x="1118" y="446">POST webhook</text>
   </g>
