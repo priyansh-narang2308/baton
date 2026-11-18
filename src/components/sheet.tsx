@@ -37,7 +37,7 @@ export function Sheet({ title, onClose, children, footer, wide }: { title: React
         className={cx(
           "anim-sheet absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col rounded-t-2xl border border-border bg-bg shadow-pop",
           "lg:inset-y-0 lg:left-auto lg:right-0 lg:max-h-none lg:rounded-none lg:rounded-l-2xl",
-          wide ? "lg:w-[520px]" : "lg:w-[440px]",
+          wide ? "lg:w-[640px] xl:w-[700px]" : "lg:w-[560px] xl:w-[600px]",
         )}
       >
         <header className="flex items-center gap-3 border-b border-border px-4 py-3">
