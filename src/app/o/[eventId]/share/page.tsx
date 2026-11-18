@@ -1,6 +1,8 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import { eventById, eventZones } from "@/server/services";
 import { getSession } from "@/server/session";
+import { CopyLink } from "./copy-link";
 
 /** Printable QR sheet: one crew QR and one attendee poster per zone (the zone is encoded in the URL). */
 export default async function SharePage(props: PageProps<"/o/[eventId]/share">) {
@@ -8,6 +10,8 @@ export default async function SharePage(props: PageProps<"/o/[eventId]/share">) 
   const [ev, session] = await Promise.all([eventById(eventId), getSession("organizer", eventId)]);
   if (!ev || !session) return <p className="p-6 text-sm">Open your organizer link first.</p>;
   const zones = await eventZones(ev.id);
+  const h = await headers();
+  const origin = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
   const posters = [{ name: "General help", path: `/e/${ev.slug}` }, ...zones.map((z) => ({ name: z.name, path: `/e/${ev.slug}?z=${z.slug}` }))];
   return (
     <main className="mx-auto max-w-5xl p-6 print:p-0">
@@ -25,6 +29,7 @@ export default async function SharePage(props: PageProps<"/o/[eventId]/share">) 
         <p className="text-sm text-text-2">Share in your volunteer group. Rotate the code if it leaks.</p>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`/api/qr?path=${encodeURIComponent(`/join/${ev.crewCode}`)}`} alt="Crew join QR code" className="mt-4 size-56" />
+        <CopyLink url={`${origin}/join/${ev.crewCode}`} label="crew join" />
       </section>
       <div className="grid gap-6 sm:grid-cols-2">
         {posters.map((p) => (
@@ -34,6 +39,7 @@ export default async function SharePage(props: PageProps<"/o/[eventId]/share">) 
             <p className="mt-1 text-sm text-text-2">{p.name} · no app needed</p>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={`/api/qr?path=${encodeURIComponent(p.path)}`} alt={`Help QR code for ${p.name}`} className="mt-4 size-48" />
+            <CopyLink url={`${origin}${p.path}`} label={`${p.name} report`} />
           </section>
         ))}
       </div>
