@@ -235,5 +235,3 @@ Baton was built during the Nexconn Build Challenge 2026 (first commit 28 Oct 202
 | Calls              | 1:1 voice and video; no group calls.                                                                                                      |
 | Duplicate matching | Rule-based; reports worded very differently can be missed. Sensitive categories are only suggested as merges, never merged automatically. |
 | Chat features      | Typing indicators in 1:1 crew conversations only (Nexconn supports typing in direct channels, not groups).                                |
-
-The landing hero is adapted from an Originkit block and the footer from Watermelon's footer-29.
