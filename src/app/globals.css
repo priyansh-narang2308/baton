@@ -138,3 +138,26 @@ body {
   .traction .print-break { break-before: page; }
   .traction header { padding-top: 0 !important; }
 }
+
+/* Everything clickable shows a pointer (Tailwind v4 leaves buttons on the default arrow); disabled controls don't. */
+@layer base {
+  button,
+  [role="button"],
+  [type="button"],
+  [type="submit"],
+  [type="reset"],
+  [type="checkbox"],
+  [type="radio"],
+  select,
+  summary,
+  label[for],
+  a[href] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"],
+  input:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+}
